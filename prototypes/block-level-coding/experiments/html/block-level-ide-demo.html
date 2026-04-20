@@ -1,0 +1,2667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyPTO Block Studio Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #08111f;
+  --bg-elev: rgba(12, 25, 42, 0.84);
+  --bg-panel: rgba(16, 31, 52, 0.82);
+  --bg-panel-strong: #102540;
+  --bg-soft: rgba(133, 166, 215, 0.08);
+  --line: rgba(154, 188, 226, 0.16);
+  --line-strong: rgba(154, 188, 226, 0.28);
+  --text: #eff6ff;
+  --text-soft: #b0c3dc;
+  --text-dim: #6d85a4;
+  --cyan: #49d8ff;
+  --cyan-soft: rgba(73, 216, 255, 0.16);
+  --blue: #5ea3ff;
+  --amber: #ffb24d;
+  --amber-soft: rgba(255, 178, 77, 0.15);
+  --lime: #88f0a0;
+  --lime-soft: rgba(136, 240, 160, 0.16);
+  --rose: #ff7b7b;
+  --rose-soft: rgba(255, 123, 123, 0.16);
+  --violet: #8d9eff;
+  --editor-bg: rgba(10, 21, 36, 0.88);
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(94, 163, 255, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(255, 178, 77, 0.13), transparent 28%),
+    linear-gradient(180deg, #05101e 0%, #08111f 44%, #07131f 100%);
+  color: var(--text);
+  font-family: "Space Grotesk", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body { padding: 18px; }
+
+.shell {
+  height: calc(100vh - 36px);
+  display: grid;
+  grid-template-rows: auto minmax(320px, 48vh) minmax(250px, 1fr);
+  gap: 16px;
+  min-height: 0;
+}
+
+.shell.profiling-collapsed {
+  grid-template-rows: auto minmax(320px, 1fr) 64px;
+}
+
+.glass {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.topbar {
+  border-radius: 22px;
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 1.2fr auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(73, 216, 255, 0.25), rgba(94, 163, 255, 0.08)),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(73, 216, 255, 0.18);
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-mark::before,
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-mark::after {
+  inset: 12px;
+  border-color: rgba(73, 216, 255, 0.45);
+}
+
+.brand-copy h1 {
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.topbar-section {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pill,
+.state-pill,
+.ghost-btn,
+.primary-btn,
+.tab-btn,
+.chip-btn {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.pill {
+  padding: 7px 11px;
+  background: var(--bg-soft);
+  border-color: rgba(154, 188, 226, 0.08);
+}
+
+.pill strong {
+  color: var(--text);
+  display: block;
+  font-size: 12px;
+}
+
+.pill span {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.state-pill {
+  padding: 8px 11px;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(154, 188, 226, 0.08);
+  font-size: 11px;
+}
+
+.state-pill:hover,
+.state-pill.active {
+  color: var(--text);
+  border-color: rgba(73, 216, 255, 0.36);
+  background: var(--cyan-soft);
+}
+
+.workspace {
+  --explorer-width: 250px;
+  --inspector-width: 360px;
+  --explorer-handle: 10px;
+  --inspector-handle: 10px;
+  display: grid;
+  grid-template-columns:
+    var(--explorer-width)
+    var(--explorer-handle)
+    minmax(0, 1fr)
+    var(--inspector-handle)
+    var(--inspector-width);
+  gap: 16px;
+  min-height: 0;
+  transition: grid-template-columns 180ms ease;
+  overflow: hidden;
+}
+
+.panel {
+  border-radius: var(--radius);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.explorer {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: padding 180ms ease;
+}
+
+.sidebar-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sidebar-toggle {
+  min-width: 74px;
+}
+
+.sidebar-heading {
+  font-size: 13px;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-body {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.sidebar-body::-webkit-scrollbar,
+.inspector-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.sidebar-body::-webkit-scrollbar-track,
+.inspector-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 999px;
+}
+
+.sidebar-body::-webkit-scrollbar-thumb,
+.inspector-body::-webkit-scrollbar-thumb {
+  background: rgba(94, 163, 255, 0.28);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.sidebar-body,
+.inspector-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(94, 163, 255, 0.35) rgba(255, 255, 255, 0.03);
+}
+
+.sidebar-rail {
+  display: none;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-soft);
+  font: inherit;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.workspace.left-collapsed {
+  --explorer-width: 54px;
+  --explorer-handle: 0px;
+}
+
+.workspace.right-collapsed {
+  --inspector-width: 54px;
+  --inspector-handle: 0px;
+}
+
+.workspace.left-collapsed .explorer {
+  padding: 8px;
+}
+
+.workspace.right-collapsed .inspector {
+  padding: 8px;
+}
+
+.workspace.left-collapsed .explorer .sidebar-frame,
+.workspace.right-collapsed .inspector .sidebar-frame {
+  display: none;
+}
+
+.workspace.left-collapsed .explorer .sidebar-rail,
+.workspace.right-collapsed .inspector .sidebar-rail {
+  display: flex;
+}
+
+.resize-handle {
+  position: relative;
+  min-height: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  transition: background 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.resize-handle::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(176, 195, 220, 0.55);
+}
+
+.resize-handle.vertical {
+  cursor: col-resize;
+}
+
+.resize-handle:hover,
+.resize-handle.dragging {
+  background: rgba(94, 163, 255, 0.14);
+  border-color: rgba(94, 163, 255, 0.26);
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: var(--text-soft);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+}
+
+.tree-row.active {
+  color: var(--text);
+  background: rgba(73, 216, 255, 0.08);
+  border-color: rgba(73, 216, 255, 0.18);
+}
+
+.tree-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tree-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-copy strong {
+  display: block;
+  font-size: 13px;
+}
+
+.tree-copy span {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.mini-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.status-compact {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.status-pill-card {
+  padding: 10px 11px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  min-width: 0;
+}
+
+.status-pill-card .label {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.status-pill-card .value {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-pill-card .hint {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.metric-card {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.metric-card .label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.metric-card .value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.metric-card .hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.studio {
+  --editor-width: 1.05fr;
+  --studio-handle: 10px;
+  display: grid;
+  grid-template-columns: minmax(320px, var(--editor-width)) var(--studio-handle) minmax(320px, 1fr);
+  gap: 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.studio.editor-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.studio.editor-collapsed .editor-panel,
+.studio.editor-collapsed #handleStudio {
+  display: none;
+}
+
+.editor-panel,
+.graph-panel,
+.inspector,
+.profiling {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panel-head h2 {
+  font-size: 13px;
+  letter-spacing: -0.03em;
+}
+
+.panel-head p {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.stack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-btn,
+.chip-btn,
+.ghost-btn,
+.primary-btn {
+  padding: 7px 10px;
+  border-radius: 999px;
+  border-color: rgba(154, 188, 226, 0.12);
+  font-size: 11px;
+}
+
+.tab-btn,
+.ghost-btn,
+.chip-btn {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-btn.active,
+.chip-btn.active,
+.ghost-btn:hover {
+  color: var(--text);
+  border-color: rgba(94, 163, 255, 0.3);
+  background: rgba(94, 163, 255, 0.12);
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, rgba(73, 216, 255, 0.28), rgba(94, 163, 255, 0.16));
+  border-color: rgba(73, 216, 255, 0.24);
+  color: var(--text);
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(73, 216, 255, 0.15);
+}
+
+.editor-body {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  background: var(--editor-bg);
+}
+
+.editor-scroll {
+  height: 100%;
+  overflow: auto;
+  padding: 16px 0 18px;
+}
+
+.code-lens {
+  padding: 8px 14px 10px 38px;
+  font-size: 11px;
+  color: var(--cyan);
+}
+
+.code-row {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  padding: 3px 14px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #dce8f8;
+  transition: 160ms ease;
+}
+
+.code-row.active {
+  background: rgba(73, 216, 255, 0.1);
+}
+
+.code-row.generated {
+  background: rgba(255, 178, 77, 0.08);
+}
+
+.code-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.line-no {
+  color: #5d7696;
+  text-align: right;
+  user-select: none;
+}
+
+.line-code { white-space: pre-wrap; }
+
+.token-comment { color: #6f8196; }
+.token-keyword { color: #8ec5ff; }
+.token-fn { color: #9bb6ff; }
+.token-string { color: #ffcf7f; }
+.token-value { color: #8df4b8; }
+.token-attr { color: #60d4ff; }
+
+.generated-card {
+  margin: 16px 20px 0;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 178, 77, 0.22);
+  background: rgba(255, 178, 77, 0.08);
+}
+
+.generated-card h3 {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.generated-card p {
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+.graph-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.graph-detail {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(8, 18, 31, 0.94), rgba(10, 23, 40, 0.96));
+  border: 1px solid rgba(154, 188, 226, 0.12);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+  transform: translateY(calc(100% + 20px));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 180ms ease, opacity 180ms ease;
+  z-index: 13;
+}
+
+.graph-detail.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.graph-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.graph-detail-head h3 {
+  font-size: 12px;
+}
+
+.graph-detail-head p {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.graph-detail-close {
+  min-width: 32px;
+  padding: 6px 0;
+}
+
+.graph-canvas,
+.compare-view {
+  position: absolute;
+  inset: 0;
+  padding: 14px;
+}
+
+.graph-canvas {
+  overflow: auto;
+}
+
+.graph-zoom {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 12;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(8, 18, 32, 0.72);
+  border: 1px solid rgba(154, 188, 226, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.graph-zoom.hidden {
+  display: none;
+}
+
+.canvas-wrap {
+  position: relative;
+  width: fit-content;
+  min-width: 100%;
+}
+
+.canvas-space {
+  position: relative;
+  width: 1000px;
+  height: 460px;
+  border-radius: 18px;
+  background:
+    linear-gradient(rgba(154, 188, 226, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(154, 188, 226, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  background-size: 28px 28px, 28px 28px, 100% 100%;
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  transform-origin: top left;
+}
+
+.zoom-badge {
+  min-width: 52px;
+  text-align: center;
+  padding: 7px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(154, 188, 226, 0.12);
+}
+
+.graph-group {
+  position: absolute;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.graph-group span {
+  position: absolute;
+  top: -12px;
+  left: 18px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-soft);
+  background: #0a1628;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.graph-node {
+  position: absolute;
+  width: 154px;
+  padding: 14px 14px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(154, 188, 226, 0.18);
+  background: rgba(10, 22, 38, 0.92);
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.graph-node:hover {
+  transform: translateY(-2px);
+  border-color: rgba(73, 216, 255, 0.36);
+}
+
+.graph-node.selected {
+  border-color: rgba(73, 216, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(73, 216, 255, 0.12);
+}
+
+.graph-node.queued {
+  border-color: rgba(255, 178, 77, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 178, 77, 0.12);
+}
+
+.graph-node .kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.graph-node strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+
+.graph-node p {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.graph-node footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.node-cube { box-shadow: inset 0 0 0 1px rgba(94, 163, 255, 0.18); }
+.node-vector { box-shadow: inset 0 0 0 1px rgba(255, 178, 77, 0.18); }
+.node-dma { box-shadow: inset 0 0 0 1px rgba(136, 240, 160, 0.16); }
+.node-root { box-shadow: inset 0 0 0 1px rgba(141, 158, 255, 0.18); }
+
+.edge-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.graph-overlay {
+  position: absolute;
+  inset: 20px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(6, 16, 30, 0.86), rgba(8, 17, 31, 0.92));
+  border: 1px solid rgba(154, 188, 226, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: 180ms ease;
+  z-index: 10;
+}
+
+.graph-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.overlay-badge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.overlay-badge.loading {
+  color: var(--cyan);
+  background: rgba(73, 216, 255, 0.12);
+}
+
+.overlay-badge.error {
+  color: var(--rose);
+  background: rgba(255, 123, 123, 0.12);
+}
+
+.overlay-badge.empty {
+  color: var(--amber);
+  background: rgba(255, 178, 77, 0.12);
+}
+
+.graph-overlay h3 {
+  font-size: 26px;
+  letter-spacing: -0.04em;
+}
+
+.graph-overlay p {
+  margin-top: 10px;
+  max-width: 420px;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.spinner {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  border: 3px solid rgba(73, 216, 255, 0.18);
+  border-top-color: rgba(73, 216, 255, 0.9);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.compare-view {
+  display: none;
+  overflow: auto;
+}
+
+.compare-view.visible {
+  display: block;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.compare-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.compare-card h3 {
+  font-size: 15px;
+}
+
+.compare-card p,
+.compare-card li {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.compare-card ul {
+  list-style: none;
+}
+
+.delta {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.delta.good {
+  background: rgba(136, 240, 160, 0.14);
+  color: var(--lime);
+}
+
+.delta.warn {
+  background: rgba(255, 178, 77, 0.14);
+  color: var(--amber);
+}
+
+.inspector-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.info-card h3 {
+  font-size: 12px;
+  letter-spacing: -0.02em;
+}
+
+.info-card p,
+.info-card li,
+.info-card label {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.subgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.submetric {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.submetric span {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.submetric strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 19px;
+}
+
+.control {
+  margin-top: 12px;
+}
+
+.control-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-top strong {
+  font-size: 13px;
+}
+
+.control-top span {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.range {
+  width: 100%;
+  margin-top: 10px;
+  accent-color: var(--cyan);
+}
+
+.toggle-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 180ms ease;
+}
+
+.switch.active {
+  background: rgba(73, 216, 255, 0.28);
+}
+
+.switch.active::after {
+  transform: translateX(20px);
+}
+
+.doc-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.suggestion {
+  margin-top: 12px;
+  padding: 12px 13px;
+  border-radius: 14px;
+  background: rgba(73, 216, 255, 0.07);
+  border: 1px solid rgba(73, 216, 255, 0.18);
+}
+
+.suggestion strong {
+  display: block;
+  font-size: 13px;
+}
+
+.suggestion p {
+  margin-top: 6px;
+}
+
+.suggestion button {
+  margin-top: 10px;
+}
+
+.validation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.validation-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.validation.good .validation-dot { background: var(--lime); }
+.validation.warn .validation-dot { background: var(--amber); }
+.validation.bad .validation-dot { background: var(--rose); }
+
+.profiling {
+  padding: 12px 14px 14px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.profiling.collapsed {
+  padding-bottom: 10px;
+  overflow: hidden;
+}
+
+.profiling.collapsed .kpi-strip,
+.profiling.collapsed .lane-wrap,
+.profiling.collapsed .footer-note {
+  display: none;
+}
+
+.profiling-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.profiling-head h2 {
+  font-size: 13px;
+}
+
+.profiling-head p {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.kpi-card {
+  padding: 7px 9px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kpi-meta {
+  min-width: 0;
+}
+
+.kpi-meta .label {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.kpi-meta .hint {
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-value {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.lane-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 2px 0 0;
+}
+
+.time-axis {
+  display: grid;
+  grid-template-columns: 136px 1fr;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.ticks {
+  position: relative;
+  height: 22px;
+  border-bottom: 1px solid rgba(154, 188, 226, 0.12);
+}
+
+.tick {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.tick::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 1px;
+  height: 8px;
+  background: rgba(154, 188, 226, 0.18);
+}
+
+.lane {
+  display: grid;
+  grid-template-columns: 136px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.lane-label {
+  text-align: right;
+  padding-right: 8px;
+}
+
+.lane-label strong {
+  display: block;
+  font-size: 12px;
+}
+
+.lane-label span {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.lane-track {
+  position: relative;
+  height: 36px;
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, rgba(154, 188, 226, 0.08) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.03);
+  background-size: 10% 100%, 100% 100%;
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.task {
+  position: absolute;
+  top: 5px;
+  height: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 10px;
+  color: #06101e;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.task:hover,
+.task.selected {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16);
+}
+
+.task.cube { background: linear-gradient(135deg, #65b3ff, #84d4ff); }
+.task.vector { background: linear-gradient(135deg, #ffc878, #ffdca2); }
+.task.dma { background: linear-gradient(135deg, #87e9a6, #bcffc8); }
+.task.cpu { background: linear-gradient(135deg, #9eaafe, #c8d0ff); }
+
+.lane-empty {
+  opacity: 0.5;
+  text-align: center;
+  color: var(--text-dim);
+  padding-top: 8px;
+  font-size: 11px;
+}
+
+.footer-note {
+  margin-top: 2px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.mono { font-family: "IBM Plex Mono", monospace; }
+
+@media (max-width: 1360px) {
+  .workspace {
+    --explorer-width: 220px;
+    --inspector-width: 320px;
+  }
+
+  .studio {
+    grid-template-columns: 1fr;
+  }
+
+  #handleStudio {
+    display: none;
+  }
+
+  .studio.editor-collapsed .editor-panel {
+    display: flex;
+  }
+
+  .graph-panel {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .shell {
+    grid-template-rows: auto auto auto;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace.left-collapsed,
+  .workspace.right-collapsed,
+  .workspace.left-collapsed.right-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .resize-handle {
+    display: none;
+  }
+
+  .explorer {
+    order: 2;
+    padding: 14px;
+  }
+
+  .inspector {
+    order: 3;
+    padding: 14px;
+  }
+
+  .workspace.left-collapsed .explorer .sidebar-frame,
+  .workspace.right-collapsed .inspector .sidebar-frame {
+    display: flex;
+  }
+
+  .workspace.left-collapsed .explorer .sidebar-rail,
+  .workspace.right-collapsed .inspector .sidebar-rail {
+    display: none;
+  }
+
+  .kpi-strip,
+  .compare-grid,
+  .subgrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  body {
+    padding: 12px;
+  }
+
+  .kpi-strip,
+  .compare-grid,
+  .subgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .lane,
+  .time-axis {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .lane-label {
+    text-align: left;
+  }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar glass">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-copy">
+        <h1>PyPTO Block Studio</h1>
+      </div>
+    </div>
+    <div class="topbar-section">
+      <div class="pill">
+        <strong>背景增量编译</strong>
+        <span id="compileHint">保存后 180ms 内刷新 Block Graph</span>
+      </div>
+      <div class="pill">
+        <strong>当前算子</strong>
+        <span class="mono">fused_attention.py</span>
+      </div>
+    </div>
+    <div class="topbar-section">
+      <div id="stateControls" class="stack"></div>
+      <button class="ghost-btn" id="resetBtn" type="button">重置 demo</button>
+    </div>
+  </header>
+
+  <section class="workspace" id="workspace">
+    <aside class="explorer panel glass" id="explorerPanel">
+      <div class="sidebar-frame">
+        <div class="sidebar-title">
+          <h2 class="sidebar-heading">项目资源管理器</h2>
+          <button class="ghost-btn sidebar-toggle" id="collapseExplorerBtn" type="button">收起左栏</button>
+        </div>
+        <div class="sidebar-body">
+          <div>
+            <div class="tree" style="margin-top:2px">
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--amber)"></div>
+                <div class="tree-copy">
+                  <strong>examples/03_advanced/advanced_nn/attention</strong>
+                  <span>来自样例工程的真实 attention 示例</span>
+                </div>
+              </div>
+              <div class="tree-row active">
+                <div class="tree-dot" style="background:var(--cyan)"></div>
+                <div class="tree-copy">
+                  <strong>attention/attention.py</strong>
+                  <span>当前 demo 参考的算子入口</span>
+                </div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--blue)"></div>
+                <div class="tree-copy">
+                  <strong>docs/tools/computation_graph/查看计算图.md</strong>
+                  <span>图视图交互参考</span>
+                </div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--violet)"></div>
+                <div class="tree-copy">
+                  <strong>docs/tools/swimlane_graph</strong>
+                  <span>泳道图与 Profiling 参考</span>
+                </div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--lime)"></div>
+                <div class="tree-copy">
+                  <strong>examples/01_beginner/basic/basic_ops.py</strong>
+                  <span>Tile / Cube 参数参考</span>
+                </div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--amber)"></div>
+                <div class="tree-copy">
+                  <strong>examples/02_intermediate/controlflow/loop/loop.py</strong>
+                  <span>中间层 controlflow 示例</span>
+                </div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--cyan)"></div>
+                <div class="tree-copy">
+                  <strong>graph/leaf/latest.leaf</strong>
+                  <span>Block Graph 快照产物</span>
+                </div>
+              </div>
+              <div class="tree-row">
+                <div class="tree-dot" style="background:var(--violet)"></div>
+                <div class="tree-copy">
+                  <strong>graph/root/latest.root</strong>
+                  <span>Execute Graph 入口产物</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <button class="sidebar-rail" id="expandExplorerBtn" type="button">项目资源管理器</button>
+    </aside>
+
+    <div class="resize-handle vertical" id="handleExplorer" aria-hidden="true"></div>
+
+    <div class="studio" id="studio">
+      <section class="editor-panel panel glass">
+        <div class="panel-head">
+          <div>
+            <h2>代码编辑器</h2>
+            <p>点击 Block 节点后，高亮对应源码行；手动合图会把 <span class="mono">sg_set_scope</span> 片段注入到代码区。</p>
+          </div>
+          <div class="stack" id="templateControls"></div>
+        </div>
+        <div class="editor-body">
+          <div class="editor-scroll" id="editorScroll">
+            <div class="code-lens">CodeLens: <span class="mono">查看对应 Block / 应用模板 / 比较快照</span></div>
+            <div id="codeContainer"></div>
+            <div id="generatedCardHost"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="resize-handle vertical" id="handleStudio" aria-hidden="true"></div>
+
+      <section class="graph-panel panel glass">
+        <div class="panel-head">
+          <div>
+            <h2>图视图与快照</h2>
+            <p>Block / Execute 双视图联动；手动模式下可多选节点并生成合图 scope。</p>
+          </div>
+          <div class="stack">
+            <button class="ghost-btn" id="toggleEditorBtn" type="button">收起代码</button>
+            <div id="graphTabs" class="stack"></div>
+            <button class="ghost-btn" id="manualToggleBtn" type="button"></button>
+            <button class="primary-btn" id="mergeApplyBtn" type="button">生成 sg_set_scope</button>
+          </div>
+        </div>
+        <div class="graph-body">
+          <div class="graph-canvas" id="graphCanvas"></div>
+          <div class="compare-view" id="compareView"></div>
+          <div class="graph-zoom" id="graphZoomControls">
+            <button class="ghost-btn" id="zoomOutBtn" type="button">-</button>
+            <div class="zoom-badge" id="zoomValue">100%</div>
+            <button class="ghost-btn" id="zoomInBtn" type="button">+</button>
+            <button class="ghost-btn" id="zoomFitBtn" type="button">适配</button>
+          </div>
+          <div class="graph-overlay" id="emptyOverlay">
+            <div>
+              <div class="overlay-badge empty">空状态</div>
+              <h3>先运行一次编译或 Profiling</h3>
+              <p>图视图会在拿到 <span class="mono">LEAF / ROOT</span> 产物后自动渲染；底部泳道图会在完成一次 Profiling 后出现真实时序。</p>
+            </div>
+          </div>
+          <div class="graph-overlay" id="loadingOverlay">
+            <div>
+              <div class="spinner"></div>
+              <div class="overlay-badge loading">加载状态</div>
+              <h3>正在生成 Block Graph...</h3>
+              <p>后台正在执行增量编译、重算子图边界，并同步估算 L1 / Workspace 占用。</p>
+            </div>
+          </div>
+          <div class="graph-overlay" id="errorOverlay">
+            <div>
+              <div class="overlay-badge error">错误状态</div>
+              <h3>检测到硬件约束冲突</h3>
+              <p id="errorText">当前参数组合会导致 Workspace 峰值超预算，建议降低 <span class="mono">pg_upper_bound</span> 或关闭 L1 复用。</p>
+              <div class="stack" style="justify-content:center; margin-top:14px">
+                <button class="primary-btn" type="button" id="jumpToParamBtn">跳到冲突参数</button>
+              </div>
+            </div>
+          </div>
+          <div class="graph-detail" id="graphDetailPanel">
+            <div class="graph-detail-head">
+              <div>
+                <h3>Block 属性详情</h3>
+                <p id="graphDetailSummary"></p>
+              </div>
+              <button class="ghost-btn graph-detail-close" id="closeGraphDetailBtn" type="button">关闭</button>
+            </div>
+            <div class="subgrid" id="graphDetailMetrics"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="resize-handle vertical" id="handleInspector" aria-hidden="true"></div>
+
+    <aside class="inspector panel glass" id="inspectorPanel">
+      <div class="sidebar-frame">
+        <div class="panel-head">
+          <div>
+            <h2>参数 / 属性 / 建议</h2>
+            <p>选中节点后看源码映射、资源估算和约束检查。</p>
+          </div>
+          <button class="ghost-btn sidebar-toggle" id="collapseInspectorBtn" type="button">收起右栏</button>
+        </div>
+        <div class="inspector-body">
+          <section class="info-card">
+            <h3>当前收敛状态</h3>
+            <div class="status-compact">
+              <div class="status-pill-card">
+                <div class="label">Block 数量</div>
+                <div class="value" id="miniBlockCount">6</div>
+                <div class="hint">当前编译产物</div>
+              </div>
+              <div class="status-pill-card">
+                <div class="label">端到端预估耗时</div>
+                <div class="value" id="miniLatency">92us</div>
+                <div class="hint">静态估算 + 最近样本</div>
+              </div>
+              <div class="status-pill-card">
+                <div class="label">最新建议</div>
+                <div class="value" id="miniSuggestion">Vec Merge</div>
+                <div class="hint">优先看自动建议</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="info-card">
+            <h3>Block 参数面板</h3>
+            <div id="controlHost"></div>
+          </section>
+
+          <section class="info-card">
+            <h3>参数文档映射</h3>
+            <div class="doc-grid" id="docChips"></div>
+            <p id="docDescription"></p>
+          </section>
+
+          <section class="info-card">
+            <h3>资源估算器</h3>
+            <div class="subgrid">
+              <div class="submetric">
+                <span>L1 占用</span>
+                <strong id="l1Value">86 KB</strong>
+              </div>
+              <div class="submetric">
+                <span>Workspace</span>
+                <strong id="workspaceValue">218 KB</strong>
+              </div>
+              <div class="submetric">
+                <span>调度批次</span>
+                <strong id="stitchValue">3</strong>
+              </div>
+              <div class="submetric">
+                <span>建议收益</span>
+                <strong id="gainValue">+11%</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="info-card">
+            <h3>硬件约束校验</h3>
+            <div id="validationHost"></div>
+          </section>
+
+          <section class="info-card">
+            <h3>自动建议引擎</h3>
+            <div id="suggestionHost"></div>
+          </section>
+        </div>
+      </div>
+      <button class="sidebar-rail" id="expandInspectorBtn" type="button">参数 / 属性 / 建议</button>
+    </aside>
+  </section>
+
+  <section class="profiling panel glass">
+    <div class="profiling-head">
+      <div>
+        <h2>Profiling Swimlane</h2>
+        <p>把 Block 任务对齐到 <span class="mono">AI Core / AI CPU</span> 泳道，观察搬运、计算与调度空隙是否被压缩。</p>
+      </div>
+      <div class="stack">
+        <button class="ghost-btn" id="profilePresetBtn" type="button">模拟一次 Profiling</button>
+        <button class="ghost-btn" id="toggleProfilingBtn" type="button">收起泳道</button>
+      </div>
+    </div>
+    <div class="kpi-strip" id="kpiStrip"></div>
+    <div class="lane-wrap">
+      <div class="time-axis">
+        <div></div>
+        <div class="ticks" id="ticks"></div>
+      </div>
+      <div id="laneHost"></div>
+    </div>
+    <div class="footer-note">
+      <span>当前 demo 覆盖：双视图联动、手动合图、参数调优、快照对比、Profiling 回路。</span>
+      <span id="footerInsight">观察到 AI CPU stitch 仍有等待，可继续收敛调度批大小。</span>
+    </div>
+  </section>
+</div>
+
+<script>
+const docs = {
+  cube_l1_reuse_setting: {
+    title: "cube_l1_reuse_setting",
+    desc: "控制 Cube 子图是否优先按 L1 复用策略合并，通常能减少重复搬运，但会推高片上缓存占用。"
+  },
+  cube_nbuffer_setting: {
+    title: "cube_nbuffer_setting",
+    desc: "控制 Cube 同构子图的广度合并粒度，适合减少 Matmul 调度开销。调得过大时，Workspace 和 L1 压力会一起上涨。"
+  },
+  vec_nbuffer_setting: {
+    title: "vec_nbuffer_setting",
+    desc: "控制 Vector 同构子图的合并粒度。适合解决 Softmax 等阶段出现大量小 Block 的情况。"
+  },
+  pg_upper_bound: {
+    title: "pg_upper_bound",
+    desc: "限制单个子图合并后的规模上界。值偏小时图更碎，值偏大时会降低调度次数，但可能触发资源约束风险。"
+  }
+};
+
+const sourceBase = [
+  { line: 1, html: '<span class="token-keyword">@pypto.frontend.jit</span>', scope: [] },
+  { line: 2, html: '<span class="token-keyword">def</span> <span class="token-fn">fused_attention</span>(q, k, v):', scope: [] },
+  { line: 3, html: '    <span class="token-comment"># Tile 先定形，再让 Block 层去收敛</span>', scope: [] },
+  { line: 4, html: '    pypto.<span class="token-attr">set_cube_tile_shapes</span>([64, 64], [64, 64], [64, 64])', scope: [] },
+  { line: 5, html: '    pypto.<span class="token-attr">set_vec_tile_shapes</span>(1, 4, 1, 64)', scope: [] },
+  { line: 6, html: '    cfg = pypto.<span class="token-fn">block_config</span>(', scope: [] },
+  { line: 7, html: '        <span class="token-attr">cube_l1_reuse_setting</span>=<span data-bind="l1Reuse"></span>,', scope: [] },
+  { line: 8, html: '        <span class="token-attr">cube_nbuffer_setting</span>=<span data-bind="cubeNBuffer"></span>,', scope: [] },
+  { line: 9, html: '        <span class="token-attr">vec_nbuffer_setting</span>=<span data-bind="vecNBuffer"></span>,', scope: [] },
+  { line: 10, html: '        <span class="token-attr">pg_upper_bound</span>=<span data-bind="pgUpperBound"></span>', scope: [] },
+  { line: 11, html: '    )', scope: [] },
+  { line: 12, html: '    qk = pypto.matmul(q, k.transpose(-1, -2), config=cfg)', scope: ['cube-qk'] },
+  { line: 13, html: '    scaled = pypto.scale(qk, 0.125)', scope: ['vec-scale'] },
+  { line: 14, html: '    probs = pypto.softmax(scaled)', scope: ['vec-softmax'] },
+  { line: 15, html: '    out = pypto.matmul(probs, v, config=cfg)', scope: ['cube-v'] },
+  { line: 16, html: '    pypto.store(out)', scope: ['dma-store'] },
+  { line: 17, html: '    <span class="token-keyword">return</span> out', scope: ['dma-store'] }
+];
+
+const graphTabs = [
+  { id: "block", label: "Block Graph" },
+  { id: "execute", label: "Execute Graph" },
+  { id: "compare", label: "快照对比" }
+];
+
+const stateModes = [
+  { id: "ready", label: "已就绪" },
+  { id: "loading", label: "编译中" },
+  { id: "error", label: "参数冲突" },
+  { id: "empty", label: "空状态" }
+];
+
+const templates = [
+  {
+    id: "vector",
+    label: "Vector 同构合图",
+    apply() {
+      state.params.vecNBuffer = 3;
+      state.params.pgUpperBound = Math.max(state.params.pgUpperBound, 7);
+      state.manualScopeId = 301;
+      state.manualScopeNodes = ["vec-scale", "vec-softmax"];
+      state.selectedBlock = "vec-fused";
+      state.graphTab = "block";
+    }
+  },
+  {
+    id: "reuse",
+    label: "L1 Reuse 优先",
+    apply() {
+      state.params.l1Reuse = true;
+      state.params.cubeNBuffer = 3;
+      state.graphTab = "execute";
+      state.selectedBlock = "cube-v";
+    }
+  },
+  {
+    id: "teaching",
+    label: "教学演示模式",
+    apply() {
+      state.uiState = "empty";
+      state.graphTab = "block";
+      state.selectedBlock = "cube-qk";
+      state.manualMode = false;
+      state.mergeQueue = [];
+    }
+  }
+];
+
+const state = {
+  uiState: "ready",
+  graphTab: "block",
+  graphZoom: 0.86,
+  graphDetailOpen: false,
+  manualMode: false,
+  editorCollapsed: false,
+  profilingCollapsed: false,
+  leftCollapsed: false,
+  rightCollapsed: false,
+  layout: {
+    explorerWidth: 250,
+    inspectorWidth: 360,
+    editorWidth: null
+  },
+  mergeQueue: [],
+  selectedBlock: "cube-qk",
+  selectedDoc: "vec_nbuffer_setting",
+  params: {
+    l1Reuse: true,
+    cubeNBuffer: 2,
+    vecNBuffer: 1,
+    pgUpperBound: 6
+  },
+  manualScopeId: 0,
+  manualScopeNodes: []
+};
+
+const nodesById = {};
+
+const $ = (id) => document.getElementById(id);
+
+function isVectorMerged() {
+  return state.manualScopeNodes.length >= 2 || state.params.vecNBuffer >= 3;
+}
+
+function getBlockModel() {
+  if (isVectorMerged()) {
+    return [
+      { id: "tile-feed", type: "dma", kicker: "tile setup", title: "Tile Feed", desc: "继承 TileShape，准备 Q/K/V 分块与依赖。", line: [4, 5], x: 7, y: 38, latency: 9, scope: "-", occupancy: "18 KB" },
+      { id: "cube-qk", type: "cube", kicker: "leaf block", title: "QK Matmul", desc: "首个 Cube Block，决定后续 Block 粒度。", line: [12], x: 26, y: 18, latency: 24 - state.params.cubeNBuffer, scope: 120, occupancy: `${26 + state.params.cubeNBuffer * 8} KB` },
+      { id: "vec-fused", type: "vector", kicker: "leaf block", title: "Vector Fuse", desc: "Scale + Softmax 被拉进同一 scope，减少小 Vector Block。", line: [13, 14], x: 49, y: 20, latency: 14 - state.params.vecNBuffer, scope: state.manualScopeId || 301, occupancy: `${18 + state.params.vecNBuffer * 5} KB` },
+      { id: "cube-v", type: "cube", kicker: "leaf block", title: "Value Matmul", desc: "承接概率矩阵，决定主计算吞吐。", line: [15], x: 49, y: 60, latency: 23 - state.params.cubeNBuffer, scope: 220, occupancy: `${32 + (state.params.l1Reuse ? 14 : 6)} KB` },
+      { id: "dma-store", type: "dma", kicker: "epilogue", title: "Store Out", desc: "写回输出并回收临时空间。", line: [16, 17], x: 76, y: 38, latency: state.params.l1Reuse ? 6 : 9, scope: "-", occupancy: `${12 + state.params.pgUpperBound} KB` }
+    ];
+  }
+
+  return [
+    { id: "tile-feed", type: "dma", kicker: "tile setup", title: "Tile Feed", desc: "继承 TileShape，准备 Q/K/V 分块与依赖。", line: [4, 5], x: 6, y: 38, latency: 10, scope: "-", occupancy: "18 KB" },
+    { id: "cube-qk", type: "cube", kicker: "leaf block", title: "QK Matmul", desc: "首个 Cube Block，决定后续 Block 粒度。", line: [12], x: 23, y: 18, latency: 26 - state.params.cubeNBuffer, scope: 120, occupancy: `${26 + state.params.cubeNBuffer * 8} KB` },
+    { id: "vec-scale", type: "vector", kicker: "leaf block", title: "Scale", desc: "当前仍是独立 Vector Block，存在调度碎片。", line: [13], x: 44, y: 18, latency: 9 - Math.min(3, state.params.vecNBuffer), scope: 201, occupancy: `${12 + state.params.vecNBuffer * 3} KB` },
+    { id: "vec-softmax", type: "vector", kicker: "leaf block", title: "Softmax", desc: "拆分后利于观察边界，但会制造额外 stitch。", line: [14], x: 64, y: 18, latency: 10 - Math.min(3, state.params.vecNBuffer), scope: 202, occupancy: `${13 + state.params.vecNBuffer * 3} KB` },
+    { id: "cube-v", type: "cube", kicker: "leaf block", title: "Value Matmul", desc: "承接概率矩阵，决定主计算吞吐。", line: [15], x: 45, y: 61, latency: 25 - state.params.cubeNBuffer, scope: 220, occupancy: `${32 + (state.params.l1Reuse ? 14 : 6)} KB` },
+    { id: "dma-store", type: "dma", kicker: "epilogue", title: "Store Out", desc: "写回输出并回收临时空间。", line: [16, 17], x: 79, y: 39, latency: state.params.l1Reuse ? 6 : 9, scope: "-", occupancy: `${12 + state.params.pgUpperBound} KB` }
+  ];
+}
+
+function getExecuteModel() {
+  return [
+    { id: "root-prepare", type: "root", kicker: "root node", title: "root.prepare", desc: "Tile 输入准备 + QK Block 装配。", line: [4, 12], x: 8, y: 20, latency: 16, scope: "ROOT-0", occupancy: "N/A" },
+    { id: "root-main", type: "root", kicker: "root node", title: "root.main", desc: isVectorMerged() ? "Cube + Vector Fuse 主干调度。" : "Cube + 两段 Vector 主干调度。", line: [12, 15], x: 36, y: 20, latency: isVectorMerged() ? 32 : 41, scope: "ROOT-1", occupancy: "N/A" },
+    { id: "root-stitch", type: "root", kicker: "runtime", title: "stitch.batch", desc: `每批处理 ${getMetrics().stitchBatches} 个 root function，AI CPU 参与拼接。`, line: [13, 15], x: 65, y: 20, latency: 14, scope: "runtime", occupancy: "Workspace" },
+    { id: "root-exit", type: "root", kicker: "egress", title: "root.exit", desc: "收尾、写回和 Profiling 采样归档。", line: [16, 17], x: 83, y: 20, latency: 7, scope: "ROOT-2", occupancy: "N/A" }
+  ];
+}
+
+function getActiveNodes() {
+  const model = state.graphTab === "execute" ? getExecuteModel() : getBlockModel();
+  model.forEach((node) => { nodesById[node.id] = node; });
+  return model;
+}
+
+function getMetrics() {
+  const blockCount = getBlockModel().length;
+  const l1 = 42 + state.params.cubeNBuffer * 14 + state.params.vecNBuffer * 6 + (state.params.l1Reuse ? 18 : 0) + state.manualScopeNodes.length * 4;
+  const workspace = 120 + state.params.cubeNBuffer * 28 + state.params.vecNBuffer * 22 + state.params.pgUpperBound * 8 + state.manualScopeNodes.length * 10;
+  const latency = Math.max(58, 108 - state.params.cubeNBuffer * 8 - state.params.vecNBuffer * 6 - state.params.pgUpperBound * 2 - (state.params.l1Reuse ? 7 : 0) - (isVectorMerged() ? 8 : 0));
+  const stitchBatches = Math.max(1, 5 - Math.floor(state.params.pgUpperBound / 2) - (isVectorMerged() ? 1 : 0));
+  const gain = Math.max(4, 6 + state.params.cubeNBuffer * 2 + state.params.vecNBuffer * 2 + (state.params.l1Reuse ? 3 : 0) + (isVectorMerged() ? 4 : 0));
+  const bad = workspace > 290 || l1 > 118 || (state.params.l1Reuse && state.params.cubeNBuffer >= 4 && state.params.pgUpperBound >= 8);
+  const warning = !bad && (workspace > 250 || l1 > 98 || state.params.pgUpperBound <= 4);
+  return { blockCount, l1, workspace, latency, stitchBatches, gain, bad, warning };
+}
+
+function getSuggestions() {
+  const metrics = getMetrics();
+  const list = [];
+
+  if (!isVectorMerged()) {
+    list.push({
+      id: "merge-vector",
+      title: "检测到大量小 Vector Block",
+      body: "当前 Scale 和 Softmax 被拆成两个叶子子图，AI CPU stitch 间隙偏大。建议提升 vec_nbuffer 或直接手动合图。",
+      actionLabel: "应用 Vec Merge",
+      apply() {
+        state.params.vecNBuffer = 3;
+        state.manualScopeId = 301;
+        state.manualScopeNodes = ["vec-scale", "vec-softmax"];
+        state.selectedBlock = "vec-fused";
+        state.graphTab = "block";
+      }
+    });
+  }
+
+  if (!state.params.l1Reuse) {
+    list.push({
+      id: "enable-reuse",
+      title: "检测到 Cube 重复搬运",
+      body: "关闭 L1 复用时，Value Matmul 前后的搬运空隙更明显。可以先开启复用，再看是否压缩 DMA 段。",
+      actionLabel: "开启 L1 Reuse",
+      apply() {
+        state.params.l1Reuse = true;
+        state.selectedDoc = "cube_l1_reuse_setting";
+      }
+    });
+  }
+
+  if (state.params.pgUpperBound <= 4) {
+    list.push({
+      id: "raise-pg",
+      title: "子图上界偏保守",
+      body: "当前 pg_upper_bound 让 Block 边界过碎，适度增大可以减少调度轮次。",
+      actionLabel: "增大上界",
+      apply() {
+        state.params.pgUpperBound = 6;
+        state.selectedDoc = "pg_upper_bound";
+      }
+    });
+  }
+
+  if (metrics.bad) {
+    list.unshift({
+      id: "risk",
+      title: "当前组合存在资源风险",
+      body: "建议降低 cube_nbuffer 或 pg_upper_bound，先回到硬件预算内，再继续尝试 L1 复用。",
+      actionLabel: "回退到安全值",
+      apply() {
+        state.params.cubeNBuffer = 2;
+        state.params.pgUpperBound = 6;
+        state.params.l1Reuse = true;
+        state.selectedDoc = "cube_nbuffer_setting";
+      }
+    });
+  }
+
+  return list.slice(0, 3);
+}
+
+function getValidationItems() {
+  const metrics = getMetrics();
+  return [
+    metrics.bad
+      ? { tone: "bad", text: `Workspace 峰值 ${metrics.workspace} KB，超出演示预算 290 KB。` }
+      : { tone: "good", text: `Workspace 峰值 ${metrics.workspace} KB，仍在当前设备预算内。` },
+    state.params.pgUpperBound <= 4
+      ? { tone: "warn", text: "pg_upper_bound 偏低，虽然安全，但会导致 Block 过碎、调度次数偏多。" }
+      : { tone: "good", text: "子图规模上界处于可调优区间，可继续观察收益拐点。" },
+    state.params.l1Reuse
+      ? { tone: metrics.bad ? "warn" : "good", text: "已启用 L1 Reuse，需要同时关注片上缓存峰值和 Cube 合并粒度。" }
+      : { tone: "warn", text: "L1 Reuse 关闭时，搬运与计算重叠度会下降。" }
+  ];
+}
+
+function getGeneratedLines() {
+  if (!state.manualScopeNodes.length) return [];
+  const scopeNames = state.manualScopeNodes.map((item) => `"${item}"`).join(", ");
+  return [
+    { line: "12a", html: `    pypto.<span class="token-attr">sg_set_scope</span>([${scopeNames}], <span class="token-value">${state.manualScopeId || 301}</span>)` },
+    { line: "12b", html: '    <span class="token-comment"># IDE 根据拖拽 / 多选结果自动插入的手动合图干预</span>' }
+  ];
+}
+
+function renderStateControls() {
+  $("stateControls").innerHTML = stateModes.map((mode) => `
+    <button class="state-pill ${state.uiState === mode.id ? "active" : ""}" type="button" data-state="${mode.id}">${mode.label}</button>
+  `).join("");
+
+  [...$("stateControls").querySelectorAll("[data-state]")].forEach((button) => {
+    button.addEventListener("click", () => {
+      state.uiState = button.dataset.state;
+      renderAll();
+    });
+  });
+}
+
+function renderLayout() {
+  const shell = document.querySelector(".shell");
+  const workspace = $("workspace");
+  const studio = $("studio");
+  const profiling = document.querySelector(".profiling");
+  shell.classList.toggle("profiling-collapsed", state.profilingCollapsed);
+  workspace.classList.toggle("left-collapsed", state.leftCollapsed);
+  workspace.classList.toggle("right-collapsed", state.rightCollapsed);
+  studio.classList.toggle("editor-collapsed", state.editorCollapsed);
+  profiling.classList.toggle("collapsed", state.profilingCollapsed);
+  workspace.style.setProperty("--explorer-width", `${state.leftCollapsed ? 54 : state.layout.explorerWidth}px`);
+  workspace.style.setProperty("--inspector-width", `${state.rightCollapsed ? 54 : state.layout.inspectorWidth}px`);
+  workspace.style.setProperty("--explorer-handle", state.leftCollapsed ? "0px" : "10px");
+  workspace.style.setProperty("--inspector-handle", state.rightCollapsed ? "0px" : "10px");
+  studio.style.setProperty("--editor-width", state.layout.editorWidth ? `${state.layout.editorWidth}px` : "1.05fr");
+  $("collapseExplorerBtn").textContent = state.leftCollapsed ? "展开左栏" : "收起左栏";
+  $("collapseInspectorBtn").textContent = state.rightCollapsed ? "展开右栏" : "收起右栏";
+  $("toggleEditorBtn").textContent = state.editorCollapsed ? "展开代码" : "收起代码";
+  $("toggleProfilingBtn").textContent = state.profilingCollapsed ? "展开泳道" : "收起泳道";
+}
+
+function bindResizeHandle(handleId, onStart) {
+  const handle = $(handleId);
+  handle.addEventListener("pointerdown", (event) => {
+    if (window.innerWidth <= 1080) return;
+    const session = onStart(event);
+    if (!session) return;
+    event.preventDefault();
+    handle.classList.add("dragging");
+    document.body.style.userSelect = "none";
+    const onMove = (moveEvent) => {
+      session.onMove(moveEvent);
+      renderLayout();
+    };
+    const onUp = () => {
+      handle.classList.remove("dragging");
+      document.body.style.userSelect = "";
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  });
+}
+
+function clampZoom(value) {
+  return Math.max(0.5, Math.min(1.35, Number(value.toFixed(2))));
+}
+
+function fitGraphToViewport() {
+  if (state.graphTab === "compare") return;
+  const graphCanvas = $("graphCanvas");
+  const availableWidth = Math.max(320, graphCanvas.clientWidth - 28);
+  const availableHeight = Math.max(220, graphCanvas.clientHeight - 28);
+  state.graphZoom = clampZoom(Math.min(availableWidth / 1000, availableHeight / 460, 1));
+}
+
+function renderTemplateControls() {
+  $("templateControls").innerHTML = templates.map((item) => `
+    <button class="chip-btn" type="button" data-template="${item.id}">${item.label}</button>
+  `).join("");
+
+  [...$("templateControls").querySelectorAll("[data-template]")].forEach((button) => {
+    button.addEventListener("click", () => {
+      templates.find((item) => item.id === button.dataset.template).apply();
+      renderAll();
+    });
+  });
+}
+
+function renderEditor() {
+  const generated = getGeneratedLines();
+  const highlighted = new Set((nodesById[state.selectedBlock] || {}).line || []);
+  const codeContainer = $("codeContainer");
+
+  const rows = [];
+  sourceBase.forEach((item) => {
+    let html = item.html
+      .replace('<span data-bind="l1Reuse"></span>', `<span class="token-value">${String(state.params.l1Reuse)}</span>`)
+      .replace('<span data-bind="cubeNBuffer"></span>', `<span class="token-value">${state.params.cubeNBuffer}</span>`)
+      .replace('<span data-bind="vecNBuffer"></span>', `<span class="token-value">${state.params.vecNBuffer}</span>`)
+      .replace('<span data-bind="pgUpperBound"></span>', `<span class="token-value">${state.params.pgUpperBound}</span>`);
+    rows.push(`
+      <div class="code-row ${highlighted.has(item.line) ? "active" : ""}" data-line="${item.line}">
+        <div class="line-no">${item.line}</div>
+        <div class="line-code">${html}</div>
+      </div>
+    `);
+
+    if (item.line === 12 && generated.length) {
+      generated.forEach((extra) => {
+        rows.push(`
+          <div class="code-row generated" data-line="${extra.line}">
+            <div class="line-no">${extra.line}</div>
+            <div class="line-code">${extra.html}</div>
+          </div>
+        `);
+      });
+    }
+  });
+
+  codeContainer.innerHTML = rows.join("");
+
+  const generatedCardHost = $("generatedCardHost");
+  if (generated.length) {
+    generatedCardHost.innerHTML = `
+      <div class="generated-card">
+        <h3>手动合图已写回源码</h3>
+        <p>当前 scope 把 <span class="mono">${state.manualScopeNodes.join(", ")}</span> 收敛到同一子图，图视图和泳道图已同步刷新。</p>
+      </div>
+    `;
+  } else {
+    generatedCardHost.innerHTML = "";
+  }
+
+  [...codeContainer.querySelectorAll("[data-line]")].forEach((row) => {
+    row.addEventListener("click", () => {
+      const line = Number.parseInt(row.dataset.line, 10);
+      const target = getBlockModel().find((node) => node.line.includes(line)) || getExecuteModel().find((node) => node.line.includes(line));
+      if (target) {
+        state.selectedBlock = target.id;
+        renderAll();
+      }
+    });
+  });
+}
+
+function renderGraphTabs() {
+  $("graphTabs").innerHTML = graphTabs.map((tab) => `
+    <button class="tab-btn ${state.graphTab === tab.id ? "active" : ""}" type="button" data-tab="${tab.id}">${tab.label}</button>
+  `).join("");
+
+  [...$("graphTabs").querySelectorAll("[data-tab]")].forEach((button) => {
+    button.addEventListener("click", () => {
+      state.graphTab = button.dataset.tab;
+      renderAll();
+    });
+  });
+}
+
+function edgePath(from, to) {
+  const sx = from.x + 77;
+  const sy = from.y + 40;
+  const tx = to.x + 77;
+  const ty = to.y + 40;
+  const cx = (sx + tx) / 2;
+  return `M ${sx} ${sy} C ${cx} ${sy}, ${cx} ${ty}, ${tx} ${ty}`;
+}
+
+function renderGraphCanvas() {
+  const graphCanvas = $("graphCanvas");
+  const compareView = $("compareView");
+  const zoomControls = $("graphZoomControls");
+  const detailPanel = $("graphDetailPanel");
+  const activeNodes = getActiveNodes();
+
+  $("manualToggleBtn").textContent = state.manualMode ? "退出手动模式" : "手动合图模式";
+  $("mergeApplyBtn").disabled = state.mergeQueue.length < 2;
+  $("mergeApplyBtn").style.opacity = state.mergeQueue.length < 2 ? "0.45" : "1";
+  $("mergeApplyBtn").style.cursor = state.mergeQueue.length < 2 ? "not-allowed" : "pointer";
+
+  if (state.graphTab === "compare") {
+    graphCanvas.style.display = "none";
+    compareView.classList.add("visible");
+    zoomControls.classList.add("hidden");
+    detailPanel.classList.remove("open");
+    $("zoomValue").textContent = `${Math.round(state.graphZoom * 100)}%`;
+    renderCompareView();
+    return;
+  }
+
+  compareView.classList.remove("visible");
+  graphCanvas.style.display = "block";
+  zoomControls.classList.remove("hidden");
+
+  const width = 1000;
+  const height = 460;
+  const groupMarkup = state.graphTab === "block" ? `
+    ${state.params.l1Reuse ? '<div class="graph-group" style="left:430px;top:246px;width:230px;height:118px"><span>L1 Reuse Pool</span></div>' : ''}
+    ${isVectorMerged() ? '<div class="graph-group" style="left:468px;top:42px;width:210px;height:128px"><span>sg_set_scope / Vec Merge</span></div>' : ''}
+  ` : `
+    <div class="graph-group" style="left:42px;top:62px;width:948px;height:112px"><span>Execute Graph 入口编排</span></div>
+  `;
+
+  const edgePairs = state.graphTab === "execute"
+    ? [["root-prepare", "root-main"], ["root-main", "root-stitch"], ["root-stitch", "root-exit"]]
+    : isVectorMerged()
+      ? [["tile-feed", "cube-qk"], ["cube-qk", "vec-fused"], ["vec-fused", "cube-v"], ["cube-v", "dma-store"]]
+      : [["tile-feed", "cube-qk"], ["cube-qk", "vec-scale"], ["vec-scale", "vec-softmax"], ["vec-softmax", "cube-v"], ["cube-v", "dma-store"]];
+
+  const scaledWidth = Math.round(width * state.graphZoom);
+  const scaledHeight = Math.round(height * state.graphZoom);
+  $("zoomValue").textContent = `${Math.round(state.graphZoom * 100)}%`;
+
+  graphCanvas.innerHTML = `
+    <div class="canvas-wrap" style="width:${Math.max(scaledWidth, graphCanvas.clientWidth - 28)}px; height:${scaledHeight}px">
+    <div class="canvas-space" style="transform: scale(${state.graphZoom});">
+      ${groupMarkup}
+      <svg class="edge-layer" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+        ${edgePairs.map(([fromId, toId]) => {
+          const from = activeNodes.find((node) => node.id === fromId);
+          const to = activeNodes.find((node) => node.id === toId);
+          return `<path d="${edgePath({ x: from.x * 10, y: from.y * 4.6 }, { x: to.x * 10, y: to.y * 4.6 })}" stroke="rgba(94, 163, 255, 0.42)" stroke-width="2" fill="none" stroke-linecap="round"></path>`;
+        }).join("")}
+      </svg>
+      ${activeNodes.map((node) => `
+        <article
+          class="graph-node node-${node.type} ${state.selectedBlock === node.id ? "selected" : ""} ${state.mergeQueue.includes(node.id) ? "queued" : ""}"
+          data-node="${node.id}"
+          style="left:${node.x}%; top:${node.y}%;"
+        >
+          <div class="kicker">${node.kicker}</div>
+          <strong>${node.title}</strong>
+          <p>${node.desc}</p>
+          <footer>
+            <span>${node.scope === "-" ? "Auto" : `Scope ${node.scope}`}</span>
+            <span>${node.latency} us</span>
+          </footer>
+        </article>
+      `).join("")}
+    </div>
+    </div>
+  `;
+
+  [...graphCanvas.querySelectorAll("[data-node]")].forEach((nodeEl) => {
+    nodeEl.addEventListener("click", () => {
+      const nodeId = nodeEl.dataset.node;
+      if (state.manualMode && state.graphTab === "block") {
+        const onlyVector = ["vec-scale", "vec-softmax"];
+        if (!onlyVector.includes(nodeId)) return;
+        if (state.mergeQueue.includes(nodeId)) {
+          state.mergeQueue = state.mergeQueue.filter((item) => item !== nodeId);
+        } else {
+          state.mergeQueue = [...state.mergeQueue, nodeId];
+        }
+      } else {
+        state.selectedBlock = nodeId;
+        state.graphDetailOpen = true;
+      }
+      renderAll();
+    });
+  });
+}
+
+function renderCompareView() {
+  const metrics = getMetrics();
+  const beforeBlockCount = 6;
+  const beforeLatency = 98;
+  const beforeWait = 28;
+  const afterWait = Math.max(9, beforeWait - metrics.gain);
+  $("compareView").innerHTML = `
+    <div class="compare-grid">
+      <section class="compare-card">
+        <h3>编译快照对比</h3>
+        <p>当前参数组合把 Block 数量从 <span class="mono">${beforeBlockCount}</span> 收敛到 <span class="mono">${metrics.blockCount}</span>，端到端静态估时从 <span class="mono">${beforeLatency}us</span> 缩短到 <span class="mono">${metrics.latency}us</span>。</p>
+        <div class="delta good">预估收益 +${metrics.gain}%</div>
+      </section>
+      <section class="compare-card">
+        <h3>子图边界变化</h3>
+        <ul>
+          <li>${isVectorMerged() ? "Scale + Softmax 已并入统一 Vector scope，减少 1 次 stitch。" : "Scale 与 Softmax 仍然分离，适合继续尝试 Vec Merge。"}</li>
+          <li>${state.params.l1Reuse ? "Value Matmul 使用 L1 Reuse，搬运段更短。" : "未启用 L1 Reuse，DMA 空隙更容易暴露。"}</li>
+          <li>pg_upper_bound = <span class="mono">${state.params.pgUpperBound}</span>，当前调度批次压到 <span class="mono">${metrics.stitchBatches}</span>。</li>
+        </ul>
+      </section>
+      <section class="compare-card">
+        <h3>Profiling 对比摘要</h3>
+        <p>AI CPU 等待占比从 <span class="mono">${beforeWait}%</span> 降到 <span class="mono">${afterWait}%</span>，主要来自 Vector Block 减少后的 stitch 轮次下降。</p>
+        <div class="delta ${metrics.warning ? "warn" : "good"}">${metrics.warning ? "仍需关注资源峰值" : "等待空隙已明显收敛"}</div>
+      </section>
+      <section class="compare-card">
+        <h3>下一步建议</h3>
+        <ul>
+          <li>继续用真实 Profiling 数据验证收益拐点，而不只看静态估算。</li>
+          <li>若 L1 峰值接近上限，优先回退 <span class="mono">cube_nbuffer_setting</span>。</li>
+          <li>如果要做教学演示，可以切回“空状态”讲解产物生成流程。</li>
+        </ul>
+      </section>
+    </div>
+  `;
+}
+
+function renderGraphDetail() {
+  const current = nodesById[state.selectedBlock] || getBlockModel()[0];
+  $("graphDetailSummary").innerHTML = `当前选中 <span class="mono">${current.title}</span>，映射源码行 <span class="mono">${current.line.join(", ")}</span>，适合用来讲解从源码到 Block 的追踪关系。`;
+  $("graphDetailMetrics").innerHTML = `
+    <div class="submetric">
+      <span>Scope</span>
+      <strong>${current.scope}</strong>
+    </div>
+    <div class="submetric">
+      <span>时延</span>
+      <strong>${current.latency} us</strong>
+    </div>
+    <div class="submetric">
+      <span>片上占用</span>
+      <strong>${current.occupancy}</strong>
+    </div>
+    <div class="submetric">
+      <span>类型</span>
+      <strong>${current.type.toUpperCase()}</strong>
+    </div>
+  `;
+  $("graphDetailPanel").classList.toggle("open", state.graphDetailOpen && state.graphTab !== "compare");
+}
+
+function renderControls() {
+  $("controlHost").innerHTML = `
+    <div class="control">
+      <div class="control-top">
+        <strong class="mono">cube_nbuffer_setting</strong>
+        <span>${state.params.cubeNBuffer}</span>
+      </div>
+      <input class="range" type="range" min="1" max="4" value="${state.params.cubeNBuffer}" data-control="cubeNBuffer">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <strong class="mono">vec_nbuffer_setting</strong>
+        <span>${state.params.vecNBuffer}</span>
+      </div>
+      <input class="range" type="range" min="1" max="4" value="${state.params.vecNBuffer}" data-control="vecNBuffer">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <strong class="mono">pg_upper_bound</strong>
+        <span>${state.params.pgUpperBound}</span>
+      </div>
+      <input class="range" type="range" min="2" max="9" value="${state.params.pgUpperBound}" data-control="pgUpperBound">
+    </div>
+    <div class="toggle-row">
+      <div>
+        <strong class="mono">cube_l1_reuse_setting</strong>
+        <p style="margin-top:6px">让 Cube 主路径更依赖 L1 复用，降低搬运重复。</p>
+      </div>
+      <div class="switch ${state.params.l1Reuse ? "active" : ""}" data-control="l1Reuse"></div>
+    </div>
+  `;
+
+  [...$("controlHost").querySelectorAll("[data-control]")].forEach((el) => {
+    const control = el.dataset.control;
+    if (el.classList.contains("range")) {
+      el.addEventListener("input", () => {
+        state.params[control] = Number(el.value);
+        if (control === "vecNBuffer" && state.params.vecNBuffer < 3 && !state.manualMode) {
+          state.manualScopeNodes = [];
+          state.manualScopeId = 0;
+        }
+        renderAll();
+      });
+    } else {
+      el.addEventListener("click", () => {
+        state.params.l1Reuse = !state.params.l1Reuse;
+        state.selectedDoc = "cube_l1_reuse_setting";
+        renderAll();
+      });
+    }
+  });
+}
+
+function renderDocs() {
+  $("docChips").innerHTML = Object.entries(docs).map(([key, item]) => `
+    <button class="chip-btn ${state.selectedDoc === key ? "active" : ""}" type="button" data-doc="${key}">${item.title}</button>
+  `).join("");
+  $("docDescription").textContent = docs[state.selectedDoc].desc;
+
+  [...$("docChips").querySelectorAll("[data-doc]")].forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedDoc = button.dataset.doc;
+      renderAll();
+    });
+  });
+}
+
+function renderMetricsAndValidation() {
+  const metrics = getMetrics();
+  $("l1Value").textContent = `${metrics.l1} KB`;
+  $("workspaceValue").textContent = `${metrics.workspace} KB`;
+  $("stitchValue").textContent = `${metrics.stitchBatches}`;
+  $("gainValue").textContent = `+${metrics.gain}%`;
+
+  const validations = getValidationItems();
+  $("validationHost").innerHTML = validations.map((item) => `
+    <div class="validation ${item.tone}">
+      <div class="validation-dot"></div>
+      <p>${item.text}</p>
+    </div>
+  `).join("");
+}
+
+function renderSuggestions() {
+  const suggestions = getSuggestions();
+  $("suggestionHost").innerHTML = suggestions.map((item) => `
+    <div class="suggestion">
+      <strong>${item.title}</strong>
+      <p>${item.body}</p>
+      <button class="primary-btn" type="button" data-suggestion="${item.id}">${item.actionLabel}</button>
+    </div>
+  `).join("");
+
+  [...$("suggestionHost").querySelectorAll("[data-suggestion]")].forEach((button) => {
+    button.addEventListener("click", () => {
+      const suggestion = suggestions.find((item) => item.id === button.dataset.suggestion);
+      if (!suggestion) return;
+      suggestion.apply();
+      renderAll();
+    });
+  });
+}
+
+function renderProfiling() {
+  const metrics = getMetrics();
+  const waitRatio = Math.max(11, 33 - state.params.pgUpperBound * 2 - (isVectorMerged() ? 6 : 0) - (state.params.l1Reuse ? 3 : 0));
+  const kpis = [
+    { label: "端到端耗时", value: `${metrics.latency} us`, hint: "静态估算 + 最近样本" },
+    { label: "AI CPU 等待", value: `${waitRatio}%`, hint: "越低越好" },
+    { label: "Block 数", value: `${metrics.blockCount}`, hint: "当前编译产物" },
+    { label: "调度批次", value: `${metrics.stitchBatches}`, hint: "stitch task 数量" }
+  ];
+  $("kpiStrip").innerHTML = kpis.map((item) => `
+    <div class="kpi-card">
+      <div class="kpi-meta">
+        <div class="label">${item.label}</div>
+        <div class="hint">${item.hint}</div>
+      </div>
+      <div class="kpi-value">${item.value}</div>
+    </div>
+  `).join("");
+
+  $("ticks").innerHTML = [0, 20, 40, 60, 80, 100].map((n) => `
+    <div class="tick" style="left:${n}%">${n}us</div>
+  `).join("");
+
+  const vectorMerged = isVectorMerged();
+  const lanes = [
+    {
+      name: "AI CPU",
+      hint: "stitch / runtime",
+      tasks: [
+        { id: "root-prepare", type: "cpu", start: 12, width: 12 - Math.floor(state.params.pgUpperBound / 3), label: "Partition" },
+        { id: "root-stitch", type: "cpu", start: vectorMerged ? 47 : 58, width: 13 - Math.floor(state.params.pgUpperBound / 4), label: "Stitch" },
+        { id: "root-exit", type: "cpu", start: 84, width: 10, label: "Commit" }
+      ]
+    },
+    {
+      name: "AI Core 0",
+      hint: "QK 主路径",
+      tasks: [
+        { id: "tile-feed", type: "dma", start: 6, width: 12, label: "Tile Feed" },
+        { id: "cube-qk", type: "cube", start: 22, width: 24 - state.params.cubeNBuffer * 2, label: "QK Matmul" },
+        vectorMerged
+          ? { id: "vec-fused", type: "vector", start: 48, width: 16 - state.params.vecNBuffer, label: "Vector Fuse" }
+          : { id: "vec-scale", type: "vector", start: 49, width: 9, label: "Scale" }
+      ].filter(Boolean)
+    },
+    {
+      name: "AI Core 1",
+      hint: "V 主路径",
+      tasks: [
+        !vectorMerged ? { id: "vec-softmax", type: "vector", start: 61, width: 9, label: "Softmax" } : null,
+        { id: "cube-v", type: "cube", start: vectorMerged ? 64 : 74, width: 23 - state.params.cubeNBuffer * 2, label: "Value Matmul" },
+        { id: "dma-store", type: "dma", start: 89, width: state.params.l1Reuse ? 7 : 10, label: "Store" }
+      ].filter(Boolean)
+    }
+  ];
+
+  $("laneHost").innerHTML = lanes.map((lane) => `
+    <div class="lane">
+      <div class="lane-label">
+        <strong>${lane.name}</strong>
+        <span>${lane.hint}</span>
+      </div>
+      <div class="lane-track">
+        ${state.uiState === "empty" ? '<div class="lane-empty">等待 Profiling 结果</div>' : lane.tasks.map((task) => `
+          <div
+            class="task ${task.type} ${state.selectedBlock === task.id ? "selected" : ""}"
+            data-task="${task.id}"
+            style="left:${task.start}%; width:${task.width}%"
+          >${task.label}</div>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  [...$("laneHost").querySelectorAll("[data-task]")].forEach((task) => {
+    task.addEventListener("click", () => {
+      state.selectedBlock = task.dataset.task;
+      if (state.selectedBlock.startsWith("root")) state.graphTab = "execute";
+      renderAll();
+    });
+  });
+
+  $("footerInsight").textContent = metrics.bad
+    ? "当前参数已撞到资源上限，建议先回退再继续验证真实 Profiling。"
+    : vectorMerged
+      ? "Vector 段已被合并，CPU stitch 等待明显缩短。"
+      : "Scale / Softmax 仍分裂成两个小 Block，CPU stitch 还存在可见空隙。";
+}
+
+function renderMiniSummary() {
+  const metrics = getMetrics();
+  $("miniBlockCount").textContent = String(metrics.blockCount);
+  $("miniLatency").textContent = `${metrics.latency}us`;
+  $("miniSuggestion").textContent = getSuggestions()[0]?.title.split(" ")[0] || "Stable";
+  $("compileHint").textContent = state.uiState === "loading"
+    ? "编译器正在重新计算 LEAF / ROOT 图产物"
+    : state.uiState === "error"
+      ? "发现参数冲突，图渲染被错误蒙层接管"
+      : "保存后 180ms 内刷新 Block Graph";
+}
+
+function renderOverlays() {
+  $("emptyOverlay").classList.toggle("visible", state.uiState === "empty");
+  $("loadingOverlay").classList.toggle("visible", state.uiState === "loading");
+  $("errorOverlay").classList.toggle("visible", state.uiState === "error");
+  const metrics = getMetrics();
+  $("errorText").innerHTML = metrics.bad
+    ? `当前组合导致 <span class="mono">Workspace ${metrics.workspace} KB</span> 与 <span class="mono">L1 ${metrics.l1} KB</span> 同时逼近上限，建议回退 <span class="mono">cube_nbuffer_setting</span> 或 <span class="mono">pg_upper_bound</span>。`
+    : `当前参数会触发编译期的约束告警，建议先恢复到安全档，再继续做收益验证。`;
+}
+
+function renderAll() {
+  nodesById.root_prepare = undefined;
+  renderLayout();
+  renderStateControls();
+  renderTemplateControls();
+  renderGraphTabs();
+  renderGraphCanvas();
+  renderEditor();
+  renderGraphDetail();
+  renderControls();
+  renderDocs();
+  renderMetricsAndValidation();
+  renderSuggestions();
+  renderProfiling();
+  renderMiniSummary();
+  renderOverlays();
+}
+
+$("manualToggleBtn").addEventListener("click", () => {
+  state.manualMode = !state.manualMode;
+  state.mergeQueue = [];
+  renderAll();
+});
+
+$("toggleEditorBtn").addEventListener("click", () => {
+  state.editorCollapsed = !state.editorCollapsed;
+  renderAll();
+});
+
+$("collapseExplorerBtn").addEventListener("click", () => {
+  state.leftCollapsed = !state.leftCollapsed;
+  renderAll();
+});
+
+$("expandExplorerBtn").addEventListener("click", () => {
+  state.leftCollapsed = false;
+  renderAll();
+});
+
+$("collapseInspectorBtn").addEventListener("click", () => {
+  state.rightCollapsed = !state.rightCollapsed;
+  renderAll();
+});
+
+$("expandInspectorBtn").addEventListener("click", () => {
+  state.rightCollapsed = false;
+  renderAll();
+});
+
+$("zoomOutBtn").addEventListener("click", () => {
+  state.graphZoom = clampZoom(state.graphZoom - 0.1);
+  renderAll();
+});
+
+$("zoomInBtn").addEventListener("click", () => {
+  state.graphZoom = clampZoom(state.graphZoom + 0.1);
+  renderAll();
+});
+
+$("zoomFitBtn").addEventListener("click", () => {
+  fitGraphToViewport();
+  renderAll();
+});
+
+$("toggleProfilingBtn").addEventListener("click", () => {
+  state.profilingCollapsed = !state.profilingCollapsed;
+  renderAll();
+});
+
+$("closeGraphDetailBtn").addEventListener("click", () => {
+  state.graphDetailOpen = false;
+  renderAll();
+});
+
+bindResizeHandle("handleExplorer", () => {
+  if (state.leftCollapsed) return null;
+  const workspaceRect = $("workspace").getBoundingClientRect();
+  return {
+    onMove(moveEvent) {
+      const nextWidth = moveEvent.clientX - workspaceRect.left;
+      state.layout.explorerWidth = Math.max(180, Math.min(420, nextWidth));
+    }
+  };
+});
+
+bindResizeHandle("handleInspector", () => {
+  if (state.rightCollapsed) return null;
+  const workspaceRect = $("workspace").getBoundingClientRect();
+  return {
+    onMove(moveEvent) {
+      const nextWidth = workspaceRect.right - moveEvent.clientX;
+      state.layout.inspectorWidth = Math.max(280, Math.min(480, nextWidth));
+    }
+  };
+});
+
+bindResizeHandle("handleStudio", () => {
+  const studioRect = $("studio").getBoundingClientRect();
+  return {
+    onMove(moveEvent) {
+      const nextWidth = moveEvent.clientX - studioRect.left;
+      const maxWidth = studioRect.width - 330;
+      state.layout.editorWidth = Math.max(320, Math.min(maxWidth, nextWidth));
+    }
+  };
+});
+
+$("mergeApplyBtn").addEventListener("click", () => {
+  if (state.mergeQueue.length < 2) return;
+  state.manualScopeNodes = [...state.mergeQueue];
+  state.manualScopeId = 300 + state.mergeQueue.length;
+  state.manualMode = false;
+  state.selectedBlock = "vec-fused";
+  state.mergeQueue = [];
+  state.graphTab = "block";
+  state.selectedDoc = "vec_nbuffer_setting";
+  renderAll();
+});
+
+$("jumpToParamBtn").addEventListener("click", () => {
+  state.selectedDoc = "cube_nbuffer_setting";
+  state.graphTab = "block";
+  state.selectedBlock = "cube-v";
+  renderAll();
+});
+
+$("profilePresetBtn").addEventListener("click", () => {
+  state.uiState = "ready";
+  if (!state.params.l1Reuse) state.params.l1Reuse = true;
+  if (state.params.vecNBuffer < 2) state.params.vecNBuffer = 2;
+  renderAll();
+});
+
+$("resetBtn").addEventListener("click", () => {
+  state.uiState = "ready";
+  state.graphTab = "block";
+  state.graphZoom = 0.86;
+  state.graphDetailOpen = false;
+  state.manualMode = false;
+  state.editorCollapsed = false;
+  state.profilingCollapsed = false;
+  state.mergeQueue = [];
+  state.leftCollapsed = false;
+  state.rightCollapsed = false;
+  state.layout = {
+    explorerWidth: 250,
+    inspectorWidth: 360,
+    editorWidth: null
+  };
+  state.selectedBlock = "cube-qk";
+  state.selectedDoc = "vec_nbuffer_setting";
+  state.params = {
+    l1Reuse: true,
+    cubeNBuffer: 2,
+    vecNBuffer: 1,
+    pgUpperBound: 6
+  };
+  state.manualScopeId = 0;
+  state.manualScopeNodes = [];
+  renderAll();
+});
+
+renderAll();
+</script>
+</body>
+</html>
