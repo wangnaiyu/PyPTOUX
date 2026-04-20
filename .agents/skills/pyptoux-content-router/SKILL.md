@@ -25,14 +25,15 @@ Use this skill for any content creation, filing, reorganization, or retrieval ta
    - visual baseline or reusable UI -> `designsystem/`
 3. Decide whether it belongs in `shared/` or a specific topic folder.
 4. Prefer canonical names such as `overview.md`, `sources.md`, `glossary.md`, `prd.md`, `ux-analysis.md`, `meta.md`.
-5. When the artifact comes from vibe coding:
+5. For newly written content in this repo, prefer Chinese by default; keep English mainly for directory names, stable filenames, code identifiers, and necessary technical labels.
+6. When the artifact comes from vibe coding:
    - HTML -> `prototypes/<topic>/experiments/html/`
    - JSX / TSX -> `prototypes/<topic>/experiments/jsx/`
    - prompts -> `prototypes/<topic>/prompts/`
    - prototype notes -> `prototypes/<topic>/notes/`
    - matured project -> `prototypes/<topic>/app/`
-6. If uncertain, choose the smallest correct placement and avoid inventing new top-level structure.
-7. Update the relevant index file if you introduced a new topic, shared framework, prototype track, tool, or designsystem area.
+7. If uncertain, choose the smallest correct placement and avoid inventing new top-level structure.
+8. Update the relevant index file if you introduced a new topic, shared framework, prototype track, tool, or designsystem area.
 
 ## Default Decisions
 
@@ -40,6 +41,7 @@ Use this skill for any content creation, filing, reorganization, or retrieval ta
 - Prefer `shared/` when the content is reusable across multiple topics.
 - Prefer `inbox/` only for genuinely unprocessed material, not as a long-term dumping ground.
 - Prefer `sources.md` over loose external-link notes scattered across the repo.
+- Prefer Chinese for newly written prose unless the user explicitly asks for English or the content is inherently code-first.
 
 ## Retrieval Rules
 

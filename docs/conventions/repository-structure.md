@@ -4,7 +4,8 @@
 
 - 目录名统一使用英文、kebab-case。
 - 文档文件名尽量简短稳定，如 `overview.md`、`sources.md`、`glossary.md`、`prd.md`。
-- 文档正文和标题可以使用中文。
+- 文档正文和标题默认优先使用中文。
+- 英文主要用于目录名、文件名、代码标识、路径名和少量不宜翻译的技术术语。
 
 ## Placement Rules
 

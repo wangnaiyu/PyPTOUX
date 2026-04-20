@@ -2,6 +2,16 @@
 
 这份文档定义 PyPTOUX 仓库内新增内容时的默认放置规则、命名规则和索引更新动作。
 
+## 0. Language Default
+
+在 PyPTOUX 仓库里新增内容时，默认优先使用中文写作：
+
+- 正文、标题、说明、分析、总结、模板内容 -> 优先中文
+- 目录名、稳定文件名、代码标识、路径名 -> 保持英文
+- 少量常见技术名词如 `HTML`、`JSX`、`PRD`、`UX` 可保留英文
+
+除非用户明确要求英文，或该内容本身必须以英文表达更准确，否则不要默认写成英文说明文档。
+
 ## 1. First Decide: Content Type
 
 按“这份内容主要解决什么问题”来归类：
@@ -84,6 +94,8 @@ UX 设计：
 - `experiments/jsx/<demo-name>.jsx`
 - `prompts/<demo-name>.md`
 - `notes/<demo-name>.md`
+
+这些文件内部的说明文字、标题和注释，默认优先使用中文。
 
 ## 5. Vibe Coding Defaults
 

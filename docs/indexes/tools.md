@@ -7,3 +7,4 @@
 - `tools/scripts`
 - `tools/templates`
 - `.agents/skills/pyptoux-content-router`
+- `.agents/skills/pyptoux-git-github`
