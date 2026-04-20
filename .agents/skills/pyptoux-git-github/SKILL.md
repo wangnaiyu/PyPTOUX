@@ -42,6 +42,16 @@ Use this skill for Git and GitHub publishing tasks inside the PyPTOUX repository
 - Prefer small, task-focused branches instead of reusing old branches.
 - Do not store tokens, device codes, or sensitive credential details in repo files.
 - Treat `gh auth status` as the source of truth for whether CLI-based PR creation is available.
+- If PR creation is blocked because `gh` auth or permissions are unavailable, proactively provide:
+  - a suggested PR title
+  - a Chinese PR description/body the user can paste directly
+  - a brief prompt asking the user to finish `create pr`, `merge`, and `delete branch` on GitHub
+- After the user confirms those GitHub-side steps are complete, proactively perform local cleanup:
+  - `git switch main`
+  - `git pull origin main`
+  - `git branch -d <working-branch>`
+  - `git fetch --prune`
+  - confirm the local repo is clean and on `main`
 
 ## Safety Rules
 
