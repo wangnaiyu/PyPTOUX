@@ -17,29 +17,29 @@
 按“这份内容主要解决什么问题”来归类：
 
 - 解释 PyPTO、算子开发、编译链路、术语、业务机制
-  -> `knowledge/`
+  -> `02-knowledge/`
 - 拆解竞品、参考案例、交互亮点、视觉灵感、跨域心智模型
-  -> `insights/`
+  -> `03-insights/`
 - 形成正式设计输出，如 PRD、UX 分析、流程、信息架构、视觉方案
-  -> `uxdesign/`
+  -> `04-uxdesign/`
 - 生成或迭代交互 demo、前端验证稿、HTML/JSX 原型
-  -> `prototypes/`
+  -> `05-prototypes/`
 - 为原型或工作流提供辅助能力，如 JSX 预览器、转换器、启动脚本
-  -> `tools/`
+  -> `06-tools/`
 - 定义仓库级视觉基线、组件规范、tokens、可复用 UI
-  -> `designsystem/`
+  -> `07-designsystem/`
 - 保存截图、导出物、图标、视频等静态成果
-  -> `assets/`
+  -> `08-assets/`
 - 保存外部来源索引、资料出处、链接表
-  -> `references/`
+  -> `09-references/`
 - 内容尚未整理完成，暂时归档
-  -> `inbox/`
+  -> `01-inbox/`
 - 内容已废弃或冻结，但仍希望保留
-  -> `archive/`
+  -> `11-archive/`
 
-## 2. Then Decide: `shared/` Or Topic
+## 2. Then Decide: `00-shared/` Or Topic
 
-满足以下任一条件，优先放 `shared/`：
+满足以下任一条件，优先放 `00-shared/`：
 
 - 会被两个及以上课题反复引用
 - 是底层框架、通用工作流、共性场景或公共方法
@@ -49,9 +49,9 @@
 
 例子：
 
-- PyPTO 总体架构 -> `knowledge/shared/pypto-architecture/`
-- IDE 插件共性布局模式 -> `uxdesign/shared/ide-plugin-foundations/`
-- 某个泳道图专题的 UX 方案 -> `uxdesign/swimlane-profiler/`
+- PyPTO 总体架构 -> `02-knowledge/00-shared/pypto-architecture/`
+- IDE 插件共性布局模式 -> `04-uxdesign/00-shared/ide-plugin-foundations/`
+- 某个泳道图专题的 UX 方案 -> `04-uxdesign/02-swimlane-profiler/`
 
 ## 3. Topic Naming
 
@@ -101,15 +101,15 @@ UX 设计：
 
 当内容由 vibe coding 产生时，默认这样处理：
 
-- Claude 生成的单文件 HTML -> `prototypes/<topic>/experiments/html/`
-- Claude 生成的 JSX / TSX 草案 -> `prototypes/<topic>/experiments/jsx/`
-- 对应提示词、生成上下文、迭代说明 -> `prototypes/<topic>/prompts/`
-- 原型结论、待办、验证结果 -> `prototypes/<topic>/notes/`
-- 当某个原型进入持续工程化 -> `prototypes/<topic>/app/`
+- Claude 生成的单文件 HTML -> `05-prototypes/<topic>/experiments/html/`
+- Claude 生成的 JSX / TSX 草案 -> `05-prototypes/<topic>/experiments/jsx/`
+- 对应提示词、生成上下文、迭代说明 -> `05-prototypes/<topic>/prompts/`
+- 原型结论、待办、验证结果 -> `05-prototypes/<topic>/notes/`
+- 当某个原型进入持续工程化 -> `05-prototypes/<topic>/app/`
 
 如果暂时无法判断课题归属，但明显属于原型探索：
 
-- 先放 `prototypes/shared/playground/` 或对应 `shared/` 目录
+- 先放 `05-prototypes/00-shared/playground/` 或对应 `00-shared/` 目录
 - 等课题稳定后再拆分
 
 ## 6. Minimal-Correct Default
@@ -119,7 +119,7 @@ UX 设计：
 - 不新建多余顶层目录
 - 不为一次性内容发明新的命名体系
 - 先放进最接近语义的位置
-- 如仍不确定，优先放入 `inbox/` 并在文件开头注明候选归属
+- 如仍不确定，优先放入 `01-inbox/` 并在文件开头注明候选归属
 
 ## 7. Retrieval Pattern
 
@@ -127,19 +127,19 @@ UX 设计：
 
 - 在对应目录补 `overview.md` 或 `meta.md`
 - 有外部依据时补 `sources.md`
-- 新增课题或共享框架时更新 `docs/indexes/`
+- 新增课题或共享框架时更新 `10-docs/03-indexes/`
 
 ## 8. Required Follow-Ups
 
 出现以下情况时，应同步更新索引：
 
 - 新增一个课题目录
-  -> 更新 `docs/indexes/topics.md`
+  -> 更新 `10-docs/03-indexes/topics.md`
 - 新增一个 shared 框架目录
-  -> 更新 `docs/indexes/shared-frameworks.md`
+  -> 更新 `10-docs/03-indexes/shared-frameworks.md`
 - 新增一个原型课题
-  -> 更新 `docs/indexes/prototypes.md`
+  -> 更新 `10-docs/03-indexes/prototypes.md`
 - 新增一个长期工具
-  -> 更新 `docs/indexes/tools.md`
+  -> 更新 `10-docs/03-indexes/tools.md`
 - 新增一个设计系统基础模块
-  -> 更新 `docs/indexes/designsystem.md`
+  -> 更新 `10-docs/03-indexes/designsystem.md`

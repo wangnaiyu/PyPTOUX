@@ -1,29 +1,31 @@
-# PR Template
+# PR Template | PR 模板
 
-## Title
+## 标题 | Title
 
-Use a short repo-scoped summary, for example:
+标题用简短的 repo-scoped summary，例如：
 
 - `Reorganize PyPTOUX repository structure`
 - `Add JSX previewer scaffold`
 
-## Body
+## 正文 | Body
+
+正文模板里的 section headers 默认保持英文，便于直接用于 GitHub PR。
 
 ```md
 ## Summary
 
-<one paragraph summary>
+<一段摘要 / one paragraph summary>
 
 ## What changed
 
-- <change>
-- <change>
+- <改了什么 / change>
+- <改了什么 / change>
 
 ## Why
 
-- <reason>
+- <原因 / reason>
 
 ## Validation
 
-- <check>
+- <验证项 / check>
 ```

@@ -4,5 +4,5 @@
 
 ## 当前状态
 
-- UX 分析文档目前位于 `uxdesign/swimlane-profiler/ux-analysis.md`
+- UX 分析文档目前位于 `04-uxdesign/02-swimlane-profiler/ux-analysis.md`
 - 这里后续用于补充业务机制、数据结构理解与术语说明

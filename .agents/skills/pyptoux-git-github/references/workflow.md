@@ -1,33 +1,33 @@
-# Workflow
+# Workflow | 发布工作流
 
-## Default Publish Path
+## 默认发布路径 | Default Publish Path
 
-1. Inspect repo state
-2. Create a short-lived working branch from `main`
-3. Stage intended files only
-4. Commit with a concise message
-5. Push with upstream tracking
-6. Create a PR with `gh pr create`
-7. Merge through GitHub
-8. Clean local branch state
+1. 检查 repo state
+2. 从 `main` 创建一个短生命周期的 working branch
+3. 只 stage 本次任务需要的文件
+4. 用简洁的 commit message 提交
+5. 以 upstream tracking 方式 push
+6. 用 `gh pr create` 创建 PR
+7. 在 GitHub 上完成 merge
+8. 清理本地分支状态
 
-## Preferred Commands
+## 推荐命令 | Preferred Commands
 
-- Check auth:
+- Check auth | 检查认证：
   - `gh auth status`
-- Create branch:
+- Create branch | 创建分支：
   - `git switch -c codex-<short-description>`
-- Push:
+- Push | 推送：
   - `git push -u origin <branch>`
-- Create PR:
+- Create PR | 创建 PR：
   - `gh pr create --draft`
-- Cleanup after merge:
+- Cleanup after merge | 合并后清理：
   - `git switch main`
   - `git pull origin main`
   - `git branch -d <branch>`
   - `git fetch --prune`
 
-## Notes
+## 说明 | Notes
 
-- The GitHub connector may fail on PR creation even for user-owned repos if the app installation lacks write permissions.
-- In that case, prefer `gh` instead of retrying the connector path.
+- 即使是用户自己的仓库，如果 GitHub app installation 缺少写权限，GitHub connector 也可能在创建 PR 时失败。
+- 遇到这种情况，不要反复重试 connector，优先改用 `gh`。

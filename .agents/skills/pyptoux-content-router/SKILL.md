@@ -1,57 +1,58 @@
 ---
 name: pyptoux-content-router
-description: Use this skill when working inside the PyPTOUX repository and you need to decide where new content should live, how files should be named, how vibe-coding outputs should be routed, or how to quickly find relevant project information across knowledge, insights, uxdesign, prototypes, tools, and designsystem.
+description: Use this skill when working inside the PyPTOUX repository and you need to decide where new content should live, how files should be named, how vibe-coding outputs should be routed, or how to quickly find relevant project information across 02-knowledge, 03-insights, 04-uxdesign, 05-prototypes, 06-tools, and 07-designsystem.
 ---
 
-# PyPTOUX Content Router
+# PyPTOUX Content Router | 内容路由
 
-Use this skill for any content creation, filing, reorganization, or retrieval task in the PyPTOUX repository.
+当你需要在 PyPTOUX 仓库里创建内容、归档内容、重组内容，或快速定位相关信息时，使用这个 skill。
 
-## What To Read First
+## 先读什么 | What To Read First
 
-- Read [docs/conventions/content-routing.md](../../../docs/conventions/content-routing.md) for the decision tree.
-- Read [docs/indexes/content-map.md](../../../docs/indexes/content-map.md) for fast routing and retrieval.
-- Read [docs/conventions/repository-structure.md](../../../docs/conventions/repository-structure.md) if you need the stable folder contract.
+- 先读 [10-docs/01-conventions/content-routing.md](../../../10-docs/01-conventions/content-routing.md)，获取内容路由的 decision tree。
+- 需要快速检索时，读 [10-docs/03-indexes/content-map.md](../../../10-docs/03-indexes/content-map.md)。
+- 如果需要确认稳定目录契约，再读 [10-docs/01-conventions/repository-structure.md](../../../10-docs/01-conventions/repository-structure.md)。
+- 涉及 `.agents` 或 skill 文案改写时，遵循 [10-docs/01-conventions/agent-writing-style.md](../../../10-docs/01-conventions/agent-writing-style.md)。
 
-## Core Workflow
+## 核心流程 | Core Workflow
 
-1. Confirm the working directory is the PyPTOUX repo.
-2. Classify the artifact by intent:
-   - business understanding -> `knowledge/`
-   - benchmark or inspiration -> `insights/`
-   - formal design output -> `uxdesign/`
-   - demo or prototype -> `prototypes/`
-   - workflow helper -> `tools/`
-   - visual baseline or reusable UI -> `designsystem/`
-3. Decide whether it belongs in `shared/` or a specific topic folder.
-4. Prefer canonical names such as `overview.md`, `sources.md`, `glossary.md`, `prd.md`, `ux-analysis.md`, `meta.md`.
-5. For newly written content in this repo, prefer Chinese by default; keep English mainly for directory names, stable filenames, code identifiers, and necessary technical labels.
-6. When the artifact comes from vibe coding:
-   - HTML -> `prototypes/<topic>/experiments/html/`
-   - JSX / TSX -> `prototypes/<topic>/experiments/jsx/`
-   - prompts -> `prototypes/<topic>/prompts/`
-   - prototype notes -> `prototypes/<topic>/notes/`
-   - matured project -> `prototypes/<topic>/app/`
-7. If uncertain, choose the smallest correct placement and avoid inventing new top-level structure.
-8. Update the relevant index file if you introduced a new topic, shared framework, prototype track, tool, or designsystem area.
+1. 先确认当前工作目录位于 PyPTOUX 仓库。
+2. 按内容意图（intent）给 artifact 分类：
+   - business understanding -> `02-knowledge/`
+   - benchmark or inspiration -> `03-insights/`
+   - formal design output -> `04-uxdesign/`
+   - demo or prototype -> `05-prototypes/`
+   - workflow helper -> `06-tools/`
+   - visual baseline or reusable UI -> `07-designsystem/`
+3. 决定它属于 `00-shared/` 还是某个具体 topic folder。
+4. 优先使用 canonical filenames，例如 `overview.md`、`sources.md`、`glossary.md`、`prd.md`、`ux-analysis.md`、`meta.md`。
+5. 对仓库里的新增说明性内容，默认优先中文；目录名、稳定文件名、代码标识和必要技术标签保持英文。
+6. 如果 artifact 来自 vibe coding，默认这样放：
+   - HTML -> `05-prototypes/<numbered-topic>/experiments/html/`
+   - JSX / TSX -> `05-prototypes/<numbered-topic>/experiments/jsx/`
+   - prompts -> `05-prototypes/<numbered-topic>/prompts/`
+   - prototype notes -> `05-prototypes/<numbered-topic>/notes/`
+   - matured project -> `05-prototypes/<numbered-topic>/app/`
+7. 如果仍然不确定，采用 smallest correct placement，避免发明新的顶层结构。
+8. 如果新引入了 topic、shared framework、prototype track、tool 或 designsystem area，记得更新相关索引文件。
 
-## Default Decisions
+## 默认决策 | Default Decisions
 
-- Prefer existing topic folders over creating near-duplicate new topics.
-- Prefer `shared/` when the content is reusable across multiple topics.
-- Prefer `inbox/` only for genuinely unprocessed material, not as a long-term dumping ground.
-- Prefer `sources.md` over loose external-link notes scattered across the repo.
-- Prefer Chinese for newly written prose unless the user explicitly asks for English or the content is inherently code-first.
+- 优先复用已有 topic folders，不要创建语义几乎重复的新 topic。
+- 当内容可被多个课题复用时，优先放进 `00-shared/`。
+- `01-inbox/` 只用于真正尚未整理的材料，不要把它当长期堆放区。
+- 外部来源优先收敛到 `sources.md`，不要把链接型笔记零散地撒在仓库里。
+- 新写 prose 默认优先中文；只有用户明确要求英文，或内容天然更偏 code-first 时，才以英文为主。
 
-## Retrieval Rules
+## 检索规则 | Retrieval Rules
 
-When asked to find relevant information quickly:
+当用户要求快速定位信息时，按下面顺序检索：
 
-- search by topic name first
-- then search by content layer
-- then check `docs/indexes/content-map.md`
-- then inspect nearby `overview.md`, `sources.md`, or `meta.md`
+- 先按 topic name 搜索
+- 再按 content layer 搜索
+- 然后检查 `10-docs/03-indexes/content-map.md`
+- 最后查看附近的 `overview.md`、`sources.md`、`meta.md`
 
-## References
+## 参考资料 | References
 
-- For routing examples and filename defaults, use [references/routing-examples.md](references/routing-examples.md).
+- 路由例子和默认文件名写法见 [references/routing-examples.md](references/routing-examples.md)。

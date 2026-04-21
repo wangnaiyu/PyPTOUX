@@ -9,20 +9,20 @@
 
 ## Placement Rules
 
-- `knowledge/`：业务知识、术语、学习总结、框架理解
-- `insights/`：竞品观察、体验分析、视觉参考、模式拆解
-- `uxdesign/`：需求、信息架构、交互方案、视觉方案、评审材料
-- `prototypes/`：交互 demo 与原型演进记录
-- `tools/`：为原型和设计流程服务的工具
-- `designsystem/`：视觉基础、组件规则和可复用 UI
+- `02-knowledge/`：业务知识、术语、学习总结、框架理解
+- `03-insights/`：竞品观察、体验分析、视觉参考、模式拆解
+- `04-uxdesign/`：需求、信息架构、交互方案、视觉方案、评审材料
+- `05-prototypes/`：交互 demo 与原型演进记录
+- `06-tools/`：为原型和设计流程服务的工具
+- `07-designsystem/`：视觉基础、组件规则和可复用 UI
 
-更细的判断树见 [content-routing.md](/Users/wny/Documents/1%20项目%20Projects/PyPTOUX/docs/conventions/content-routing.md)。
+更细的判断树见 [content-routing.md](/Users/wny/Documents/1%20项目%20Projects/PyPTOUX/10-docs/01-conventions/content-routing.md)。
 
 ## Shared vs Topic
 
 - 放进具体课题目录：
   只服务某一个清晰课题或功能模块的内容
-- 放进 `shared/`：
+- 放进 `00-shared/`：
   会被多个课题反复复用的框架、方法、模式、公共场景
 
 ## Prototype Rules
@@ -42,6 +42,6 @@
 
 ## Design System Rule
 
-- 新 demo 默认从 `designsystem/` 获取视觉基线
+- 新 demo 默认从 `07-designsystem/` 获取视觉基线
 - 允许早期实验偏离，但应记录偏离原因
-- 进入 `app/` 的原型优先复用 `designsystem/components/ui/`
+- 进入 `app/` 的原型优先复用 `07-designsystem/02-components/ui/`
