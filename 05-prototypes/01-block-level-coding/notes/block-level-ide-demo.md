@@ -1,10 +1,10 @@
 # 原型目标
 
-基于 `uxdesign/block-level-coding/prd.md` 与 `knowledge/block-level-coding/overview.md`，生成一个可直接打开的 HTML demo，用来演示 PyPTO Block Level IDE 的核心交互闭环。
+基于 `04-uxdesign/01-block-level-coding/prd.md` 与 `02-knowledge/01-block-level-coding/overview.md`，生成一个可直接打开的 HTML demo，用来演示 PyPTO Block Level IDE 的核心交互闭环。
 
 ## 当前版本说明
 
-- 原型文件：`prototypes/block-level-coding/experiments/html/block-level-ide-demo.html`
+- 原型文件：`05-prototypes/01-block-level-coding/experiments/html/block-level-ide-demo.html`
 - 交互重点：
   - 代码编辑器与 Block / Execute 图双视图联动
   - 点击节点追溯源码行
@@ -29,9 +29,9 @@
 
 - 增加“默认 / 加载 / 错误 / 空状态”的录屏脚本或截图素材。
 - 把参数面板升级成更接近真实 IDE 的表单结构，并补充更多 Block 参数。
-- 若要继续工程化，可在 `prototypes/block-level-coding/app/` 中把 demo 演进为前端子项目。
+- 若要继续工程化，可在 `05-prototypes/01-block-level-coding/app/` 中把 demo 演进为前端子项目。
 
 ## 关联资源
 
-- `uxdesign/block-level-coding/prd.md`
-- `knowledge/block-level-coding/overview.md`
+- `04-uxdesign/01-block-level-coding/prd.md`
+- `02-knowledge/01-block-level-coding/overview.md`

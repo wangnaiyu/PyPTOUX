@@ -7,8 +7,14 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 
 当任务发生在 PyPTOUX 仓库内，且涉及 branch、commit、push、PR 或本地/远端 Git 状态整理时，使用这个 skill。
 
+## 先看项目级规则 | Project Rules First
+
+- 项目级仓库信息和通用 Git / GitHub 约定，统一见 [../../../AGENTS.md](../../../AGENTS.md)。
+- 这个 skill 只保留 Git 操作流程和发布细节。
+
 ## 先读什么 | What To Read First
 
+- 先读 [../../../AGENTS.md](../../../AGENTS.md)，确认项目级规则。
 - 先读 [references/workflow.md](references/workflow.md)，确认项目默认 workflow。
 - 需要准备 PR 内容时，再读 [references/pr-template.md](references/pr-template.md)。
 

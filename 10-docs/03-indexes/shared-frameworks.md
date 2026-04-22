@@ -3,9 +3,10 @@
 ## Knowledge
 
 - `02-knowledge/00-shared/pypto-architecture`
-- `02-knowledge/00-shared/operator-development-workflow`
 - `02-knowledge/00-shared/compile-pipeline`
 - `02-knowledge/00-shared/common-glossary`
+- `02-knowledge/00-shared/pypto-sample-datasets`
+- `02-knowledge/00-shared/pypto-toolkit`
 
 ## UX Design
 
