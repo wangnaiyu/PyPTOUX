@@ -91,6 +91,8 @@
 - 先参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 缩小查询范围
 - 再到最匹配的来源检索信息
 - 结论需要沉淀回 `02-knowledge/` 对应主题；没有合适主题时新建
+- 对上游 `pypto` 仓库或样例数据里的真实文件名、路径、字段键、索引键、trace key 保持原样，不要为了统一术语口径而改写
+- 可统一的是我们自己的解释性正文；不可改写的是用于追溯上游产物的 literal，例如 `program.json`、`*_ROOT.json`、`rootHash`、`callOpMagic`、`leafHash`
 
 当前高频来源包括：
 
@@ -110,6 +112,7 @@
 - 不要把 mock 数据伪装成真实运行结果
 - 优先保证“可追溯”，再追求“好看”
 - 如果用到样例数据，优先查看 `02-knowledge/00-shared/pypto-sample-datasets/overview.md`
+- demo 文案允许统一术语口径，但引用上游真实产物时仍应保留原始路径名、文件名和字段名
 
 ### 5.5 Git / GitHub
 

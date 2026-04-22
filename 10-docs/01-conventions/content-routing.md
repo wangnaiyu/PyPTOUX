@@ -129,6 +129,23 @@ UX 设计：
 - 有外部依据时补 `sources.md`
 - 新增课题或共享框架时更新 `10-docs/03-indexes/`
 
+## 7.1 Source Traceability Rule
+
+当内容引用上游仓库、样例数据或外部产物时，区分“解释性正文”和“追溯 literal”：
+
+- 解释性正文可以按仓库约定统一术语口径
+- 上游真实文件名、路径、字段键、索引键、trace key 必须保留原样，不要为了术语统一而改写
+- 需要同时兼顾可读性与可追溯时，优先写成“解释性术语 + 原始 literal”
+
+常见必须保留原样的内容包括：
+
+- `program.json`
+- `*_ROOT.json`
+- `*_LEAF_program_id_*.json`
+- `rootHash`
+- `callOpMagic`
+- `leafHash`
+
 ## 8. Required Follow-Ups
 
 出现以下情况时，应同步更新索引：

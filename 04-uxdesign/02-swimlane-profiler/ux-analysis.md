@@ -221,7 +221,7 @@ Issue 中最大同步数暂定 64。对于一个有 N 个核、每核 M 个 task
 
 ### 4.1 编译产物链路
 
-PyPTO 的多级计算图变换路径为：Tensor Graph → Tile Graph → Block Graph → Execution Graph → PTO 虚拟指令。Issue 中的修改点分布在这条链路的后半段：
+PyPTO 的多级计算图变换路径为：Tensor Graph → Tile Graph → Block Graph → Execute Graph → PTO 虚拟指令。Issue 中的修改点分布在这条链路的后半段：
 
 ```
 Tensor Graph                    （不涉及）
@@ -230,7 +230,7 @@ Tile Graph                      （不涉及）
     ↓ Compilation Passes
 Block Graph                     （不涉及）
     ↓ PipeSync Pass
-Execution Graph + Sync Info     ← Pass 模块：记录核间同步关系
+Execute Graph + Sync Info       ← Pass 模块：记录核间同步关系
     ↓ CodeGen
 PTO Assembly + Timestamps       ← CodeGen 模块：插入时间戳指令
     ↓ Machine Runtime
