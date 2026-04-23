@@ -1,6 +1,6 @@
 # Agent Writing Style
 
-这份约定用于规范 PyPTOUX 仓库内 `.agents/notes.md`、`.agents/skills/*/SKILL.md` 及相近代理说明文件的写法。
+这份约定用于规范 PyPTOUX 仓库内 `.agents/skills/*/SKILL.md` 及相近代理说明文件的写法。
 
 目标有四个：
 
@@ -89,15 +89,7 @@
 - “何时使用” 要保留足够清晰的英文关键词，避免削弱 skill routing
 - 参考文件路径统一保持英文原样
 
-## 7. Notes-Specific Rules
-
-对 `.agents/notes.md` 额外遵守以下规则：
-
-- 用中文写仓库级约束、偏好和操作提醒
-- 对项目名、仓库路径、默认分支等稳定元信息，保留英文字面量
-- 记录性条目尽量短句化，方便快速扫读
-
-## 8. Rewrite Principle
+## 7. Rewrite Principle
 
 改写旧文件时，优先做这几类动作：
 
@@ -107,7 +99,7 @@
 4. 保留命令、路径、文件、标识符原文
 5. 只在关键术语第一次出现时补英文括注
 
-## 9. Quick Example
+## 8. Quick Example
 
 不推荐：
 

@@ -139,7 +139,6 @@
 
 ## 6. 相关入口文件
 
-- `.agents/notes.md`
 - `.agents/skills/pyptoux-content-router/SKILL.md`
 - `.agents/skills/pyptoux-git-github/SKILL.md`
 - `.agents/skills/pypto-knowledge-source/SKILL.md`
