@@ -17,6 +17,7 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 
 - 项目级 demo 素材规则、可追溯要求和常用来源，统一见 [../../../AGENTS.md](../../../AGENTS.md)。
 - 这个 skill 只保留“怎么给 demo 配真实素材”的专属流程。
+- 数据等级遵循 `AGENTS.md` 中的 `L1 / L2 / L3` 规则；本 skill 的默认目标是准备 `L1` 或 `L2`。
 
 ## 先读什么 | What To Read First
 
@@ -60,6 +61,14 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 8. 如果真实素材缺失，再退一步使用“基于真实结构整理”的摘要内容，不要伪造并不存在的字段、节点、性能数值或运行阶段。
 9. 在产出里保留来源意识：哪些内容来自真实文件，哪些是为展示做的裁剪或简化。
 10. 如果这次整理出了新的可复用数据集理解、素材组合套路或 demo 填充经验，回填到 `02-knowledge/` 对应主题下。
+
+## 数据等级规则 | Data Level Rules
+
+- 优先准备 `L1`：真实文件、真实路径、真实字段名、真实运行产物。
+- 真实数据缺失但 schema、字段定义或业务规则明确时，可准备 `L2`。
+- `L2` 必须注明来源依据或推导规则，不得伪装成 `L1`。
+- 本 skill 不直接为纯视觉探索制造 `L3`；`L3` 属于前端探索阶段的临时占位。
+- 不要自行扩展不存在的上游字段、节点类型或运行阶段。
 
 ## 真实性规则 | Fidelity Rules
 
