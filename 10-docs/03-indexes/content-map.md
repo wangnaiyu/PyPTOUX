@@ -11,6 +11,7 @@
 | 竞品、案例、灵感、模式对照 | `03-insights/` |
 | 通用交互模式、IDE 模式、可视化策略 | `04-uxdesign/00-shared/` 或 `03-insights/00-shared/` |
 | PRD、UX 分析、信息架构、交互方案 | `04-uxdesign/` |
+| Agent 协作约定、分工边界、协作治理 | `10-docs/01-conventions/dual-agent-collaboration.md` |
 | HTML demo、JSX demo、原型验证 | `05-prototypes/` |
 | JSX 预览器、转换脚本、启动脚本 | `06-tools/` |
 | 颜色、字体、组件规范、UI 基础件 | `07-designsystem/` |

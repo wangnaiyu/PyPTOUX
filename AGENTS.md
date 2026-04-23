@@ -108,11 +108,19 @@
 
 ### 5.4 Demo 素材规则
 
-- `PyPTO` demo 优先使用真实代码、真实图产物、真实泳道图和真实日志
-- 不要把 mock 数据伪装成真实运行结果
-- 优先保证“可追溯”，再追求“好看”
+`PyPTO` demo 采用三层数据策略：
+
+- `L1`：真实数据，直接来自上游 `pypto`、样例数据或真实编译产物，默认首选
+- `L2`：推导数据，在真实数据缺失但 schema、字段定义或业务规则明确时使用；可外发，但必须可追溯、自洽
+- `L3`：占位数据，仅用于早期布局验证，不外发
+
+通用规则：
+
+- 不要把 `L2` / `L3` 数据伪装成 `L1` 真实运行结果
+- 做 demo 展示、sample-data 或原型实现时，不要改写上游 literal（字段名、文件名、trace key 等）
+- 优先保证“可追溯 + 自洽”，再追求“好看”
 - 如果用到样例数据，优先查看 `02-knowledge/00-shared/pypto-sample-datasets/overview.md`
-- demo 文案允许统一术语口径，但引用上游真实产物时仍应保留原始路径名、文件名和字段名
+- 更完整的规则见 `10-docs/01-conventions/dual-agent-collaboration.md`
 
 ### 5.5 Git / GitHub
 
@@ -120,6 +128,14 @@
 - `pull` / `push` 前先确认 `origin`
 - 本机已安装 `gh`
 - 若 GitHub connector 不可用或权限异常，优先回退到 `gh`
+
+### 5.6 双 Agent 协作约定
+
+- `PyPTOUX` 默认采用 Codex + Claude Desktop 协作
+- Codex 主责：规划与方案、业务知识检索、内容路由、结构维护、demo 素材准备、构建与后端、Git / GitHub
+- Claude Desktop 主责：前端原型、视觉与交互、工作台前端、自测与原型记录
+- `10-docs/03-indexes/` 的索引同步由 Codex 主责；触发边界与例外见 `10-docs/01-conventions/dual-agent-collaboration.md`
+- 出现跨边界争议时，先看目录 owner，再看决策 owner；事实、结构、契约、构建归 Codex，视觉、交互、前端呈现归 Claude；若仍无法收敛，由用户最终仲裁
 
 ## 6. 相关入口文件
 
@@ -130,3 +146,4 @@
 - `.agents/skills/pypto-demo-data-filling/SKILL.md`
 - `10-docs/01-conventions/agent-writing-style.md`
 - `10-docs/01-conventions/content-routing.md`
+- `10-docs/01-conventions/dual-agent-collaboration.md`
