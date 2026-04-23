@@ -50,7 +50,7 @@
 例子：
 
 - PyPTO 总体架构 -> `02-knowledge/00-shared/pypto-architecture/`
-- IDE 插件共性布局模式 -> `04-uxdesign/00-shared/ide-plugin-foundations/`
+- 跨课题通用交互模式 -> `04-uxdesign/00-shared/common-interaction-patterns/`
 - 某个泳道图专题的 UX 方案 -> `04-uxdesign/02-swimlane-profiler/`
 
 ## 3. Topic Naming

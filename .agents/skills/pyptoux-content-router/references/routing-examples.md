@@ -2,8 +2,8 @@
 
 ## 典型放置方式 | Typical Placements
 
-- PyPTO 编译阶段总结
-  -> `02-knowledge/00-shared/compile-pipeline/overview.md`
+- PyPTO 总体架构总结
+  -> `02-knowledge/00-shared/pypto-architecture/overview.md`
 - 某个专题的 UX 深度分析
   -> `04-uxdesign/<numbered-topic>/ux-analysis.md`
 - Claude 生成的一个 HTML 交互稿
