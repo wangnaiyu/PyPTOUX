@@ -9,5 +9,4 @@
 ## Shared
 
 - `05-prototypes/00-shared/playground`
-- `05-prototypes/00-shared/interaction-patterns`
 - `05-prototypes/00-shared/visual-explorations`

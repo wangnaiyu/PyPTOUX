@@ -3,26 +3,19 @@
 ## Knowledge
 
 - `02-knowledge/00-shared/pypto-architecture`
-- `02-knowledge/00-shared/compile-pipeline`
 - `02-knowledge/00-shared/common-glossary`
 - `02-knowledge/00-shared/pypto-sample-datasets`
 - `02-knowledge/00-shared/pypto-toolkit`
 
 ## UX Design
 
-- `04-uxdesign/00-shared/design-principles`
-- `04-uxdesign/00-shared/ide-plugin-foundations`
 - `04-uxdesign/00-shared/common-interaction-patterns`
-- `04-uxdesign/00-shared/visualization-strategies`
 
 ## Insights
 
-- `03-insights/00-shared/ide-pattern-benchmarks`
-- `03-insights/00-shared/visualization-patterns`
-- `03-insights/00-shared/onboarding-patterns`
+- 暂无 active shared frameworks
 
 ## Prototypes
 
 - `05-prototypes/00-shared/playground`
-- `05-prototypes/00-shared/interaction-patterns`
 - `05-prototypes/00-shared/visual-explorations`
