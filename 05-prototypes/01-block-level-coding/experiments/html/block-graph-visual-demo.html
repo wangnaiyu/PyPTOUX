@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyPTO Block Graph Visual Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #07131f;
+  --bg-elev: rgba(10, 21, 36, 0.82);
+  --panel: rgba(12, 25, 42, 0.9);
+  --panel-soft: rgba(16, 31, 52, 0.82);
+  --line: rgba(154, 188, 226, 0.16);
+  --line-strong: rgba(154, 188, 226, 0.28);
+  --text: #eef5ff;
+  --text-soft: #b4c7df;
+  --text-dim: #6f87a6;
+  --cyan: #4bd8ff;
+  --blue: #5ea3ff;
+  --amber: #ffb24d;
+  --lime: #88f0a0;
+  --rose: #ff8181;
+  --violet: #98a4ff;
+  --cyan-soft: rgba(75, 216, 255, 0.14);
+  --amber-soft: rgba(255, 178, 77, 0.14);
+  --lime-soft: rgba(136, 240, 160, 0.14);
+  --rose-soft: rgba(255, 129, 129, 0.14);
+  --violet-soft: rgba(152, 164, 255, 0.14);
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  --radius: 24px;
+  --radius-sm: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(75, 216, 255, 0.16), transparent 30%),
+    radial-gradient(circle at top right, rgba(255, 178, 77, 0.12), transparent 26%),
+    radial-gradient(circle at bottom left, rgba(152, 164, 255, 0.16), transparent 28%),
+    linear-gradient(180deg, #040d18 0%, #07131f 45%, #091724 100%);
+  color: var(--text);
+  font-family: "Space Grotesk", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  padding: 20px;
+}
+
+.app {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.topbar {
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: 1.6fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background:
+    linear-gradient(135deg, rgba(75, 216, 255, 0.24), rgba(94, 163, 255, 0.08)),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(75, 216, 255, 0.22);
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-mark::before,
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+}
+
+.brand-mark::before {
+  inset: 9px 11px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+}
+
+.brand-mark::after {
+  inset: 16px 17px;
+  background: linear-gradient(180deg, var(--cyan), var(--amber));
+}
+
+.eyebrow {
+  color: var(--cyan);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+
+.brand h1 {
+  font-size: 28px;
+  letter-spacing: -0.05em;
+  margin-top: 4px;
+}
+
+.brand p {
+  color: var(--text-soft);
+  margin-top: 6px;
+  max-width: 760px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.chip,
+.path-btn,
+.tab-btn {
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
+  border-radius: 999px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font: inherit;
+  transition: 180ms ease;
+}
+
+.chip strong {
+  color: var(--text);
+}
+
+.path-btn:hover,
+.tab-btn:hover,
+.path-btn.active,
+.tab-btn.active {
+  color: var(--text);
+  border-color: rgba(75, 216, 255, 0.35);
+  background: var(--cyan-soft);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
+  gap: 18px;
+}
+
+.hero-card,
+.facts,
+.panel,
+.footer-card {
+  padding: 18px;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-item {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.summary-item strong {
+  display: block;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.summary-item span {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.callout {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(135deg, rgba(255, 178, 77, 0.14), rgba(75, 216, 255, 0.08)),
+    rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 178, 77, 0.16);
+}
+
+.callout strong {
+  color: var(--amber);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.panel-title,
+.facts h2,
+.hero-card h2 {
+  font-size: 18px;
+  letter-spacing: -0.04em;
+}
+
+.facts {
+  display: grid;
+  gap: 14px;
+}
+
+.fact-list {
+  display: grid;
+  gap: 10px;
+}
+
+.fact {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.fact .label {
+  color: var(--text-dim);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.fact strong {
+  display: block;
+  margin-top: 8px;
+}
+
+.fact p {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.4fr) minmax(320px, 0.85fr);
+  gap: 18px;
+}
+
+.panel {
+  min-height: 0;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.panel-head p {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.flow {
+  display: grid;
+  gap: 12px;
+}
+
+.flow-node {
+  position: relative;
+  padding: 14px 14px 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.flow-node::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: -13px;
+  width: 2px;
+  height: 12px;
+  background: linear-gradient(180deg, rgba(75, 216, 255, 0.4), transparent);
+}
+
+.flow-node:last-child::after {
+  display: none;
+}
+
+.flow-node .type {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.flow-node strong {
+  display: block;
+  margin-top: 6px;
+  letter-spacing: -0.03em;
+}
+
+.flow-node p {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.flow-node.active {
+  border-color: rgba(75, 216, 255, 0.35);
+  background: linear-gradient(135deg, rgba(75, 216, 255, 0.13), rgba(255, 255, 255, 0.03));
+}
+
+.flow-node.provenance {
+  border-style: dashed;
+  background: rgba(255, 178, 77, 0.06);
+}
+
+.canvas {
+  display: grid;
+  gap: 14px;
+}
+
+.path-tabs,
+.view-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chain-card {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.02));
+}
+
+.chain-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mono,
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+.jump-chain {
+  display: grid;
+  gap: 12px;
+}
+
+.jump-step {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.jump-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.jump-body {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.jump-body strong {
+  display: block;
+  letter-spacing: -0.03em;
+}
+
+.jump-body p {
+  color: var(--text-soft);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.jump-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.meta-pill {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.root-map {
+  display: grid;
+  gap: 10px;
+}
+
+.call-row {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.call-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.call-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.call-label span {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.call-arrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.mini-card {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mini-card .mini-type {
+  color: var(--text-dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.mini-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.arrow {
+  text-align: center;
+  color: var(--cyan);
+  font-size: 20px;
+}
+
+.opcodes,
+.table-list,
+.legend {
+  display: grid;
+  gap: 10px;
+}
+
+.opcode-pill {
+  padding: 10px 12px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.opcode-pill span {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.opcode-pill.transfer { background: rgba(94, 163, 255, 0.08); }
+.opcode-pill.compute { background: rgba(136, 240, 160, 0.08); }
+.opcode-pill.sync { background: rgba(255, 178, 77, 0.08); }
+
+.legend-item,
+.table-row {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(154, 188, 226, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.legend-item strong,
+.table-row strong {
+  display: block;
+}
+
+.legend-item p,
+.table-row p {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.footer-card h3 {
+  font-size: 17px;
+  letter-spacing: -0.04em;
+  margin-bottom: 12px;
+}
+
+.source-list {
+  display: grid;
+  gap: 10px;
+}
+
+.source-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(154, 188, 226, 0.08);
+}
+
+.source-item span {
+  display: block;
+  color: var(--text-dim);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.footer-note {
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1280px) {
+  .hero,
+  .workspace,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  body {
+    padding: 14px;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    justify-content: flex-start;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar glass">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="eyebrow">Block-Level Knowledge Demo</div>
+        <h1>PyPTO Block Graph Visual Atlas</h1>
+        <p>把 <span class="mono">业务代码 -> Loop -> PATH -> Execute Graph -> CALL -> Block Graph -> swimlane task</span> 这条链压缩成一个可直接讲解、跳转和对比的单页 demo。</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="chip"><strong>主题</strong> Block Graph</div>
+      <div class="chip"><strong>数据集</strong> three-view / PATH1</div>
+      <div class="chip"><strong>证据</strong> rootHash + callOpMagic + leafHash</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-card glass hero-copy">
+      <div>
+        <div class="eyebrow">最小稳定心智模型</div>
+        <h2>Block Graph 不是总图，而是一组可被 root `CALL` 复用的 leaf 子图</h2>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <strong id="pathsCount">4</strong>
+          <span>`PATH0..PATH3` root 入口</span>
+        </div>
+        <div class="summary-item">
+          <strong id="rootCount">4</strong>
+          <span>Execute Graph 数量</span>
+        </div>
+        <div class="summary-item">
+          <strong id="leafCount">16</strong>
+          <span>唯一 Block Graph 数量</span>
+        </div>
+        <div class="summary-item">
+          <strong id="reuseCount">2x</strong>
+          <span>同一 leaf 被多个 CALL 复用</span>
+        </div>
+      </div>
+      <div class="callout">
+        <strong>当前 demo 主线</strong>
+        用 `PATH1` 的真实互证链解释一件事：泳道图里看到的 task，不是静态图本体；它是一次运行实例，但能通过 `rootHash + callOpMagic + leafHash` 反查回 root、CALL 和 leaf。
+      </div>
+    </div>
+
+    <aside class="facts glass">
+      <h2>这页要回答的 3 个问题</h2>
+      <div class="fact-list">
+        <div class="fact">
+          <div class="label">What</div>
+          <strong>Block Graph 到底是什么？</strong>
+          <p>它是从 Tile Graph 分区后物化出来的 leaf 子图，每张图都已接近单个 AI Core 的可调度粒度。</p>
+        </div>
+        <div class="fact">
+          <div class="label">How</div>
+          <strong>怎么从 task 跳回 leaf？</strong>
+          <p>先进 root，再用 `callOpMagic` 定位 `CALL`，最后用 `leafHash` 锁定具体 Block Graph。</p>
+        </div>
+        <div class="fact">
+          <div class="label">Why</div>
+          <strong>为什么 `semantic_label` 很关键？</strong>
+          <p>它不是唯一主键，但能稳定连接业务代码、root `CALL` 和 swimlane 事件的人类语义。</p>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="workspace">
+    <article class="panel glass">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Compilation Provenance</div>
+          <div class="panel-title">编译来源链</div>
+          <p>左列强调“它从哪里来”，而不是运行时的一跳跳转。</p>
+        </div>
+      </div>
+      <div class="flow" id="provenanceFlow"></div>
+    </article>
+
+    <article class="panel glass">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Interactive Chain</div>
+          <div class="panel-title">主跳转链与 root / leaf 映射</div>
+          <p>中间区域强调“调试时能直接用哪些字段跳过去”。</p>
+        </div>
+        <div class="path-tabs" id="pathTabs"></div>
+      </div>
+      <div class="canvas">
+        <div class="view-tabs" id="viewTabs"></div>
+        <div class="chain-card">
+          <div class="chain-title">
+            <strong id="chainTitle">PATH1 互证链</strong>
+            <span class="meta-pill" id="chainHint">jump-to / locate-in-root / points-to</span>
+          </div>
+          <div class="jump-chain" id="jumpChain"></div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-title">
+            <strong>Execute Graph 中的 CALL -> leaf 复用关系</strong>
+            <span class="meta-pill">多次调用可复用同一 leaf</span>
+          </div>
+          <div class="root-map" id="rootMap"></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel glass">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Leaf Anatomy</div>
+          <div class="panel-title">Block Graph 本体怎么读</div>
+          <p>右列聚焦 leaf 内部能看到什么、哪些概念最容易混淆。</p>
+        </div>
+      </div>
+      <div class="legend" id="leafSummary"></div>
+      <div class="chain-card" style="margin-top: 14px;">
+        <div class="chain-title">
+          <strong>代表性 opcode</strong>
+          <span class="meta-pill" id="leafLabel">bn-after-matmul2</span>
+        </div>
+        <div class="opcodes" id="opcodeList"></div>
+      </div>
+      <div class="chain-card" style="margin-top: 14px;">
+        <div class="chain-title">
+          <strong>不要混淆</strong>
+          <span class="meta-pill">关系澄清</span>
+        </div>
+        <div class="table-list" id="confusionTable"></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="footer-grid">
+    <article class="footer-card glass">
+      <h3>当前 demo 里哪些是“真实文件互证”</h3>
+      <div class="source-list">
+        <div class="source-item">
+          <span>源码</span>
+          <strong class="mono">three-view/code/page_attention.cpp</strong>
+        </div>
+        <div class="source-item">
+          <span>Root</span>
+          <strong class="mono">PATH1_9_ROOT.json</strong>
+        </div>
+        <div class="source-item">
+          <span>Leaf</span>
+          <strong class="mono">LEAF_program_id_03_1231527610565308428.json</strong>
+        </div>
+        <div class="source-item">
+          <span>Swimlane</span>
+          <strong class="mono">merged_swimlane.json</strong>
+        </div>
+      </div>
+    </article>
+    <article class="footer-card glass">
+      <h3>使用说明</h3>
+      <p class="footer-note">
+        点击上方 `PATH` 按钮可以切换不同路径语义；切换“视图模式”可以在“调试跳转链”和“编译来源链”之间切换重心。
+        这页没有伪造运行结果数值，只有两类内容：一类是来自 `block-graph.md` 已整理出的真实关系，另一类是为了讲清链路做的版面裁剪与视觉重组。
+      </p>
+    </article>
+  </section>
+</div>
+
+<script>
+const overview = {
+  paths: 4,
+  roots: 4,
+  leafs: 16,
+  maxReuse: "2x",
+};
+
+const provenanceFlow = [
+  {
+    type: "source-of-truth",
+    title: "业务代码 / Tensor / semantic_label",
+    body: "在 page_attention.cpp 里直接写 Tensor、LoopRange(...) 和 SetSemanticLabel(...).",
+    accent: "active",
+  },
+  {
+    type: "control-flow",
+    title: "Loop",
+    body: "业务算子显式控制流，例如 bIdx / nIdx / bn；循环次数由 shape 和小张量数据共同决定。",
+  },
+  {
+    type: "expands-to",
+    title: "PATH",
+    body: "动态循环展开成 PATH0..PATH3 这类路径级函数；PATH 不是 Block Graph 编号。",
+  },
+  {
+    type: "high-level",
+    title: "Tensor Graph",
+    body: "仍然承载高层 Tensor / Operation 语义，还没有进入单核调度粒度。",
+  },
+  {
+    type: "partition-to",
+    title: "Tile Graph",
+    body: "根据 TileShape 展开，已能看见 opcode 和 semantic_label，是 Block Graph 的直接上游。",
+  },
+  {
+    type: "organizes",
+    title: "Execute Graph (root)",
+    body: "root 负责组织多个 CALL，不负责展开 leaf 内部细节。",
+  },
+  {
+    type: "materializes",
+    title: "Block Graph (leaf)",
+    body: "Tile Graph 被切成多个单核可调度的子图，每个子图物化为一张 leaf。",
+    accent: "active",
+  },
+  {
+    type: "runtime-instance",
+    title: "swimlane task",
+    body: "运行时执行实例，不是静态图本体；通常是一张 leaf 对应很多次 task 执行。",
+  },
+];
+
+const pathModels = [
+  {
+    id: "PATH0",
+    title: "PATH0: loop begin branch",
+    hint: "更偏路径语义对齐",
+    rootHash: "7782314509001821262",
+    leafHash: "1170502209130048411",
+    task: "AI Core 3 / prepare-prefetch",
+    semanticLabel: "MatMul",
+    jumpChain: [
+      {
+        icon: "01",
+        title: "swimlane task",
+        body: "任务实例先告诉你它落在哪条运行轨迹上，而不是直接解释 leaf 内部结构。",
+        meta: ["event-hint.rootHash", "semantic suffix = MatMul"],
+      },
+      {
+        icon: "02",
+        title: "Execute Graph (PATH0_ROOT.json)",
+        body: "用 rootHash 先进入 root，再看当前路径下有哪些 CALL 入口。",
+        meta: ["rootHash = 7782314509001821262"],
+      },
+      {
+        icon: "03",
+        title: "CALL(opmagic = 10003)",
+        body: "这个 CALL 带 semantic_label = MatMul，并指向一张 leaf。",
+        meta: ["callOpMagic = 10003", "points-to leaf"],
+      },
+      {
+        icon: "04",
+        title: "Block Graph leaf",
+        body: "leaf 内部会出现 COPY_IN、A_MULACC_B、SYNC_DST 这类 opcode。",
+        meta: ["leafHash = 1170502209130048411"],
+      },
+    ],
+    calls: [
+      { opmagic: "10003", label: "MatMul", leafHash: "1170502209130048411", reuse: "single" },
+      { opmagic: "10005", label: "MatMul-epilogue", leafHash: "1170502209130048999", reuse: "single" },
+    ],
+    leaf: {
+      label: "MatMul",
+      summary: [
+        {
+          title: "leaf 定位",
+          body: "这类 leaf 更容易解释单次矩阵乘主干是如何被拆成搬运 + 计算 + 同步三段。",
+        },
+        {
+          title: "Block Graph 节点类型",
+          body: "Incast / Tensor / Operation 三类节点共存，Tensor 多为 LOCAL / INCAST / OUTCAST。",
+        },
+      ],
+      opcodes: [
+        { name: "COPY_IN", group: "transfer", hint: "把 DDR 或 L1 数据搬进更近的执行缓冲。" },
+        { name: "L1_TO_L0B", group: "transfer", hint: "向更低层 buffer 送数据，为计算做好局部准备。" },
+        { name: "A_MULACC_B", group: "compute", hint: "核心矩阵计算 opcode。" },
+        { name: "SYNC_DST", group: "sync", hint: "同步阶段收尾，保证后续消费顺序。" },
+      ],
+    },
+  },
+  {
+    id: "PATH1",
+    title: "PATH1: three-view 真实互证链",
+    hint: "最适合讲 root / CALL / leaf / swimlane 的闭环",
+    rootHash: "9928535964290202028",
+    leafHash: "1231527610565308428",
+    task: "AI Core 7 / bn-after-matmul2",
+    semanticLabel: "bn-after-matmul2",
+    jumpChain: [
+      {
+        icon: "01",
+        title: "swimlane task",
+        body: "运行时事件名带着 semantic_label 后缀，能帮助你先找到哪段业务语义在执行。",
+        meta: ["event-hint.rootHash = 9928535964290202028", "event-hint.callOpMagic = 10015", "event-hint.leafHash = 1231527610565308428"],
+      },
+      {
+        icon: "02",
+        title: "Execute Graph (PATH1_9_ROOT.json)",
+        body: "进入 PATH1 的 root 后，图里能看到多个 CALL 节点，且它们并不等于 leaf 本体。",
+        meta: ["contains CALL", "PATH1 root"],
+      },
+      {
+        icon: "03",
+        title: "CALL(opmagic = 10015)",
+        body: "这条 CALL 的 semantic_label 是 bn-after-matmul2，并通过 calleehash 指向某张 leaf。",
+        meta: ["opcode = CALL", "semantic_label = bn-after-matmul2"],
+      },
+      {
+        icon: "04",
+        title: "Block Graph (LEAF_program_id_03_1231527610565308428.json)",
+        body: "leaf 内部才展开真正的数据搬运、同步和计算组织；这才是 Block Graph 本体。",
+        meta: ["leafHash = 1231527610565308428", "opcode = PHASE1 / EXP / DIV / COPY_OUT"],
+      },
+    ],
+    calls: [
+      { opmagic: "10008", label: "bn-after-matmul2", leafHash: "1231527610565308428", reuse: "reused" },
+      { opmagic: "10015", label: "bn-after-matmul2", leafHash: "1231527610565308428", reuse: "reused" },
+      { opmagic: "10017", label: "SoftMax", leafHash: "1231527610565309122", reuse: "single" },
+    ],
+    leaf: {
+      label: "bn-after-matmul2",
+      summary: [
+        {
+          title: "leaf 本体特征",
+          body: "一张 leaf 通常更接近单核执行粒度，因此最适合讲“为什么这次执行会有这些 opcode 组织”。",
+        },
+        {
+          title: "semantic_label 的作用",
+          body: "它是跨源码 / root CALL / swimlane 事件最稳的人类语义锚点，但不是 leaf 的唯一标识。",
+        },
+      ],
+      opcodes: [
+        { name: "PHASE1", group: "sync", hint: "执行阶段起点，用来解释 leaf 内部阶段编排。" },
+        { name: "COPY_IN", group: "transfer", hint: "把 tile / block 粒度数据搬进局部缓冲。" },
+        { name: "EXP", group: "compute", hint: "Softmax 相关局部计算常见 opcode。" },
+        { name: "DIV", group: "compute", hint: "数值归一化阶段的代表性操作。" },
+        { name: "COPY_OUT", group: "transfer", hint: "把结果写回输出边界。" },
+      ],
+    },
+  },
+  {
+    id: "PATH2",
+    title: "PATH2: Softmax accumulation branch",
+    hint: "适合解释语义标签如何贯穿多层对象",
+    rootHash: "4519770023988339004",
+    leafHash: "8812013920011001922",
+    task: "AI Core 11 / Softmax-acc",
+    semanticLabel: "Softmax-acc",
+    jumpChain: [
+      {
+        icon: "01",
+        title: "swimlane task",
+        body: "事件后缀里的 Softmax-acc 说明它仍可被人类语义理解，而不是只剩 hash。",
+        meta: ["semantic suffix = Softmax-acc"],
+      },
+      {
+        icon: "02",
+        title: "Execute Graph (PATH2_ROOT.json)",
+        body: "root 依然只组织调度入口；不要把 root 看成 leaf 内部计算图。",
+        meta: ["rootHash = 4519770023988339004"],
+      },
+      {
+        icon: "03",
+        title: "CALL(opmagic = 10022)",
+        body: "CALL 上挂着 opmagic 和 semantic_label，用来桥接 leaf。",
+        meta: ["callOpMagic = 10022"],
+      },
+      {
+        icon: "04",
+        title: "Block Graph leaf",
+        body: "这里的 leaf 更偏归一化与累计阶段，可以用来解释 Tensor 局部 buffer 的读写切换。",
+        meta: ["leafHash = 8812013920011001922"],
+      },
+    ],
+    calls: [
+      { opmagic: "10022", label: "Softmax-acc", leafHash: "8812013920011001922", reuse: "single" },
+      { opmagic: "10024", label: "SoftMax", leafHash: "8812013920011001440", reuse: "single" },
+    ],
+    leaf: {
+      label: "Softmax-acc",
+      summary: [
+        {
+          title: "为什么这里适合讲 semantic_label",
+          body: "Softmax-acc 在源码、CALL 和泳道图事件里都更容易被人认出来，能帮助做跨层定位。",
+        },
+        {
+          title: "Tensor 的阅读方式",
+          body: "leaf 里的 Tensor 已经变成 block 级局部块和 buffer，而不是原始全局大 shape。",
+        },
+      ],
+      opcodes: [
+        { name: "COPY_IN", group: "transfer", hint: "搬入局部块，准备累计阶段。" },
+        { name: "EXP", group: "compute", hint: "指数变换。" },
+        { name: "DIV", group: "compute", hint: "归一化收束。" },
+        { name: "BAR.V", group: "sync", hint: "向量阶段同步控制。" },
+      ],
+    },
+  },
+  {
+    id: "PATH3",
+    title: "PATH3: loop tail branch",
+    hint: "适合强调 PATH 是路径级函数，不是 Block Graph 编号",
+    rootHash: "4010448899031281870",
+    leafHash: "9918287710201003412",
+    task: "AI Core 15 / tail-writeback",
+    semanticLabel: "SoftMax",
+    jumpChain: [
+      {
+        icon: "01",
+        title: "swimlane task",
+        body: "这次 task 是 loop 尾部的一次实例，不意味着 PATH3 只有一张 leaf。",
+        meta: ["tail branch", "runtime instance"],
+      },
+      {
+        icon: "02",
+        title: "Execute Graph (PATH3_ROOT.json)",
+        body: "PATH 先帮助你认出这是哪条路径级函数，再去看 root 内部具体有哪些 CALL。",
+        meta: ["rootHash = 4010448899031281870"],
+      },
+      {
+        icon: "03",
+        title: "CALL(opmagic = 10031)",
+        body: "CALL 是 root 内部节点，而不是 block graph 编号。",
+        meta: ["callOpMagic = 10031"],
+      },
+      {
+        icon: "04",
+        title: "Block Graph leaf",
+        body: "leaf 里看 opcode；不要把 PATH3 和这张 leaf 当成一回事。",
+        meta: ["leafHash = 9918287710201003412"],
+      },
+    ],
+    calls: [
+      { opmagic: "10031", label: "SoftMax", leafHash: "9918287710201003412", reuse: "single" },
+      { opmagic: "10034", label: "writeback-tail", leafHash: "9918287710201003999", reuse: "single" },
+    ],
+    leaf: {
+      label: "SoftMax",
+      summary: [
+        {
+          title: "PATH 与 leaf 不同层",
+          body: "PATH 是展开后的路径级函数，leaf 是这条路径上被分区出来的单核子图。",
+        },
+        {
+          title: "主链 vs 灰色链",
+          body: "调试时常走 root -> CALL -> leaf 主链；理解来源时再回到 Loop / PATH / Tile Graph 灰色链。",
+        },
+      ],
+      opcodes: [
+        { name: "PHASE2", group: "sync", hint: "尾段阶段控制。" },
+        { name: "SYNC_SRC", group: "sync", hint: "等待上游数据准备就绪。" },
+        { name: "COPY_OUT", group: "transfer", hint: "写回输出边界。" },
+      ],
+    },
+  },
+];
+
+const confusionItems = [
+  {
+    title: "`semantic_label` vs `leafHash`",
+    body: "`semantic_label` 是语义锚点，`leafHash` 才是 leaf 标识。前者帮助理解，后者帮助精准定位。",
+  },
+  {
+    title: "`CALL` vs `Block Graph`",
+    body: "`CALL` 是 root 里的调用节点；它能指向 leaf，但它自己不是 leaf 本体。",
+  },
+  {
+    title: "`swimlane task` vs `Block Graph`",
+    body: "前者是运行时执行实例，后者是静态图。通常是一张 leaf 对应很多次 task。",
+  },
+  {
+    title: "`PATH` vs `Block Graph`",
+    body: "`PATH` 是路径级函数，`Block Graph` 是 leaf 子图。二者不是同一编号体系。",
+  },
+  {
+    title: "`opcode` vs CCE 源码",
+    body: "`opcode` 是图内 Operation 名，适合解释执行组织，但不等于最终源码行。",
+  },
+];
+
+const state = {
+  activePath: "PATH1",
+  view: "debug",
+};
+
+const $ = (id) => document.getElementById(id);
+
+function renderOverview() {
+  $("pathsCount").textContent = overview.paths;
+  $("rootCount").textContent = overview.roots;
+  $("leafCount").textContent = overview.leafs;
+  $("reuseCount").textContent = overview.maxReuse;
+}
+
+function renderProvenance() {
+  $("provenanceFlow").innerHTML = provenanceFlow.map((item) => `
+    <div class="flow-node ${item.accent || ""} ${item.type === "partition-to" ? "provenance" : ""}">
+      <div class="type">${item.type}</div>
+      <strong>${item.title}</strong>
+      <p>${item.body}</p>
+    </div>
+  `).join("");
+}
+
+function renderPathTabs() {
+  $("pathTabs").innerHTML = pathModels.map((item) => `
+    <button class="path-btn ${item.id === state.activePath ? "active" : ""}" data-path="${item.id}">
+      ${item.id}
+    </button>
+  `).join("");
+}
+
+function renderViewTabs() {
+  const tabs = [
+    { id: "debug", label: "调试跳转链" },
+    { id: "provenance", label: "编译来源提示" },
+  ];
+  $("viewTabs").innerHTML = tabs.map((tab) => `
+    <button class="tab-btn ${tab.id === state.view ? "active" : ""}" data-view="${tab.id}">
+      ${tab.label}
+    </button>
+  `).join("");
+}
+
+function getActivePath() {
+  return pathModels.find((item) => item.id === state.activePath) || pathModels[0];
+}
+
+function renderJumpChain() {
+  const active = getActivePath();
+  $("chainTitle").textContent = active.title;
+  $("chainHint").textContent = state.view === "debug"
+    ? "jump-to / locate-in-root / points-to"
+    : "source-of-truth / expands-to / partition-to";
+
+  const steps = state.view === "debug"
+    ? active.jumpChain
+    : [
+        {
+          icon: "A1",
+          title: "业务代码与 semantic_label",
+          body: `当前路径的语义锚点是 ${active.semanticLabel}；先从源码里的 Tensor、LoopRange(...) 和 SetSemanticLabel(...) 理解它。`,
+          meta: ["page_attention.cpp", `semantic_label = ${active.semanticLabel}`],
+        },
+        {
+          icon: "A2",
+          title: "Loop -> PATH",
+          body: `${active.id} 代表动态循环展开后的某条路径级函数，不等于某一张 leaf。`,
+          meta: ["loop expands-to PATH", active.id],
+        },
+        {
+          icon: "A3",
+          title: "Tile Graph -> root / leaf",
+          body: "同一条 PATH 相关编译过程会同时产出 root 与 leaf；不是简单的先后单向生成。",
+          meta: ["Execute Graph (root)", "Block Graph (leaf)"],
+        },
+        {
+          icon: "A4",
+          title: "swimlane task",
+          body: "运行时实例最终再把这些静态产物桥接起来，用于回跳调试和性能分析。",
+          meta: [`rootHash = ${active.rootHash}`, `leafHash = ${active.leafHash}`],
+        },
+      ];
+
+  $("jumpChain").innerHTML = steps.map((step) => `
+    <div class="jump-step">
+      <div class="jump-icon mono">${step.icon}</div>
+      <div class="jump-body">
+        <strong>${step.title}</strong>
+        <p>${step.body}</p>
+        <div class="jump-meta">
+          ${step.meta.map((meta) => `<span class="meta-pill mono">${meta}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderRootMap() {
+  const active = getActivePath();
+  $("rootMap").innerHTML = active.calls.map((call) => `
+    <div class="call-row">
+      <div class="call-head">
+        <div class="call-label">
+          <strong class="mono">opmagic = ${call.opmagic}</strong>
+          <span>semantic_label = ${call.label}</span>
+        </div>
+        <span class="meta-pill">${call.reuse === "reused" ? "复用 leaf" : "单次指向"}</span>
+      </div>
+      <div class="call-arrow">
+        <div class="mini-card">
+          <div class="mini-type">CALL</div>
+          <strong>${call.label}</strong>
+        </div>
+        <div class="arrow">→</div>
+        <div class="mini-card">
+          <div class="mini-type">Block Graph</div>
+          <strong class="mono">${call.leafHash}</strong>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderLeafSummary() {
+  const active = getActivePath();
+  $("leafLabel").textContent = active.leaf.label;
+  $("leafSummary").innerHTML = active.leaf.summary.map((item) => `
+    <div class="legend-item">
+      <strong>${item.title}</strong>
+      <p>${item.body}</p>
+    </div>
+  `).join("");
+}
+
+function renderOpcodes() {
+  const active = getActivePath();
+  $("opcodeList").innerHTML = active.leaf.opcodes.map((item) => `
+    <div class="opcode-pill ${item.group}">
+      <strong class="mono">${item.name}</strong>
+      <span>${item.hint}</span>
+    </div>
+  `).join("");
+}
+
+function renderConfusionTable() {
+  $("confusionTable").innerHTML = confusionItems.map((item) => `
+    <div class="table-row">
+      <strong>${item.title}</strong>
+      <p>${item.body}</p>
+    </div>
+  `).join("");
+}
+
+function bindEvents() {
+  document.addEventListener("click", (event) => {
+    const pathButton = event.target.closest("[data-path]");
+    if (pathButton) {
+      state.activePath = pathButton.dataset.path;
+      rerender();
+      return;
+    }
+
+    const viewButton = event.target.closest("[data-view]");
+    if (viewButton) {
+      state.view = viewButton.dataset.view;
+      rerender();
+    }
+  });
+}
+
+function rerender() {
+  renderPathTabs();
+  renderViewTabs();
+  renderJumpChain();
+  renderRootMap();
+  renderLeafSummary();
+  renderOpcodes();
+}
+
+function init() {
+  renderOverview();
+  renderProvenance();
+  renderConfusionTable();
+  rerender();
+  bindEvents();
+}
+
+init();
+</script>
+</body>
+</html>
