@@ -6,6 +6,8 @@
 
 - 本文基于 `pypto` 仓库 `README.md`、`docs/`、`examples/` 的阶段性阅读整理。
 - 其中 `docs/` 与 `examples/` 部分来自当前本地镜像；对应那轮阅读按用户要求**未刷新本地 pypto 镜像**。
+- 对应 pypto 仓库快照日期: unknown
+- 对应 pypto 提交 / 分支: unknown
 
 ## 1. 项目概述
 

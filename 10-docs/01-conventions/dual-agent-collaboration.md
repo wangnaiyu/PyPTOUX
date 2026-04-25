@@ -133,6 +133,36 @@
 - Claude 可以在 `notes/` 中记录 `PRD 待澄清`、`sample-data 不足`、`结构待确认`，推动 Codex 补齐外围约束。
 - 进入 `app/` 或 workbench 阶段后，若前端代码同时涉及构建与视觉，按“Codex 改配置与契约，Claude 改页面与组件”的原则拆开执行。
 
+### 4.5 协作灰区规则（补充）
+
+本节只补充灰区目录的协作方式，不替代 §4.1 的 owner 表。
+
+#### `.agents/skills/`：Codex 主写 / Claude 共写
+
+- Codex 主导：新增 skill、章节结构、流程定义、矩阵规则、模板 / schema、删除内容。
+- Claude 可做：错别字、标点、链接修复、不改语义的措辞润色、补例子。
+- 冲突避免：遵守未提交工作树锁；结构性大改动建议先在 PR 或对话登记。
+
+#### `09-references/`：对等共写
+
+- Codex 与 Claude 均可写、可主导。
+- 冲突避免：遵守未提交工作树锁。
+- 结构性大改动（重排、拆分、归档、模板变更）建议先在 PR 或对话登记。
+- 新文件可选 frontmatter 标注 `owner: claude`、`owner: codex` 或 `owner: shared`。
+
+#### `02-knowledge/` / `03-insights/` / `04-uxdesign/` / `10-docs/`：Codex 单边主写
+
+- Claude 默认只读不写。
+- Claude 运行时发现 drift、verified claim、conflict 或 empirical note 时，跳过文件写入，在回答末尾“待人工处理”固定区块汇总。
+- 由用户决定是否手动处理或通知 Codex。
+- 一次会话只汇总一次；下次会话不主动重提。
+
+#### 未提交工作树锁定义
+
+- 一份文件在 git 上已 commit 的修改 = 交接完成，对方可接力。
+- 一份文件存在未 commit / 未 merge 的修改 = 该文件被锁定，对方不写。
+- 不确定时，先看 `git status` / `git log` 和最近一次写者。
+
 ---
 
 ## 五、原型形态的演进路径
