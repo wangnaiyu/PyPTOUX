@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyPTO Mix Task Tuning Storyboard</title>
+<style>
+:root {
+  --bg: #17191d;
+  --panel: #202328;
+  --panel-2: #262a30;
+  --panel-3: #2e333a;
+  --line: #3a4048;
+  --line-soft: #303640;
+  --text: #eef1f5;
+  --muted: #a5adb8;
+  --dim: #737d8b;
+  --cyan: #1fa7b7;
+  --green: #5aa56a;
+  --amber: #b7791f;
+  --orange: #b95635;
+  --purple: #8b61bf;
+  --pink: #b65f93;
+  --blue: #347db6;
+  --red: #b84b54;
+  --wait: #38313c;
+  --grid: rgba(255,255,255,0.045);
+  --shadow: 0 12px 34px rgba(0,0,0,0.35);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #111317;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0;
+}
+
+body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+button, input {
+  font: inherit;
+}
+
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 36px minmax(0, 1fr);
+  background: var(--bg);
+}
+
+.chrome {
+  display: grid;
+  grid-template-columns: 64px 280px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: #1d2025;
+  border-bottom: 1px solid #2b3038;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.chrome .brand {
+  color: #60a5fa;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.chrome .search {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid #3a4048;
+  border-radius: 6px;
+  background: #282c33;
+  color: #cfd5dd;
+}
+
+.chrome .win-actions {
+  display: flex;
+  gap: 12px;
+  color: #c0c6cf;
+}
+
+.workbench {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 64px 236px minmax(720px, 1fr) 390px;
+  transition: grid-template-columns 180ms ease;
+}
+
+.app.sidebar-collapsed .workbench {
+  grid-template-columns: 64px 0 minmax(720px, 1fr) 390px;
+}
+
+.activity {
+  background: #1d2025;
+  border-right: 1px solid #2b3038;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+  gap: 20px;
+}
+
+.activity button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #b5bec9;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.activity button.active {
+  background: #2d3340;
+  color: #e8edf4;
+}
+
+.sidebar {
+  min-width: 0;
+  overflow: hidden;
+  background: #202328;
+  border-right: 1px solid #2b3038;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.app.sidebar-collapsed .sidebar {
+  visibility: hidden;
+  border-right: 0;
+}
+
+.side-title {
+  padding: 14px 16px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #d8dee7;
+  text-transform: uppercase;
+}
+
+.tree {
+  overflow: auto;
+  padding: 0 10px 14px;
+}
+
+.tree-group {
+  margin: 8px 0;
+}
+
+.tree-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 8px;
+  color: #d6dbe4;
+  font-size: 13px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.tree-label.small {
+  color: var(--muted);
+  padding-left: 24px;
+}
+
+.tree-label.active {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 44px auto minmax(0, 1fr) clamp(240px, 34vh, 300px);
+  background: #17191d;
+}
+
+.app.timeline-expanded .main {
+  grid-template-rows: 44px auto minmax(0, 1fr) clamp(340px, 46vh, 420px);
+}
+
+.tabs {
+  display: flex;
+  align-items: end;
+  gap: 1px;
+  background: #1d2025;
+  border-bottom: 1px solid #2b3038;
+}
+
+.tab {
+  height: 44px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #2b3038;
+  background: #24282f;
+  color: #e6ebf2;
+  font-size: 14px;
+}
+
+.tab.secondary {
+  color: #99a3b0;
+  background: #1f2228;
+}
+
+.stagebar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 8px;
+  padding: 10px;
+  background: #1b1e23;
+  border-bottom: 1px solid #2d333b;
+}
+
+.stage-btn {
+  height: 54px;
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  background: #252a31;
+  color: #cbd3df;
+  cursor: pointer;
+  text-align: left;
+  padding: 7px 9px;
+}
+
+.stage-btn strong {
+  display: block;
+  color: #f3f6fa;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.stage-btn span {
+  display: block;
+  font-size: 11px;
+  color: #9ca6b3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-btn.active {
+  border-color: var(--cyan);
+  background: #20353b;
+  box-shadow: inset 0 -2px 0 var(--cyan);
+}
+
+.stage-controls {
+  min-width: 210px;
+  display: grid;
+  grid-template-rows: 26px 24px;
+  gap: 4px;
+  align-self: stretch;
+}
+
+.control-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.icon-btn,
+.scope-btn {
+  height: 26px;
+  border: 1px solid #3a4048;
+  border-radius: 6px;
+  background: #252a31;
+  color: #cbd3df;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.icon-btn {
+  width: 30px;
+  display: grid;
+  place-items: center;
+}
+
+.scope-btn {
+  min-width: 44px;
+  padding: 0 8px;
+}
+
+.icon-btn.active,
+.scope-btn.active {
+  border-color: #7dd3fc;
+  background: #20353b;
+  color: #f3f6fa;
+}
+
+.workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(360px, 42%) minmax(420px, 58%);
+}
+
+.code {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid #2b3038;
+  background: #181b20;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.pane-head {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border-bottom: 1px solid #2b3038;
+  color: #cfd5dd;
+  font-size: 13px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #263640;
+  color: #7dd3fc;
+  font-size: 11px;
+}
+
+.code-lines {
+  min-height: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  padding: 10px 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  min-width: 620px;
+  min-height: 23px;
+}
+
+.line .no {
+  color: #6c7685;
+  text-align: right;
+  padding-right: 12px;
+  user-select: none;
+}
+
+.line .txt {
+  color: #d8dee7;
+  white-space: pre;
+  padding-right: 14px;
+}
+
+.line.hl .txt {
+  background: rgba(31, 167, 183, 0.16);
+  outline: 1px solid rgba(31, 167, 183, 0.45);
+}
+
+.kw { color: #c678dd; }
+.fn { color: #61afef; }
+.str { color: #98c379; }
+.num { color: #d19a66; }
+.cm { color: #6a9955; }
+
+.graph {
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, var(--grid) 1px, transparent 1px) 0 0 / 18px 18px,
+    #1a1d22;
+}
+
+.graph-toolbar {
+  position: absolute;
+  z-index: 5;
+  top: 12px;
+  left: 14px;
+  right: 14px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.graph-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #e8edf4;
+  pointer-events: auto;
+}
+
+.graph-back {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #3a4048;
+  border-radius: 6px;
+  background: #252a31;
+  color: #cbd3df;
+  cursor: pointer;
+  display: none;
+}
+
+.graph-back.visible {
+  display: grid;
+  place-items: center;
+}
+
+.graph-title .type {
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #1fa7b7;
+  color: white;
+  font-size: 11px;
+}
+
+.graph-search {
+  width: 260px;
+  height: 32px;
+  border: 1px solid #3a4048;
+  border-radius: 7px;
+  padding: 0 10px;
+  color: #98a3b1;
+  background: #24282f;
+  pointer-events: auto;
+  outline: none;
+}
+
+.graph-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.graph-actions .graph-search {
+  width: 230px;
+}
+
+.graph-fit,
+.graph-zoom {
+  height: 30px;
+  border: 1px solid #3a4048;
+  border-radius: 6px;
+  background: #252a31;
+  color: #cbd3df;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.graph-fit {
+  padding: 0 9px;
+}
+
+.graph-zoom {
+  width: 30px;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 980px;
+  height: 540px;
+  transform-origin: left top;
+  transition: transform 160ms ease;
+  cursor: grab;
+}
+
+.canvas.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.edge {
+  position: absolute;
+  height: 2px;
+  background: #59616d;
+  transform-origin: left center;
+  opacity: 0.8;
+}
+
+.node {
+  position: absolute;
+  width: 138px;
+  border: 1px solid #454c58;
+  border-radius: 8px;
+  background: #282c33;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+  transition: transform 180ms ease, border-color 180ms ease, opacity 180ms ease;
+  cursor: pointer;
+}
+
+.node.active {
+  transform: translateY(-4px);
+  border-color: #7dd3fc;
+  box-shadow: 0 14px 34px rgba(31,167,183,0.22);
+}
+
+.node.dimmed {
+  opacity: 0.42;
+}
+
+.node.search-hidden {
+  opacity: 0.13;
+}
+
+.node.selected {
+  border-color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250,204,21,0.34), 0 16px 34px rgba(0,0,0,0.34);
+}
+
+.node-head {
+  height: 34px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+}
+
+.node-body {
+  padding: 7px 8px 8px;
+  color: #c5ccd6;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.tensor .node-head { background: var(--blue); }
+.call .node-head { background: var(--cyan); }
+.vector .node-head { background: var(--purple); }
+.cube .node-head { background: var(--orange); }
+.sync .node-head { background: var(--amber); }
+.out .node-head { background: #59616d; }
+
+.fx {
+  float: right;
+  margin-top: 4px;
+  color: rgba(255,255,255,0.32);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.minimap {
+  position: absolute;
+  z-index: 6;
+  right: 16px;
+  top: 60px;
+  width: 158px;
+  height: 94px;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  background: #252a31;
+  display: grid;
+  place-items: center;
+}
+
+.mini-bars {
+  width: 104px;
+  height: 54px;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  align-items: center;
+  gap: 4px;
+}
+
+.mini-bars i {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--purple);
+}
+
+.timeline {
+  min-height: 0;
+  border-top: 1px solid #2b3038;
+  background: #1a1d22;
+  display: grid;
+  grid-template-rows: 48px 1fr;
+}
+
+.time-head {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  border-bottom: 1px solid #303640;
+}
+
+.mode-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+  min-width: 0;
+}
+
+.mode-brand strong {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.round-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #5847a8;
+  color: white;
+  font-weight: 700;
+}
+
+.mini-toggle {
+  height: 24px;
+  min-width: 28px;
+  width: 28px;
+  align-self: center;
+  margin: 0 6px 0 auto;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.scale {
+  position: relative;
+  overflow: hidden;
+  background: #22262c;
+}
+
+.tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #363c45;
+}
+
+.tick span {
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  font-size: 12px;
+  color: #c8ced8;
+}
+
+.lanes {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: 210px 1fr;
+}
+
+.lane-labels {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  border-right: 1px solid #303640;
+  background: #202328;
+  overflow: visible;
+  box-shadow: 8px 0 14px rgba(0,0,0,0.18);
+}
+
+.lane-label {
+  height: 32px;
+  display: grid;
+  grid-template-columns: 1fr 56px;
+  align-items: center;
+  border-bottom: 1px solid #2d333b;
+  padding: 0 10px;
+  color: #d8dee7;
+  font-size: 12px;
+}
+
+.lane-label small {
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #303640;
+  color: #d7dde6;
+}
+
+.lane-track {
+  position: relative;
+  overflow: visible;
+  min-width: 760px;
+  background:
+    linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), #2f3540 calc(10% - 1px), #2f3540 10%) 0 0 / 10% 100%,
+    #171a1f;
+}
+
+.lane-row {
+  position: relative;
+  height: 32px;
+  border-bottom: 1px solid #2d333b;
+}
+
+.bar {
+  position: absolute;
+  top: 6px;
+  height: 20px;
+  border-radius: 3px;
+  color: #f5f7fb;
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  transition: left 260ms ease, width 260ms ease, background 260ms ease, opacity 260ms ease;
+  cursor: pointer;
+}
+
+.bar.wait {
+  background: repeating-linear-gradient(45deg, #3b3344, #3b3344 6px, #4d3a58 6px, #4d3a58 10px);
+  color: #d9c6e9;
+}
+
+.bar.aic { background: var(--orange); }
+.bar.aiv { background: var(--pink); }
+.bar.sync { background: var(--amber); color: #111317; }
+.bar.ok { background: var(--green); }
+.bar.blue { background: var(--blue); }
+.bar.dim { opacity: 0.42; }
+.bar.hot { outline: 2px solid #facc15; z-index: 2; }
+.bar.selected {
+  outline: 2px solid #7dd3fc;
+  z-index: 3;
+}
+.bar.linked {
+  outline: 2px solid #facc15;
+  box-shadow: 0 0 0 2px rgba(250,204,21,0.22), inset 0 0 0 1px rgba(255,255,255,0.14);
+  z-index: 4;
+}
+.bar.filtered {
+  opacity: 0.16;
+}
+
+.right {
+  min-width: 0;
+  min-height: 0;
+  background: #202328;
+  border-left: 1px solid #2b3038;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.summary {
+  padding: 14px;
+  border-bottom: 1px solid #303640;
+}
+
+.summary h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.summary p {
+  margin: 0;
+  color: #b5bec9;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.right-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 28px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #303640;
+}
+
+.metric {
+  min-height: 68px;
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  background: #262a30;
+  padding: 10px;
+}
+
+.metric span {
+  display: block;
+  color: #9ca6b3;
+  font-size: 11px;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.metric small {
+  color: #7dd3fc;
+  font-size: 11px;
+}
+
+.metric small.delta {
+  color: #86efac;
+}
+
+.inspector {
+  border-bottom: 1px solid #303640;
+  padding: 12px;
+}
+
+.inspector-card {
+  min-height: 92px;
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  background: #262a30;
+  padding: 12px;
+}
+
+.inspector-card h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.inspector-card p {
+  margin: 0;
+  color: #b8c1cc;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.inspector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.inspector-grid span {
+  min-height: 24px;
+  border-radius: 5px;
+  background: #303640;
+  color: #d8dee7;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hardware {
+  border-bottom: 1px solid #303640;
+  padding: 12px;
+}
+
+.hardware-card {
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  background: #262a30;
+  padding: 12px;
+}
+
+.hardware-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.hardware-head h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.hardware-head p {
+  margin: 4px 0 0;
+  color: #b8c1cc;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.confidence {
+  flex: 0 0 auto;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #20353b;
+  color: #7dd3fc;
+  font-size: 11px;
+}
+
+.confidence.claim {
+  background: #34303f;
+  color: #d8b4fe;
+}
+
+.hw-map {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.hw-zone {
+  min-height: 116px;
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  padding: 8px;
+  background: #20242b;
+}
+
+.hw-zone strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #e6ebf2;
+  font-size: 11px;
+}
+
+.hw-zone.claim {
+  grid-column: 1 / -1;
+  min-height: 54px;
+  border-style: dashed;
+  background: #242331;
+}
+
+.hw-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.hw-part {
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 5px;
+  background: #303640;
+  color: #b9c2ce;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.hw-part.active {
+  background: #1f6f78;
+  color: #f8fafc;
+  box-shadow: 0 0 0 1px rgba(125,211,252,0.55);
+}
+
+.hw-part.data {
+  background: #374151;
+}
+
+.hw-part.data.active {
+  background: #2f855a;
+}
+
+.hw-part.instr.active {
+  background: #b7791f;
+  color: #111317;
+}
+
+.flow-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.flow-box {
+  border: 1px solid #3a4048;
+  border-radius: 7px;
+  background: #20242b;
+  padding: 8px;
+}
+
+.flow-box h4 {
+  margin: 0 0 7px;
+  color: #e6ebf2;
+  font-size: 11px;
+}
+
+.flow-box ol {
+  margin: 0;
+  padding-left: 18px;
+  color: #b8c1cc;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.flow-note {
+  margin: 10px 0 0;
+  color: #9ca6b3;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.story {
+  min-height: 0;
+  padding: 14px 14px 28px;
+}
+
+.story-section {
+  margin-bottom: 14px;
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  background: #262a30;
+  padding: 12px;
+}
+
+.story-section h3 {
+  margin: 0 0 9px;
+  font-size: 13px;
+  color: #f3f6fa;
+}
+
+.story-section ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #b8c1cc;
+  font-size: 12px;
+  line-height: 1.58;
+}
+
+.story-section li {
+  margin: 6px 0;
+}
+
+.data-tag {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 22px;
+  padding: 0 8px;
+  margin-right: 6px;
+  border-radius: 6px;
+  background: #323844;
+  color: #d8dee7;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.legend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 0;
+  padding: 12px 14px 0;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #aeb7c3;
+  font-size: 11px;
+}
+
+.legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+@media (max-width: 1180px) {
+  .workbench {
+    grid-template-columns: 54px 220px minmax(620px, 1fr);
+  }
+
+  .app.sidebar-collapsed .workbench {
+    grid-template-columns: 54px 0 minmax(620px, 1fr);
+  }
+
+  .right {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="chrome">
+    <div class="brand">PyPTO</div>
+    <div>文件(F)&nbsp;&nbsp;编辑(E)&nbsp;&nbsp;选择(S)&nbsp;&nbsp;查看(V)&nbsp;&nbsp;转到(G)</div>
+    <div class="search">Mix task tuning storyboard</div>
+    <div class="win-actions">▭  ◫  ···</div>
+  </header>
+
+  <div class="workbench">
+    <nav class="activity" aria-label="Activity bar">
+      <button class="active" id="sidebarToggle" title="收起/展开资源管理器">▱</button>
+      <button title="Search">⌕</button>
+      <button title="Run">▷</button>
+      <button title="Toolkit">◇</button>
+      <button title="Graph">⌘</button>
+    </nav>
+
+    <aside class="sidebar">
+      <div class="side-title">资源管理器</div>
+      <div class="tree">
+        <div class="tree-group">
+          <div class="tree-label">▾ MIX-TUNING-DEMO</div>
+          <div class="tree-label small active">{} merged_swimlane.json</div>
+          <div class="tree-label small">{} program.json</div>
+          <div class="tree-label small">☰ dyn_topo.txt</div>
+          <div class="tree-label small">▸ Pass_35_CodegenPreproc</div>
+          <div class="tree-label small">▸ kernel_aicore</div>
+        </div>
+        <div class="tree-group">
+          <div class="tree-label">▾ Storyboard</div>
+          <div class="tree-label small">01_baseline_open_box</div>
+          <div class="tree-label small">02_vector_tileshape</div>
+          <div class="tree-label small">03_cube_tileshape</div>
+          <div class="tree-label small">04_l1reuse</div>
+          <div class="tree-label small">05_verify_mix_sync</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="tabs">
+        <div class="tab">{} mix_tuning_storyboard.html</div>
+        <div class="tab secondary">{} merged_swimlane.json</div>
+        <div class="tab secondary">☰ program</div>
+      </div>
+
+      <div class="stagebar" id="stagebar"></div>
+
+      <section class="workspace">
+        <div class="code">
+          <div class="pane-head">
+            <span>page_attention.cpp / QuantIndexerProlog-like path</span>
+            <span class="badge" id="codeBadge">semantic_label: MatMul</span>
+          </div>
+          <div class="code-lines" id="codeLines"></div>
+        </div>
+
+        <div class="graph">
+          <div class="graph-toolbar">
+            <div class="graph-title">
+              <button class="graph-back" id="graphBackBtn" title="返回 Execute Graph" aria-label="返回 Execute Graph">‹</button>
+              <span id="graphTitle">TENSOR_IndexerProlog_root_Q</span>
+              <span class="type" id="graphType">EXECUTE_GRAPH</span>
+            </div>
+            <div class="graph-actions">
+              <input class="graph-search" id="graphSearch" type="search" placeholder="搜索 node / sync / TileShape">
+              <button class="graph-fit" id="fitGraphBtn" title="适配完整计算图">Fit</button>
+              <button class="graph-zoom" id="zoomOutBtn" title="缩小">−</button>
+              <button class="graph-zoom" id="zoomInBtn" title="放大">+</button>
+            </div>
+          </div>
+          <div class="canvas" id="graphCanvas"></div>
+          <div class="minimap">
+            <div class="mini-bars">
+              <i style="height:18px;background:#5aa56a"></i>
+              <i style="height:28px;background:#b95635"></i>
+              <i style="height:46px;background:#8b61bf"></i>
+              <i style="height:22px;background:#b65f93"></i>
+              <i style="height:36px;background:#347db6"></i>
+              <i style="height:64px;background:#b7791f"></i>
+              <i style="height:30px;background:#1fa7b7"></i>
+              <i style="height:22px;background:#8b61bf"></i>
+              <i style="height:18px;background:#b84b54"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="timeline">
+        <div class="time-head">
+          <div class="mode-brand">
+            <div class="round-icon">{}</div>
+            <strong>Workflow</strong>
+            <span class="data-tag" id="modeTag">泳道图</span>
+            <button class="scope-btn mini-toggle" id="timelineSizeBtn" title="展开泳道图" aria-label="展开泳道图">⤢</button>
+          </div>
+          <div class="scale" id="scale"></div>
+        </div>
+        <div class="lanes">
+          <div class="lane-labels" id="laneLabels"></div>
+          <div class="lane-track" id="laneTrack"></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="right">
+      <div class="summary">
+        <h2 id="stageTitle">开箱运行：看见 Mix 等待</h2>
+        <p id="stageSummary"></p>
+      </div>
+      <div class="right-scroll">
+        <div class="legend">
+          <span><i style="background:var(--orange)"></i>AIC / Cube</span>
+          <span><i style="background:var(--pink)"></i>AIV / Vector</span>
+          <span><i style="background:var(--wait)"></i>CV_SYNC_WAIT</span>
+          <span><i style="background:var(--green)"></i>有效收益</span>
+        </div>
+        <div class="metrics" id="metrics"></div>
+        <div class="inspector" id="inspector"></div>
+        <div class="hardware" id="hardware"></div>
+        <div class="story" id="story"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const stages = [
+  {
+    id: "baseline",
+    name: "01 开箱运行",
+    short: "发现 wrap 内等待",
+    title: "开箱运行：看见 Mix 等待",
+    tag: "L2 storyboard / baseline index",
+    summary: "同一个 wrapId 下，AIC 的 Q MatMul 很长，AIV0/AIV1 的 dequant / RoPE 任务碎且等待多。问题不是单核慢，而是 Cube、Vector 和同步节奏不齐。",
+    metric: { total: "100%", wait: "31%", aic: "73%", aiv: "42%" },
+    activeLines: [8, 11, 12, 15],
+    activeNodes: ["callQ", "cubeQ", "waitV0", "waitV1", "vecDeq", "vecRope"],
+    findings: [
+      "泳道图上 AIV 行有多段 CV_SYNC_WAIT，等待 AIC 的 CV_SYNC_SET。",
+      "Vector 小任务很多，颜色碎片化，bar 之间存在气泡。",
+      "Q 分支 Cube 任务数量多，疑似右矩阵重复搬运。",
+      "下一步先调 Vector TileShape，因为小任务碎片会放大同步等待。"
+    ],
+    bars: {
+      "AICPU-SCHED-1": [[2, 12, "INIT_0", "ok"], [14, 34, "DEV_TASK_RCV", "blue"], [50, 36, "SCHED_EXEC", "blue"]],
+      "AIC_9": [[8, 38, "Q MatMul", "aic hot"], [46, 10, "CV_SET", "sync"], [72, 8, "copy out", "ok"]],
+      "AIV_0": [[18, 9, "dequant", "aiv"], [30, 16, "CV_WAIT", "wait hot"], [51, 7, "RoPE", "aiv"], [62, 11, "cast", "aiv"]],
+      "AIV_1": [[20, 7, "scale", "aiv"], [29, 17, "CV_WAIT", "wait hot"], [52, 8, "RoPE", "aiv"], [67, 6, "add", "aiv"]],
+      "AIC_10": [[12, 35, "Cache MatMul", "aic"], [49, 6, "CV_SET", "sync"]],
+      "AIV_2": [[23, 6, "norm", "aiv"], [34, 15, "CV_WAIT", "wait"], [55, 7, "softmax", "aiv"]],
+      "AIV_3": [[40, 5, "tiny", "aiv"], [48, 4, "tiny", "aiv"], [58, 5, "tiny", "aiv"], [68, 4, "tiny", "aiv"]]
+    },
+    sync: [{ x: 46, y: 1, h: 70, w: 18 }]
+  },
+  {
+    id: "vector",
+    name: "02 Vector Tile",
+    short: "对齐 dequant / RoPE",
+    title: "Vector TileShape：先减少小任务碎片",
+    tag: "documented anchor: 76us",
+    summary: "把 dequant、RoPE 和 elementwise 的 TileShape 调成一致或相邻可合图形态，减少多对多依赖。文档案例中这一类优化后性能到 76us。",
+    metric: { total: "76us", wait: "18%", aic: "76%", aiv: "61%" },
+    activeLines: [10, 11, 12, 13],
+    activeNodes: ["vecDeq", "vecRope", "waitV0", "waitV1"],
+    findings: [
+      "AIV 小任务合并为更少的 Vector 子图，bar 更连续。",
+      "CV_SYNC_WAIT 还在，但等待段明显缩短。",
+      "此时关键路径转向 Cube MatMul，AIC 长 bar 仍然压住尾部。",
+      "下一步重调 Cube TileShape，贴合小 M、大 K 的业务形态。"
+    ],
+    bars: {
+      "AICPU-SCHED-1": [[2, 10, "INIT_0", "ok"], [13, 29, "DEV_TASK_RCV", "blue"], [48, 28, "SCHED_EXEC", "blue"]],
+      "AIC_9": [[8, 37, "Q MatMul", "aic hot"], [45, 8, "CV_SET", "sync"], [66, 7, "copy out", "ok"]],
+      "AIV_0": [[17, 18, "dequant + RoPE", "aiv"], [37, 9, "CV_WAIT", "wait hot"], [50, 12, "cast + add", "aiv"]],
+      "AIV_1": [[18, 16, "scale + RoPE", "aiv"], [36, 10, "CV_WAIT", "wait hot"], [50, 10, "softmax", "aiv"]],
+      "AIC_10": [[12, 32, "Cache MatMul", "aic"], [44, 5, "CV_SET", "sync"]],
+      "AIV_2": [[23, 14, "norm + softmax", "aiv"], [39, 7, "CV_WAIT", "wait"], [51, 9, "out", "aiv"]],
+      "AIV_3": [[40, 13, "vec group", "aiv"], [57, 11, "vec group", "aiv"]]
+    },
+    sync: [{ x: 45, y: 1, h: 60, w: 10 }]
+  },
+  {
+    id: "cube",
+    name: "03 Cube Tile",
+    short: "小 M 场景重切",
+    title: "Cube TileShape：把 AIC 关键路径压短",
+    tag: "documented anchor: 56us",
+    summary: "通用 [128,128] 不一定适合小 M。把 M 轴小切、K 轴放大、N 轴收紧，减少 AIC 长任务和尾部同步拖延。文档案例中这一类优化后性能到 56us。",
+    metric: { total: "56us", wait: "11%", aic: "81%", aiv: "66%" },
+    activeLines: [8, 9, 14],
+    activeNodes: ["cubeQ", "cubeCache", "callQ"],
+    findings: [
+      "Q MatMul bar 缩短，同一个 wrap 内 AIV 等待继续下降。",
+      "Cube 任务数量仍偏多，右矩阵重复进入 L1 的迹象还在。",
+      "如果此处直接继续减 Tile，可能牺牲算数强度。",
+      "下一步看 L1Reuse，让同源搬运在广度方向合并。"
+    ],
+    bars: {
+      "AICPU-SCHED-1": [[2, 9, "INIT_0", "ok"], [12, 24, "DEV_TASK_RCV", "blue"], [42, 22, "SCHED_EXEC", "blue"]],
+      "AIC_9": [[8, 27, "Q MatMul", "aic hot"], [35, 6, "CV_SET", "sync"], [54, 6, "copy out", "ok"]],
+      "AIV_0": [[15, 17, "dequant + RoPE", "aiv"], [34, 6, "CV_WAIT", "wait hot"], [43, 11, "cast + add", "aiv"]],
+      "AIV_1": [[16, 15, "scale + RoPE", "aiv"], [34, 6, "CV_WAIT", "wait hot"], [43, 10, "softmax", "aiv"]],
+      "AIC_10": [[12, 25, "Cache MatMul", "aic"], [38, 5, "CV_SET", "sync"]],
+      "AIV_2": [[20, 13, "norm + softmax", "aiv"], [36, 5, "CV_WAIT", "wait"], [44, 9, "out", "aiv"]],
+      "AIV_3": [[33, 13, "vec group", "aiv"], [48, 9, "vec group", "aiv"]]
+    },
+    sync: [{ x: 35, y: 1, h: 58, w: 8 }]
+  },
+  {
+    id: "reuse",
+    name: "04 L1Reuse",
+    short: "合并重复搬运",
+    title: "L1Reuse：减少 Q 分支重复搬运",
+    tag: "documented anchor: 49us",
+    summary: "Q 计算的 Cube 任务过多会重复搬运右矩阵。通过 cube_l1_reuse_setting 让可复用 L1 的 Cube 子图合并，减少冗余搬运。文档案例中最终到 49us。",
+    metric: { total: "49us", wait: "7%", aic: "84%", aiv: "70%" },
+    activeLines: [16, 17, 18],
+    activeNodes: ["cubeQ", "cubeReuse", "out"],
+    findings: [
+      "多个 Q Cube 子图归并，AIC bar 从长而散变成更少的连续块。",
+      "CV_SYNC_WAIT 只保留必要同步，等待不再主导总耗时。",
+      "AIV 利用率变高但没有明显排队，说明 Vector 合图没有过度。",
+      "下一步不是继续压单点，而是验证端到端和资源风险。"
+    ],
+    bars: {
+      "AICPU-SCHED-1": [[2, 8, "INIT_0", "ok"], [11, 20, "DEV_TASK_RCV", "blue"], [37, 19, "SCHED_EXEC", "blue"]],
+      "AIC_9": [[8, 22, "Q MatMul x L1Reuse", "aic hot"], [30, 5, "CV_SET", "sync"], [47, 5, "copy out", "ok"]],
+      "AIV_0": [[14, 16, "dequant + RoPE", "aiv"], [31, 4, "WAIT", "wait"], [38, 10, "cast + add", "aiv"]],
+      "AIV_1": [[15, 14, "scale + RoPE", "aiv"], [31, 4, "WAIT", "wait"], [38, 9, "softmax", "aiv"]],
+      "AIC_10": [[12, 20, "Cache MatMul", "aic"], [33, 4, "CV_SET", "sync"]],
+      "AIV_2": [[18, 13, "norm + softmax", "aiv"], [34, 4, "WAIT", "wait"], [40, 8, "out", "aiv"]],
+      "AIV_3": [[30, 12, "vec group", "aiv"], [44, 8, "vec group", "aiv"]]
+    },
+    sync: [{ x: 30, y: 1, h: 56, w: 5 }]
+  },
+  {
+    id: "verify",
+    name: "05 验证收敛",
+    short: "端到端与风险检查",
+    title: "验证收敛：看总耗时，不只看 kernel",
+    tag: "decision checkpoint",
+    summary: "最终检查端到端、AICPU 调度、workspace 和 L2 命中风险。若仍有空隙，再试 stitch_function_max_num 或 device_sched_mode，但要用总耗时判断收益。",
+    metric: { total: "49us", wait: "7%", aic: "84%", aiv: "70%" },
+    activeLines: [20, 21, 22],
+    activeNodes: ["callQ", "out", "cubeReuse"],
+    findings: [
+      "如果提高 stitch 后 kernel 继续下降但端到端上升，应回退。",
+      "如果 L1Reuse 导致 workspace 压力或 L2 命中下降，需要按场景分档。",
+      "保留 semantic_label、rootHash、callOpMagic、leafHash，方便从泳道图跳回计算图。",
+      "把这组配置固化为典型 Batch=4 / KV Cache 64k 的 tuning profile。"
+    ],
+    bars: {
+      "AICPU-SCHED-1": [[2, 8, "INIT_0", "ok"], [11, 20, "DEV_TASK_RCV", "blue"], [37, 19, "SCHED_EXEC", "blue"]],
+      "AIC_9": [[8, 22, "Q MatMul x L1Reuse", "ok"], [30, 5, "CV_SET", "sync"], [47, 5, "copy out", "ok"]],
+      "AIV_0": [[14, 16, "dequant + RoPE", "ok"], [31, 4, "WAIT", "wait"], [38, 10, "cast + add", "ok"]],
+      "AIV_1": [[15, 14, "scale + RoPE", "ok"], [31, 4, "WAIT", "wait"], [38, 9, "softmax", "ok"]],
+      "AIC_10": [[12, 20, "Cache MatMul", "ok"], [33, 4, "CV_SET", "sync"]],
+      "AIV_2": [[18, 13, "norm + softmax", "ok"], [34, 4, "WAIT", "wait"], [40, 8, "out", "ok"]],
+      "AIV_3": [[30, 12, "vec group", "ok"], [44, 8, "vec group", "ok"]]
+    },
+    sync: [{ x: 30, y: 1, h: 56, w: 5, dim: true }]
+  }
+];
+
+const codeRows = [
+  ["cm", "/* QuantIndexerProlog-like Mix path, storyboard data */"],
+  ["", "auto q = load_q(input, cache_index);"],
+  ["", "config::SetSemanticLabel(\"Q-MatMul\");"],
+  ["", "pypto.set_cube_tile_shapes([128,128], [128,128], [128,128]);"],
+  ["", "q_mm = pypto.matmul(q, q_weight);"],
+  ["", ""],
+  ["", "config::SetSemanticLabel(\"Dequant-RoPE\");"],
+  ["", "scale = pypto.dequantize(q_mm, scale_tensor);"],
+  ["", "rope = apply_rope(scale, pos);"],
+  ["", ""],
+  ["cm", "// Step 02: align Vector TileShape for dequant / RoPE / elementwise"],
+  ["", "pypto.set_vec_tile_shapes(64, 512);"],
+  ["", "rope = fuse_vector_tail(scale, pos, bias);"],
+  ["", ""],
+  ["cm", "// Step 03: tune Cube TileShape for small M, large K"],
+  ["", "pypto.set_cube_tile_shapes([16,16], [128,512], [64,64]);"],
+  ["", ""],
+  ["cm", "// Step 04: reduce repeated L1 movement on Q branch"],
+  ["", "@pypto.frontend.jit(pass_options={\"cube_l1_reuse_setting\": {\"Q-MatMul\": 4}})"],
+  ["", ""],
+  ["cm", "// Step 05: verify E2E before changing scheduler knobs"],
+  ["", "@pypto.frontend.jit(runtime_options={\"stitch_function_max_num\": 128})"],
+  ["", "@pypto.frontend.jit(runtime_options={\"device_sched_mode\": 1})"]
+];
+
+const linkRefs = {
+  q: {
+    semanticLabel: "Q-MatMul",
+    rootHash: "9928535964290202028",
+    callOpMagic: "10015",
+    leafHash: "1231527610565308428",
+    wrapId: "37"
+  },
+  qReuse: {
+    semanticLabel: "Q-MatMul",
+    rootHash: "9928535964290202028",
+    callOpMagic: "10015",
+    leafHash: "1231527610565308428",
+    wrapId: "37",
+    l1ReuseHashOrder: "4"
+  },
+  vec: {
+    semanticLabel: "Dequant-RoPE",
+    rootHash: "746860275674524290",
+    callOpMagic: "10005",
+    leafHash: "17630336457827800367",
+    wrapId: "37"
+  },
+  cache: {
+    semanticLabel: "KV-Cache-MatMul",
+    rootHash: "746860275674524290",
+    callOpMagic: "10007",
+    leafHash: "7781186700511352762",
+    wrapId: "42"
+  },
+  out: {
+    semanticLabel: "OUTCAST",
+    rootHash: "9928535964290202028",
+    callOpMagic: "10015",
+    leafHash: "1231527610565308428",
+    rawMagic: "108"
+  }
+};
+
+function linkOf(key, extra = {}) {
+  return { ...linkRefs[key], ...extra };
+}
+
+const executeGraphNodes = [
+  { id: "rootIn", type: "tensor", x: 70, y: 235, title: "INCAST", sub: "Execute Graph", body: "q/k/v cache inputs\nrawMagic: [0..7]" },
+  { id: "callQ", type: "call", x: 255, y: 130, title: "CALL Q-MatMul", sub: "Execute Graph / CALL", body: "InCast: [114,155]\nOutCast: [630]\nwrapId: 37", link: linkOf("q"), linkMode: "execute-call", drill: "callQ" },
+  { id: "callVec", type: "call", x: 500, y: 95, title: "CALL Dequant-RoPE", sub: "Execute Graph / CALL", body: "semantic: Dequant-RoPE\nwrapId: 37", link: linkOf("vec"), linkMode: "execute-call", drill: "callVec" },
+  { id: "callCache", type: "call", x: 500, y: 280, title: "CALL Cache-MatMul", sub: "Execute Graph / CALL", body: "parallel branch\nwrapId: 42", link: linkOf("cache"), linkMode: "execute-call", drill: "callCache" },
+  { id: "out", type: "out", x: 760, y: 220, title: "OUTCAST", sub: "Execute Graph", body: "shape: [4,128]\nrawmagic: 108", link: linkOf("out"), linkMode: "semantic" }
+];
+
+const executeGraphEdges = [
+  ["rootIn", "callQ"], ["callQ", "callVec"], ["callQ", "callCache"],
+  ["callVec", "out"], ["callCache", "out"]
+];
+
+const blockGraphNodesByCall = {
+  callQ: [
+    { id: "cubeQ", type: "cube", x: 170, y: 160, title: "812 Tensor", sub: "Block Graph / LEAF", body: "shape: [16,512]\nrawshape: [128,512]\ndatatype: bf16", link: linkOf("q"), linkMode: "leaf" },
+    { id: "cubeReuse", type: "cube", x: 410, y: 245, title: "L1Reuse group", sub: "Block Graph / LEAF", body: "cube_l1_reuse_setting\nreuse: 4\nright matrix resident", link: linkOf("qReuse"), linkMode: "leaf" },
+    { id: "out", type: "out", x: 650, y: 200, title: "OUTCAST", sub: "Slot ID: 0", body: "shape: [4,128]\nrawmagic: 108", link: linkOf("out"), linkMode: "semantic" }
+  ],
+  callVec: [
+    { id: "waitV0", type: "sync", x: 150, y: 120, title: "CV_SYNC_WAIT", sub: "AIV0 waits AIC", body: "eventid: 6\ntype: CV_SYNC_WAIT\ntime: 31us", link: linkOf("vec", { syncType: "CV_SYNC_WAIT" }), linkMode: "semantic" },
+    { id: "waitV1", type: "sync", x: 150, y: 285, title: "CV_SYNC_WAIT", sub: "AIV1 waits AIC", body: "eventid: 7\ntype: CV_SYNC_WAIT\ntime: 31us", link: linkOf("vec", { syncType: "CV_SYNC_WAIT" }), linkMode: "semantic" },
+    { id: "vecDeq", type: "vector", x: 405, y: 120, title: "Dequant", sub: "Block Graph / LEAF", body: "shape: [64,512]\nvecNBufferHashOrder: 2", link: linkOf("vec"), linkMode: "leaf" },
+    { id: "vecRope", type: "vector", x: 405, y: 285, title: "RoPE + Cast", sub: "Block Graph / LEAF", body: "shape: [64,512]\nsemantic: Dequant-RoPE", link: linkOf("vec"), linkMode: "leaf" },
+    { id: "out", type: "out", x: 650, y: 205, title: "OUTCAST", sub: "Slot ID: 0", body: "shape: [4,128]\nrawmagic: 108", link: linkOf("out"), linkMode: "semantic" }
+  ],
+  callCache: [
+    { id: "cubeCache", type: "cube", x: 260, y: 200, title: "Cache MatMul", sub: "Block Graph / LEAF", body: "shape: [16,512]\nparallel branch", link: linkOf("cache"), linkMode: "leaf" },
+    { id: "out", type: "out", x: 560, y: 200, title: "OUTCAST", sub: "Slot ID: 0", body: "shape: [4,128]\nrawmagic: 108", link: linkOf("out"), linkMode: "semantic" }
+  ]
+};
+
+const blockGraphEdgesByCall = {
+  callQ: [["cubeQ", "cubeReuse"], ["cubeReuse", "out"]],
+  callVec: [["waitV0", "vecDeq"], ["waitV1", "vecRope"], ["vecDeq", "out"], ["vecRope", "out"]],
+  callCache: [["cubeCache", "out"]]
+};
+
+let current = 0;
+let selected = { type: "stage", id: "baseline" };
+let isPlaying = false;
+let playTimer = null;
+let scope = "all";
+let compareBaseline = true;
+let searchTerm = "";
+let timelineExpanded = false;
+let sidebarCollapsed = false;
+let graphLevel = "execute";
+let activeCallId = "callQ";
+let graphZoom = 0.86;
+let graphPan = { x: 0, y: 44 };
+let graphFitted = false;
+let isGraphDragging = false;
+let dragStart = { x: 0, y: 0, panX: 0, panY: 0 };
+const laneNames = ["AICPU-SCHED-1", "AIC_9", "AIV_0", "AIV_1", "AIC_10", "AIV_2", "AIV_3"];
+
+const scopeLabels = {
+  all: "全部",
+  cube: "Cube",
+  vector: "Vector",
+  wait: "等待"
+};
+
+const callTitles = {
+  callQ: "CALL Q-MatMul",
+  callVec: "CALL Dequant-RoPE",
+  callCache: "CALL Cache-MatMul"
+};
+
+const hardwareParts = {
+  external: ["GM", "L2 128B Sector", "NDDMA"],
+  aic: ["Scalar", "MTE2", "L1", "MTE1", "L0A/L0B", "Cube", "L0C", "FixPipe"],
+  aiv: ["Scalar", "MTE2", "Unified Buffer", "Vector", "MTE3"],
+  claim: ["Cube-Vector fused path", "UnifiedBus", "URMA", "CCU"]
+};
+
+const hardwareFlows = {
+  default: {
+    title: "A5 / Ascend 950 hardware context",
+    confidence: "L2 storyboard",
+    summary: "默认展示 950 的分离架构视角：AIC 负责 Cube/MatMul，AIV 负责 Vector 后处理，GM/L2 是二者协作的数据桥。",
+    active: ["GM", "L2 128B Sector", "AIC", "AIV"],
+    data: ["选择计算图 CALL 或泳道 bar", "按 semanticLabel / syncType / wrapId 映射硬件路径", "在这里区分数据流与指令流"],
+    instr: ["Execute Graph 定位 CALL", "Block Graph 定位 LEAF", "泳道图定位 task / sync event"],
+    note: "本区域基于 A5 / Ascend 950 知识主题和 PyPTO trace 字段组织，属于 L2 storyboard，不是 950 真机 profiler 原始输出。"
+  },
+  cube: {
+    title: "Cube MatMul path on A5 / 950",
+    confidence: "inferred",
+    summary: "MatMul 类 CALL 主要落在 AIC / Cube Core。优化重点是让 MTE 搬入、L1 复用、Cube 计算和 FixPipe 搬出节奏对齐。",
+    active: ["GM", "L2 128B Sector", "MTE2", "L1", "MTE1", "L0A/L0B", "Cube", "L0C", "FixPipe"],
+    data: ["GM/L2", "MTE2 搬入 L1", "MTE1 搬入 L0A/L0B", "Cube 计算", "L0C 累加/输出", "FixPipe 回写 GM/L1"],
+    instr: ["AIC Scalar 发起搬入", "调度 MTE1/MTE2", "发射 Cube 指令", "FixPipe 做随路处理/搬出"],
+    note: "对应当前 demo 的 CALL Q-MatMul / CALL Cache-MatMul。硬件主路径来自通用 AI Core 结构，和 950 语境结合后用于解释 Mix 调优。"
+  },
+  l1reuse: {
+    title: "L1Reuse keeps Cube fed",
+    confidence: "inferred",
+    summary: "L1Reuse 的目标是减少右矩阵重复从 GM/L2 搬入，让更多时间花在 L1 -> L0 -> Cube 的有效计算链路上。",
+    active: ["GM", "L2 128B Sector", "MTE2", "L1", "MTE1", "L0A/L0B", "Cube", "L0C"],
+    data: ["首轮 GM/L2 -> L1", "右矩阵在 L1 侧复用", "多轮 L1 -> L0A/L0B", "Cube 连续消费 tile", "L0C 汇聚结果"],
+    instr: ["AIC Scalar 组织 reuse group", "减少重复 MTE2 搬入", "重复发射 MTE1 + Cube", "最后统一 FixPipe 搬出"],
+    note: "对应 Block Graph 里的 L1Reuse group 和泳道图里的 Q MatMul x L1Reuse。"
+  },
+  vector: {
+    title: "Vector post-process path",
+    confidence: "inferred",
+    summary: "Dequant、RoPE、Cast、Softmax 等后处理主要落在 AIV / Vector Core，Unified Buffer 是 Vector 输入输出的核心本地存储。",
+    active: ["GM", "L2 128B Sector", "MTE2", "Unified Buffer", "Vector", "MTE3"],
+    data: ["GM/L2", "MTE2 搬入 Unified Buffer", "Vector 计算", "结果回到 Unified Buffer", "MTE3 搬出 GM"],
+    instr: ["AIV Scalar 发起搬入", "调度 Vector 指令", "按 tile 粒度写回", "与 AIC 侧 sync 对齐"],
+    note: "UI 中写全称 Unified Buffer，避免和 950 互联里的 UnifiedBus 混淆。"
+  },
+  sync: {
+    title: "AIC / AIV control dependency",
+    confidence: "inferred",
+    summary: "CV_SYNC_WAIT / CV_SYNC_SET 是控制依赖，不是数据搬运。它解释泳道图里的等待气泡，但不应该画成 AIC 本地 buffer 直连 AIV。",
+    active: ["GM", "L2 128B Sector", "Scalar", "Cube-Vector fused path"],
+    data: ["数据仍经 GM/L2 或明确 trace 路径交换", "等待条本身不代表数据流", "解除依赖后 AIV 继续消费自己的 Unified Buffer tile"],
+    instr: ["AIC/AIV Scalar 维护同步", "AIV 执行 CV_SYNC_WAIT", "AIC 完成后触发 CV_SYNC_SET", "950 可用 BufferID 语义解释依赖"],
+    note: "这也是 Mix 任务调优要看的关键：等待比例下降，才说明 Cube/Vector 节奏更贴合。"
+  },
+  output: {
+    title: "Output write-back path",
+    confidence: "inferred",
+    summary: "OUTCAST / copy out 会落到不同搬出路径：Cube 侧常见 L0C -> FixPipe -> GM，Vector 侧常见 Unified Buffer -> MTE3 -> GM。",
+    active: ["GM", "L2 128B Sector", "L0C", "FixPipe", "Unified Buffer", "MTE3"],
+    data: ["Cube: L0C -> FixPipe -> GM", "Vector: Unified Buffer -> MTE3 -> GM", "L2 作为外部访问缓存层"],
+    instr: ["搬出前确认依赖完成", "FixPipe/MTE3 执行搬出", "runtime 继续后续 task 调度"],
+    note: "当前 demo 只做路径解释，不把 OUTCAST 强行归到唯一硬件单元。"
+  }
+};
+
+function getGraphNodes() {
+  return graphLevel === "execute" ? executeGraphNodes : blockGraphNodesByCall[activeCallId];
+}
+
+function getGraphEdges() {
+  return graphLevel === "execute" ? executeGraphEdges : blockGraphEdgesByCall[activeCallId];
+}
+
+function getGraphNodeById(id) {
+  const visibleNode = getGraphNodes().find(node => node.id === id);
+  if (visibleNode) return visibleNode;
+  return [
+    ...executeGraphNodes,
+    ...Object.values(blockGraphNodesByCall).flat()
+  ].find(node => node.id === id);
+}
+
+function openBlockGraph(callId) {
+  graphLevel = "block";
+  activeCallId = callId;
+  graphFitted = false;
+}
+
+function backToExecuteGraph() {
+  graphLevel = "execute";
+  selected = { type: "stage", id: stages[current].id };
+  graphFitted = false;
+  render();
+}
+
+function gotoStage(index) {
+  current = (index + stages.length) % stages.length;
+  selected = { type: "stage", id: stages[current].id };
+  graphLevel = "execute";
+  activeCallId = "callQ";
+  graphFitted = false;
+  render();
+}
+
+function clearSelection() {
+  selected = { type: "stage", id: stages[current].id };
+  render();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  if (playTimer) {
+    window.clearInterval(playTimer);
+    playTimer = null;
+  }
+  if (isPlaying) {
+    playTimer = window.setInterval(() => {
+      gotoStage(current + 1);
+    }, 2100);
+  }
+  renderStageButtons();
+}
+
+function setScope(nextScope) {
+  scope = nextScope;
+  selected = { type: "stage", id: stages[current].id };
+  render();
+}
+
+function renderStageButtons() {
+  const box = document.getElementById("stagebar");
+  box.innerHTML = stages.map((s, i) => `
+    <button class="stage-btn ${i === current ? "active" : ""}" data-stage="${i}">
+      <strong>${s.name}</strong>
+      <span>${s.short}</span>
+    </button>
+  `).join("") + `
+    <div class="stage-controls">
+      <div class="control-row">
+        <button class="icon-btn" id="prevBtn" title="上一阶段">‹</button>
+        <button class="icon-btn ${isPlaying ? "active" : ""}" id="playBtn" title="播放/暂停">${isPlaying ? "Ⅱ" : "▶"}</button>
+        <button class="icon-btn" id="nextBtn" title="下一阶段">›</button>
+        <button class="scope-btn ${compareBaseline ? "active" : ""}" id="compareBtn" title="显示相对 baseline 的变化">Δ</button>
+      </div>
+      <div class="control-row">
+        ${Object.entries(scopeLabels).map(([key, label]) => `
+          <button class="scope-btn ${scope === key ? "active" : ""}" data-scope="${key}">${label}</button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  box.querySelectorAll(".stage-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      gotoStage(Number(btn.dataset.stage));
+    });
+  });
+  document.getElementById("prevBtn").addEventListener("click", () => gotoStage(current - 1));
+  document.getElementById("nextBtn").addEventListener("click", () => gotoStage(current + 1));
+  document.getElementById("playBtn").addEventListener("click", togglePlay);
+  document.getElementById("compareBtn").addEventListener("click", () => {
+    compareBaseline = !compareBaseline;
+    render();
+  });
+  box.querySelectorAll("[data-scope]").forEach(btn => {
+    btn.addEventListener("click", () => setScope(btn.dataset.scope));
+  });
+}
+
+function renderCode(stage) {
+  document.getElementById("codeBadge").textContent = stage.id === "baseline"
+    ? "semantic_label: Q-MatMul"
+    : stage.id === "vector"
+      ? "semantic_label: Dequant-RoPE"
+      : stage.id === "cube"
+        ? "set_cube_tile_shapes"
+        : stage.id === "reuse"
+          ? "cube_l1_reuse_setting"
+          : "runtime_options";
+  document.getElementById("codeLines").innerHTML = codeRows.map((row, idx) => {
+    const lineNo = idx + 1;
+    const txt = row[1]
+      .replaceAll("pypto", "<span class='fn'>pypto</span>")
+      .replaceAll("config", "<span class='fn'>config</span>")
+      .replaceAll("\"Q-MatMul\"", "<span class='str'>\"Q-MatMul\"</span>")
+      .replaceAll("\"Dequant-RoPE\"", "<span class='str'>\"Dequant-RoPE\"</span>")
+      .replaceAll("128", "<span class='num'>128</span>")
+      .replaceAll("512", "<span class='num'>512</span>")
+      .replaceAll("64", "<span class='num'>64</span>")
+      .replaceAll("16", "<span class='num'>16</span>");
+    const cls = stage.activeLines.includes(lineNo) ? "line hl" : "line";
+    return `<div class="${cls}"><span class="no">${lineNo}</span><span class="txt ${row[0]}">${txt}</span></div>`;
+  }).join("");
+}
+
+function centerOf(node) {
+  return { x: node.x + 69, y: node.y + 38 };
+}
+
+function applyGraphTransform() {
+  const canvas = document.getElementById("graphCanvas");
+  canvas.style.transform = `translate(${graphPan.x}px, ${graphPan.y}px) scale(${graphZoom})`;
+}
+
+function fitGraph() {
+  const graph = document.querySelector(".graph");
+  const graphNodes = getGraphNodes();
+  const minX = Math.min(...graphNodes.map(n => n.x));
+  const minY = Math.min(...graphNodes.map(n => n.y));
+  const maxX = Math.max(...graphNodes.map(n => n.x + 138));
+  const maxY = Math.max(...graphNodes.map(n => n.y + 92));
+  const contentW = maxX - minX;
+  const contentH = maxY - minY;
+  const viewW = graph.clientWidth;
+  const viewH = graph.clientHeight;
+  const toolbarReserve = 62;
+  const scale = Math.min((viewW - 44) / contentW, (viewH - toolbarReserve - 24) / contentH, 1.05);
+  graphZoom = Math.max(0.58, Math.min(1.2, scale));
+  graphPan = {
+    x: Math.round((viewW - contentW * graphZoom) / 2 - minX * graphZoom),
+    y: Math.round(toolbarReserve - minY * graphZoom)
+  };
+  graphFitted = true;
+  applyGraphTransform();
+}
+
+function zoomGraph(delta) {
+  graphZoom = Math.max(0.5, Math.min(1.6, graphZoom + delta));
+  graphFitted = true;
+  applyGraphTransform();
+}
+
+function renderGraphHeader() {
+  document.getElementById("graphTitle").textContent = graphLevel === "execute"
+    ? "TENSOR_IndexerProlog_root_Q"
+    : `${callTitles[activeCallId]} / LEAF fragment`;
+  document.getElementById("graphType").textContent = graphLevel === "execute" ? "EXECUTE_GRAPH" : "BLOCK_GRAPH";
+  document.getElementById("graphBackBtn").classList.toggle("visible", graphLevel === "block");
+}
+
+function isNodeStageActive(stage, node) {
+  const active = new Set(stage.activeNodes);
+  if (active.has(node.id)) return true;
+  if (node.id === "callQ") return ["callQ", "cubeQ", "cubeReuse"].some(id => active.has(id));
+  if (node.id === "callVec") return ["vecDeq", "vecRope", "waitV0", "waitV1"].some(id => active.has(id));
+  if (node.id === "callCache") return active.has("cubeCache");
+  return false;
+}
+
+function renderGraph(stage) {
+  renderGraphHeader();
+  const graphNodes = getGraphNodes();
+  const graphEdges = getGraphEdges();
+  const nodes = Object.fromEntries(graphNodes.map(n => [n.id, n]));
+  const selectedBar = selected.type === "bar" ? getBarById(stage, selected.id) : null;
+  const query = searchTerm.trim().toLowerCase();
+  const edges = graphEdges.map(([a, b]) => {
+    const from = centerOf(nodes[a]);
+    const to = centerOf(nodes[b]);
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    const visible = isNodeStageActive(stage, nodes[a]) || isNodeStageActive(stage, nodes[b]) || selected.id === a || selected.id === b;
+    return `<div class="edge" style="left:${from.x}px;top:${from.y}px;width:${len}px;transform:rotate(${angle}deg);opacity:${visible ? 0.95 : 0.28}"></div>`;
+  }).join("");
+  const cards = graphNodes.map(n => {
+    const haystack = `${n.id} ${n.type} ${n.title} ${n.sub} ${n.body}`.toLowerCase();
+    const matchesSearch = !query || haystack.includes(query);
+    const state = isNodeStageActive(stage, n) ? "active" : "dimmed";
+    const selectedClass = (selected.type === "node" && selected.id === n.id) ||
+      (selectedBar && taskMatchesNode(selectedBar.meta, n)) ? "selected" : "";
+    const searchClass = matchesSearch ? "" : "search-hidden";
+    return `<div class="node ${n.type} ${state} ${selectedClass} ${searchClass}" data-node="${n.id}" style="left:${n.x}px;top:${n.y}px">
+      <div class="node-head"><span>${n.title}</span><span>${n.id === "out" ? "35" : "1000"}</span></div>
+      <div class="node-body"><strong>${n.sub}</strong><br>${n.body.replaceAll("\n", "<br>")}${n.type === "call" ? "<span class='fx'>fx</span>" : ""}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("graphCanvas").innerHTML = edges + cards;
+  applyGraphTransform();
+  document.querySelectorAll("[data-node]").forEach(el => {
+    el.addEventListener("click", () => {
+      const node = getGraphNodeById(el.dataset.node);
+      if (graphLevel === "execute" && node && node.type === "call" && node.drill) {
+        openBlockGraph(node.drill);
+      }
+      selected = { type: "node", id: el.dataset.node };
+      render();
+    });
+  });
+}
+
+function renderScale() {
+  const scale = document.getElementById("scale");
+  const ticks = [];
+  for (let i = 0; i <= 10; i++) {
+    ticks.push(`<div class="tick" style="left:${i * 10}%"><span>${i * 10}us</span></div>`);
+  }
+  scale.innerHTML = ticks.join("");
+}
+
+function getBarKind(lane, cls) {
+  if (cls.includes("wait")) return "wait";
+  if (cls.includes("aic") || lane.startsWith("AIC_")) return "cube";
+  if (cls.includes("aiv") || lane.startsWith("AIV_")) return "vector";
+  return "all";
+}
+
+function inferTaskMeta(stage, lane, barIdx, label, cls) {
+  const text = `${label} ${cls}`.toLowerCase();
+  const lanePart = lane.includes("_") ? lane.split("_")[1] : "0";
+  const base = {
+    taskName: `0-${lanePart}-${barIdx + 1}`,
+    taskId: `${Number(lanePart || 0) * 1048576 + barIdx + 1}`,
+    seqNo: "0"
+  };
+  if (text.includes("q matmul") && text.includes("l1reuse")) {
+    return { ...base, ...linkOf("qReuse"), eventKind: "compute" };
+  }
+  if (text.includes("q matmul")) {
+    return { ...base, ...linkOf("q"), eventKind: "compute" };
+  }
+  if (text.includes("cache matmul")) {
+    return { ...base, ...linkOf("cache"), eventKind: "compute" };
+  }
+  if (text.includes("wait")) {
+    return {
+      ...base,
+      ...linkOf("vec", { syncType: "CV_SYNC_WAIT" }),
+      eventKind: "sync",
+      waitFor: "AIC CV_SYNC_SET",
+      eventId: barIdx + 6
+    };
+  }
+  if (text.includes("dequant") || text.includes("rope") || text.includes("scale") ||
+      text.includes("cast") || text.includes("softmax") || text.includes("norm") ||
+      text.includes("vec group") || text.includes("add")) {
+    return { ...base, ...linkOf("vec"), eventKind: "compute" };
+  }
+  if (text.includes("copy out") || text.startsWith("out ")) {
+    return { ...base, ...linkOf("out"), eventKind: "memory" };
+  }
+  return { ...base, eventKind: "runtime" };
+}
+
+function taskMatchesNode(meta, node) {
+  if (!meta || !node || !node.link) return false;
+  const exactCall = node.linkMode === "execute-call" &&
+    meta.rootHash === node.link.rootHash &&
+    meta.callOpMagic === node.link.callOpMagic;
+  const leafMatch = node.linkMode === "leaf" && meta.leafHash === node.link.leafHash;
+  const semanticMatch = node.linkMode === "semantic" &&
+    meta.semanticLabel === node.link.semanticLabel &&
+    (!node.link.syncType || meta.syncType === node.link.syncType);
+  return exactCall || leafMatch || semanticMatch;
+}
+
+function getLinkedBarIds(stage, node) {
+  if (!node || !node.link) return new Set();
+  const ids = new Set();
+  laneNames.forEach(lane => {
+    (stage.bars[lane] || []).forEach((bar, barIdx) => {
+      const [left, width, label, cls] = bar;
+      const meta = inferTaskMeta(stage, lane, barIdx, label, cls);
+      if (taskMatchesNode(meta, node)) {
+        ids.add(`${stage.id}:${lane}:${barIdx}`);
+      }
+    });
+  });
+  return ids;
+}
+
+function getBarById(stage, id) {
+  for (const lane of laneNames) {
+    const bars = stage.bars[lane] || [];
+    for (let barIdx = 0; barIdx < bars.length; barIdx += 1) {
+      const barId = `${stage.id}:${lane}:${barIdx}`;
+      if (barId === id) {
+        const [left, width, label, cls] = bars[barIdx];
+        return { id: barId, lane, left, width, label, cls, kind: getBarKind(lane, cls), meta: inferTaskMeta(stage, lane, barIdx, label, cls) };
+      }
+    }
+  }
+  return null;
+}
+
+function renderLanes(stage) {
+  const selectedNode = selected.type === "node" ? getGraphNodeById(selected.id) : null;
+  const linkedIds = getLinkedBarIds(stage, selectedNode);
+  document.getElementById("laneLabels").innerHTML = laneNames.map(name => {
+    const util = name.includes("AICPU") ? "98%" : name.includes("AIC") ? "84%" : "70%";
+    return `<div class="lane-label"><span>${name}</span><small>${util}</small></div>`;
+  }).join("");
+
+  const rows = laneNames.map((name, rowIdx) => {
+    const bars = (stage.bars[name] || []).map((b, barIdx) => {
+      const [left, width, label, cls] = b;
+      const kind = getBarKind(name, cls);
+      const filtered = scope !== "all" && scope !== kind ? "filtered" : "";
+      const id = `${stage.id}:${name}:${barIdx}`;
+      const isSelected = selected.type === "bar" && selected.id === id ? "selected" : "";
+      const linked = linkedIds.has(id) ? "linked" : "";
+      const meta = inferTaskMeta(stage, name, barIdx, label, cls);
+      const hint = meta.rootHash
+        ? `Task:[${meta.taskName}], rootHash:${meta.rootHash}, callOpMagic:${meta.callOpMagic || "-"}, leafHash:${meta.leafHash || "-"}`
+        : `Task:[${meta.taskName}]`;
+      return `<div class="bar ${cls} ${filtered} ${isSelected} ${linked}" data-bar="${id}" data-lane="${name}" data-kind="${kind}" data-left="${left}" data-width="${width}" data-label="${label}" title="${hint}" style="left:${left}%;width:${width}%">${label}</div>`;
+    }).join("");
+    return `<div class="lane-row" data-row="${rowIdx}">${bars}</div>`;
+  }).join("");
+  document.getElementById("laneTrack").innerHTML = rows;
+  document.querySelectorAll("[data-bar]").forEach(el => {
+    el.addEventListener("click", () => {
+      selected = {
+        type: "bar",
+        id: el.dataset.bar,
+        lane: el.dataset.lane,
+        kind: el.dataset.kind,
+        left: Number(el.dataset.left),
+        width: Number(el.dataset.width),
+        label: el.dataset.label
+      };
+      render();
+    });
+  });
+}
+
+function renderMetrics(stage) {
+  const baseline = stages[0].metric;
+  const metricMeta = [
+    ["总耗时", "total", stage.tag],
+    ["同步等待占比", "wait", "wrapId 37"],
+    ["Cube 利用率", "aic", "AIC lanes"],
+    ["Vector 利用率", "aiv", "AIV lanes"]
+  ];
+  const metricHtml = metricMeta.map(([label, key, note]) => {
+    const value = stage.metric[key];
+    let small = note;
+    let deltaClass = "";
+    if (compareBaseline && stage.id !== "baseline") {
+      const baseNum = Number.parseFloat(baseline[key]);
+      const currNum = Number.parseFloat(value);
+      if (Number.isFinite(baseNum) && Number.isFinite(currNum)) {
+        const diff = Math.round((currNum - baseNum) * 10) / 10;
+        const sign = diff > 0 ? "+" : "";
+        small = `Δ baseline ${sign}${diff}`;
+        deltaClass = "delta";
+      }
+    }
+    return `<div class="metric"><span>${label}</span><strong>${value}</strong><small class="${deltaClass}">${small}</small></div>`;
+  }).join("");
+  document.getElementById("metrics").innerHTML = `
+    ${metricHtml}
+  `;
+}
+
+function renderInspector(stage) {
+  const root = document.getElementById("inspector");
+  if (selected.type === "node") {
+    const node = getGraphNodeById(selected.id);
+    if (!node) {
+      clearSelection();
+      return;
+    }
+    const linkedIds = getLinkedBarIds(stage, node);
+    const linkedTasks = [...linkedIds].map(id => getBarById(stage, id)).filter(Boolean);
+    const sampleTask = linkedTasks[0];
+    const modeText = node.linkMode === "execute-call"
+      ? "rootHash + callOpMagic"
+      : node.linkMode === "leaf"
+        ? "leafHash"
+        : "semanticLabel";
+    root.innerHTML = `
+      <div class="inspector-card">
+        <h3>${node.title}</h3>
+        <p>${node.sub}。当前按 ${modeText} 联动泳道图，已高亮 ${linkedTasks.length} 个 Task 节点。${node.drill ? "该 CALL 已下钻到对应 Block Graph 片段。" : ""}</p>
+        <div class="inspector-grid">
+          <span>nodeId: ${node.id}</span>
+          <span>type: ${node.type}</span>
+          <span>semantic: ${node.link.semanticLabel || "-"}</span>
+          <span>wrapId: ${node.link.wrapId || "inherit"}</span>
+          <span>rootHash: ${node.link.rootHash || "-"}</span>
+          <span>callOpMagic: ${node.link.callOpMagic || "-"}</span>
+          <span>leafHash: ${node.link.leafHash || "-"}</span>
+          <span>hit: ${sampleTask ? sampleTask.lane : "none"}</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (selected.type === "bar") {
+    const bar = getBarById(stage, selected.id) || selected;
+    const start = bar.left;
+    const end = bar.left + bar.width;
+    const kindText = scopeLabels[bar.kind] || bar.kind;
+    const meta = bar.meta || {};
+    root.innerHTML = `
+      <div class="inspector-card">
+        <h3>${bar.label}</h3>
+        <p>${bar.lane} 上的 ${kindText} 片段。它的 event-hint 可回跳 Execute Graph / Block Graph，也可反向高亮计算图节点。</p>
+        <div class="inspector-grid">
+          <span>Task: ${meta.taskName || "-"}</span>
+          <span>semantic: ${meta.semanticLabel || "-"}</span>
+          <span>rootHash: ${meta.rootHash || "-"}</span>
+          <span>callOpMagic: ${meta.callOpMagic || "-"}</span>
+          <span>leafHash: ${meta.leafHash || "-"}</span>
+          <span>wrapId: ${meta.wrapId || "-"}</span>
+          <span>sync: ${meta.syncType || "-"}</span>
+          <span>waitFor: ${meta.waitFor || "-"}</span>
+          <span>start: ${start}us</span>
+          <span>end: ${end}us</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  root.innerHTML = `
+    <div class="inspector-card">
+      <h3>${stage.name}</h3>
+      <p>点选计算图节点或泳道 bar 后，这里会显示该元素的调优含义。顶部可播放故事板，也可以按 Cube / Vector / 等待过滤泳道图。</p>
+      <div class="inspector-grid">
+        <span>focus: ${scopeLabels[scope]}</span>
+        <span>compare: ${compareBaseline ? "baseline" : "off"}</span>
+        <span>step: ${current + 1}/${stages.length}</span>
+        <span>data: L2 storyboard</span>
+      </div>
+    </div>
+  `;
+}
+
+function getHardwareFlowIdForNode(node) {
+  if (!node) return "default";
+  if (node.id === "cubeReuse") return "l1reuse";
+  if (node.type === "cube" || node.id === "callQ" || node.id === "callCache") return "cube";
+  if (node.type === "vector" || node.id === "callVec") return "vector";
+  if (node.type === "sync") return "sync";
+  if (node.id === "out") return "output";
+  return "default";
+}
+
+function getHardwareFlowIdForBar(bar) {
+  if (!bar) return "default";
+  const label = (bar.label || "").toLowerCase();
+  const meta = bar.meta || {};
+  if (meta.syncType || label.includes("wait")) return "sync";
+  if (label.includes("l1reuse")) return "l1reuse";
+  if (meta.semanticLabel === "Q-MatMul" || meta.semanticLabel === "KV-Cache-MatMul") return "cube";
+  if (meta.semanticLabel === "Dequant-RoPE") return "vector";
+  if (meta.semanticLabel === "OUTCAST" || label.includes("copy out") || label === "out") return "output";
+  return "default";
+}
+
+function getCurrentHardwareFlow(stage) {
+  if (selected.type === "node") return hardwareFlows[getHardwareFlowIdForNode(getGraphNodeById(selected.id))];
+  if (selected.type === "bar") return hardwareFlows[getHardwareFlowIdForBar(getBarById(stage, selected.id) || selected)];
+  return hardwareFlows.default;
+}
+
+function renderHardwareParts(group, activeSet, extraClass = "") {
+  return hardwareParts[group].map(part => {
+    const isActive = activeSet.has(part) || (part === "Scalar" && activeSet.has("Scalar"));
+    return `<span class="hw-part ${extraClass} ${isActive ? "active" : ""}">${part}</span>`;
+  }).join("");
+}
+
+function renderHardware(stage) {
+  const flow = getCurrentHardwareFlow(stage);
+  const activeSet = new Set(flow.active || []);
+  const confidenceClass = flow.confidence === "article claim" ? "claim" : "";
+  document.getElementById("hardware").innerHTML = `
+    <div class="hardware-card">
+      <div class="hardware-head">
+        <div>
+          <h3>${flow.title}</h3>
+          <p>${flow.summary}</p>
+        </div>
+        <span class="confidence ${confidenceClass}">${flow.confidence}</span>
+      </div>
+      <div class="hw-map">
+        <div class="hw-zone">
+          <strong>GM / L2 / DMA</strong>
+          <div class="hw-parts">${renderHardwareParts("external", activeSet, "data")}</div>
+        </div>
+        <div class="hw-zone">
+          <strong>AIC / Cube Core</strong>
+          <div class="hw-parts">${renderHardwareParts("aic", activeSet, "instr")}</div>
+        </div>
+        <div class="hw-zone">
+          <strong>AIV / Vector Core</strong>
+          <div class="hw-parts">${renderHardwareParts("aiv", activeSet, "instr")}</div>
+        </div>
+        <div class="hw-zone claim">
+          <strong>950 extension / claim layer</strong>
+          <div class="hw-parts">${renderHardwareParts("claim", activeSet)}</div>
+        </div>
+      </div>
+      <div class="flow-columns">
+        <div class="flow-box">
+          <h4>Data flow</h4>
+          <ol>${flow.data.map(item => `<li>${item}</li>`).join("")}</ol>
+        </div>
+        <div class="flow-box">
+          <h4>Instruction / control</h4>
+          <ol>${flow.instr.map(item => `<li>${item}</li>`).join("")}</ol>
+        </div>
+      </div>
+      <p class="flow-note">${flow.note}</p>
+    </div>
+  `;
+}
+
+function renderStory(stage) {
+  document.getElementById("stageTitle").textContent = stage.title;
+  document.getElementById("stageSummary").textContent = stage.summary;
+  document.getElementById("modeTag").textContent = stage.id === "verify" ? "性能报告" : "泳道图";
+  document.getElementById("story").innerHTML = `
+    <div class="story-section">
+      <h3>观察到的问题</h3>
+      <ul>${stage.findings.map(item => `<li>${item}</li>`).join("")}</ul>
+    </div>
+    <div class="story-section">
+      <h3>可追溯字段</h3>
+      <ul>
+        <li><span class="data-tag">L1 fields</span>wrapId, syncEvents, CV_SYNC_SET, CV_SYNC_WAIT</li>
+        <li><span class="data-tag">L1 bridge</span>rootHash, callOpMagic, leafHash</li>
+        <li><span class="data-tag">L2 story</span>Mix 调优时间线基于 PyPTO 文档中的 76us / 56us / 49us 锚点组织</li>
+      </ul>
+    </div>
+  `;
+}
+
+function renderTimelineSize() {
+  document.querySelector(".app").classList.toggle("timeline-expanded", timelineExpanded);
+  const button = document.getElementById("timelineSizeBtn");
+  button.textContent = timelineExpanded ? "⤡" : "⤢";
+  button.title = timelineExpanded ? "收起泳道图" : "展开泳道图";
+  button.setAttribute("aria-label", timelineExpanded ? "收起泳道图" : "展开泳道图");
+}
+
+function renderSidebarState() {
+  document.querySelector(".app").classList.toggle("sidebar-collapsed", sidebarCollapsed);
+  const button = document.getElementById("sidebarToggle");
+  button.classList.toggle("active", !sidebarCollapsed);
+  button.title = sidebarCollapsed ? "展开资源管理器" : "收起资源管理器";
+}
+
+function render() {
+  const stage = stages[current];
+  renderStageButtons();
+  renderCode(stage);
+  renderGraph(stage);
+  if (!graphFitted) fitGraph();
+  renderScale();
+  renderLanes(stage);
+  renderMetrics(stage);
+  renderInspector(stage);
+  renderHardware(stage);
+  renderStory(stage);
+  renderTimelineSize();
+  renderSidebarState();
+}
+
+document.getElementById("graphSearch").addEventListener("input", event => {
+  searchTerm = event.target.value;
+  selected = { type: "stage", id: stages[current].id };
+  renderGraph(stages[current]);
+  renderInspector(stages[current]);
+});
+
+document.getElementById("fitGraphBtn").addEventListener("click", fitGraph);
+document.getElementById("zoomOutBtn").addEventListener("click", () => zoomGraph(-0.08));
+document.getElementById("zoomInBtn").addEventListener("click", () => zoomGraph(0.08));
+document.getElementById("graphBackBtn").addEventListener("click", backToExecuteGraph);
+document.getElementById("timelineSizeBtn").addEventListener("click", () => {
+  timelineExpanded = !timelineExpanded;
+  renderTimelineSize();
+});
+
+document.getElementById("sidebarToggle").addEventListener("click", () => {
+  sidebarCollapsed = !sidebarCollapsed;
+  renderSidebarState();
+  window.setTimeout(() => {
+    graphFitted = false;
+    fitGraph();
+  }, 190);
+});
+
+document.querySelector(".graph").addEventListener("wheel", event => {
+  event.preventDefault();
+  const direction = event.deltaY > 0 ? -0.06 : 0.06;
+  zoomGraph(direction);
+}, { passive: false });
+
+document.getElementById("graphCanvas").addEventListener("pointerdown", event => {
+  if (event.target.closest(".node")) return;
+  isGraphDragging = true;
+  dragStart = { x: event.clientX, y: event.clientY, panX: graphPan.x, panY: graphPan.y };
+  event.currentTarget.classList.add("dragging");
+  event.currentTarget.setPointerCapture(event.pointerId);
+});
+
+document.getElementById("graphCanvas").addEventListener("click", event => {
+  if (event.target.closest(".node")) return;
+  if (Math.abs(event.clientX - dragStart.x) > 3 || Math.abs(event.clientY - dragStart.y) > 3) return;
+  clearSelection();
+});
+
+document.getElementById("graphCanvas").addEventListener("pointermove", event => {
+  if (!isGraphDragging) return;
+  graphPan = {
+    x: dragStart.panX + event.clientX - dragStart.x,
+    y: dragStart.panY + event.clientY - dragStart.y
+  };
+  graphFitted = true;
+  applyGraphTransform();
+});
+
+document.getElementById("graphCanvas").addEventListener("pointerup", event => {
+  isGraphDragging = false;
+  event.currentTarget.classList.remove("dragging");
+});
+
+document.getElementById("laneTrack").addEventListener("click", event => {
+  if (event.target.closest(".bar")) return;
+  clearSelection();
+});
+
+document.getElementById("laneLabels").addEventListener("click", clearSelection);
+
+window.addEventListener("resize", () => {
+  graphFitted = false;
+  fitGraph();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.target && event.target.tagName === "INPUT") return;
+  if (event.key === "ArrowRight") gotoStage(current + 1);
+  if (event.key === "ArrowLeft") gotoStage(current - 1);
+  if (event.key === " ") {
+    event.preventDefault();
+    togglePlay();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
