@@ -5,6 +5,7 @@
 - `05-prototypes/01-block-level-coding`
 - `05-prototypes/02-swimlane-profiler`
 - `05-prototypes/03-operator-doc-assistant`
+- `05-prototypes/03-ascend-hardware-architecture`
 
 ## Shared
 

@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ascend Hardware Map · v1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+/* =========================================================
+   FOUNDATION TOKENS  (lift later → 07-designsystem/01-foundations)
+   ========================================================= */
+:root {
+  /* Surface */
+  --dgm-bg-0: #050b14;
+  --dgm-bg-1: #0a1421;
+  --dgm-panel: rgba(14, 26, 42, 0.78);
+  --dgm-panel-soft: rgba(20, 34, 54, 0.55);
+  --dgm-line: rgba(160, 195, 230, 0.14);
+  --dgm-line-strong: rgba(160, 195, 230, 0.26);
+
+  /* Text */
+  --dgm-text: #eaf2ff;
+  --dgm-text-soft: #b7c9e2;
+  --dgm-text-dim: #6b81a0;
+  --dgm-text-faint: #475a76;
+
+  /* Semantic palette per object kind */
+  --c-shared-h: 195;       /* GM / L2 / shared */
+  --c-aic-h: 215;          /* AIC, Cube */
+  --c-aiv-h: 145;          /* AIV, Vector */
+  --c-mte-h: 35;           /* MTE / FixPipe */
+  --c-sdma-h: 265;         /* SDMA independent engine */
+  --c-claim-h: 280;        /* CCU / URMA / claim layer */
+  --c-scalar-h: 0;         /* Scalar (achromatic, low chroma below) */
+
+  /* Status */
+  --status-verified: 1;
+  --status-partial: 0.78;
+  --status-claim: 0.45;
+
+  /* Geometry */
+  --dgm-radius-lg: 18px;
+  --dgm-radius-md: 12px;
+  --dgm-radius-sm: 8px;
+  --dgm-radius-xs: 5px;
+
+  /* Motion */
+  --dgm-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dgm-fast: 140ms;
+  --dgm-mid: 280ms;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 18% 8%, rgba(94, 163, 255, 0.10), transparent 42%),
+    radial-gradient(ellipse at 82% 12%, rgba(136, 240, 160, 0.06), transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(152, 164, 255, 0.08), transparent 50%),
+    linear-gradient(180deg, var(--dgm-bg-0), var(--dgm-bg-1));
+  color: var(--dgm-text);
+  font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.01em;
+}
+
+button { font-family: inherit; color: inherit; cursor: pointer; }
+
+/* =========================================================
+   SHELL LAYOUT
+   ========================================================= */
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  padding: 14px;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 12px 18px;
+  background: var(--dgm-panel);
+  border: 1px solid var(--dgm-line);
+  border-radius: var(--dgm-radius-lg);
+  backdrop-filter: blur(14px);
+}
+
+.brand {
+  display: flex; gap: 12px; align-items: center;
+}
+.brand__mark {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, hsla(215, 88%, 68%, 0.55), hsla(195, 80%, 60%, 0.25));
+  border: 1px solid hsla(215, 88%, 68%, 0.45);
+  position: relative;
+}
+.brand__mark::after {
+  content: "";
+  position: absolute; inset: 6px;
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, transparent 49%, rgba(255,255,255,0.2) 50%, transparent 51%),
+    linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.2) 50%, transparent 51%);
+}
+.brand__name { font-weight: 700; font-size: 14px; letter-spacing: 0.04em; }
+.brand__sub { color: var(--dgm-text-dim); font-size: 11px; font-family: "IBM Plex Mono", monospace; }
+
+/* PRIMITIVE: tabbar (segmented control) */
+.dgm-tabbar {
+  display: inline-flex;
+  background: var(--dgm-panel-soft);
+  border: 1px solid var(--dgm-line);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.dgm-tabbar__btn {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: var(--dgm-text-soft);
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 1px;
+  transition: background var(--dgm-fast), color var(--dgm-fast);
+}
+.dgm-tabbar__btn:hover { color: var(--dgm-text); background: rgba(255,255,255,0.04); }
+.dgm-tabbar__btn[aria-selected="true"] {
+  background: linear-gradient(180deg, hsla(215, 70%, 50%, 0.32), hsla(215, 70%, 35%, 0.18));
+  color: var(--dgm-text);
+  box-shadow: inset 0 0 0 1px hsla(215, 80%, 65%, 0.3);
+}
+.dgm-tabbar__btn small {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--dgm-text-dim);
+  letter-spacing: 0.03em;
+}
+.dgm-tabbar__btn[aria-selected="true"] small { color: hsla(215, 80%, 80%, 0.85); }
+
+/* PRIMITIVE: toggle */
+.dgm-toggle {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 12px;
+  color: var(--dgm-text-soft);
+  user-select: none;
+  cursor: pointer;
+}
+.dgm-toggle__track {
+  width: 32px; height: 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--dgm-line);
+  border-radius: 999px;
+  position: relative;
+  transition: background var(--dgm-fast);
+}
+.dgm-toggle__thumb {
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 14px; height: 14px;
+  background: var(--dgm-text-soft);
+  border-radius: 50%;
+  transition: transform var(--dgm-fast) var(--dgm-ease), background var(--dgm-fast);
+}
+.dgm-toggle input { display: none; }
+.dgm-toggle input:checked ~ .dgm-toggle__track {
+  background: hsla(280, 60%, 55%, 0.45);
+}
+.dgm-toggle input:checked ~ .dgm-toggle__track .dgm-toggle__thumb {
+  transform: translateX(14px);
+  background: hsla(280, 90%, 88%, 0.95);
+}
+.dgm-toggle__hint {
+  font-size: 11px;
+  color: var(--dgm-text-dim);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* ---------- main 3-column ---------- */
+.workbench {
+  display: grid;
+  grid-template-columns: 232px 1fr 300px;
+  gap: 14px;
+  min-height: 0;
+}
+
+/* ---------- left rail ---------- */
+.rail {
+  background: var(--dgm-panel);
+  border: 1px solid var(--dgm-line);
+  border-radius: var(--dgm-radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(14px);
+  overflow: auto;
+}
+.rail__title {
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--dgm-text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* PRIMITIVE: list */
+.dgm-list { display: flex; flex-direction: column; gap: 4px; }
+.dgm-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--dgm-radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  font-size: 12.5px;
+  color: var(--dgm-text-soft);
+  cursor: pointer;
+  transition: background var(--dgm-fast), border-color var(--dgm-fast);
+}
+.dgm-list__item:hover { background: rgba(255,255,255,0.04); color: var(--dgm-text); }
+.dgm-list__item[aria-selected="true"] {
+  background: linear-gradient(180deg, hsla(215, 70%, 50%, 0.2), hsla(215, 70%, 50%, 0.08));
+  border-color: hsla(215, 80%, 65%, 0.35);
+  color: var(--dgm-text);
+}
+.dgm-list__item[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+.dgm-list__item[disabled]:hover { background: transparent; color: var(--dgm-text-soft); }
+.dgm-list__bullet {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dgm-list__bullet[data-status="verified"] { background: hsl(145, 60%, 60%); }
+.dgm-list__bullet[data-status="partial"]  { background: hsl(40, 90%, 60%); }
+.dgm-list__bullet[data-status="claim"]    { background: hsl(280, 60%, 65%); }
+.dgm-list__name { flex: 1; }
+.dgm-list__count {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--dgm-text-dim);
+  background: rgba(255,255,255,0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* PRIMITIVE: player */
+.player {
+  display: flex; gap: 6px; align-items: center;
+  padding: 8px;
+  background: var(--dgm-panel-soft);
+  border-radius: var(--dgm-radius-sm);
+  border: 1px solid var(--dgm-line);
+}
+.player__btn {
+  width: 28px; height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  color: var(--dgm-text-soft);
+  display: grid; place-items: center;
+  transition: background var(--dgm-fast), color var(--dgm-fast);
+}
+.player__btn:hover { background: rgba(255,255,255,0.1); color: var(--dgm-text); }
+.player__btn svg { width: 12px; height: 12px; }
+.player__progress {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.player__bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, hsl(215, 80%, 60%), hsl(195, 80%, 60%));
+  transition: width 360ms var(--dgm-ease);
+}
+.player__step {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--dgm-text-dim);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ---------- canvas ---------- */
+.canvas-wrap {
+  background: var(--dgm-panel);
+  border: 1px solid var(--dgm-line);
+  border-radius: var(--dgm-radius-lg);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+}
+.canvas-head {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 5;
+  pointer-events: none;
+}
+.canvas-head__title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.canvas-head__sub {
+  margin-top: 4px;
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--dgm-text-dim);
+  letter-spacing: 0.04em;
+}
+.canvas-head__meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  pointer-events: auto;
+}
+
+/* PRIMITIVE: pill (tag for model name etc) */
+.dgm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--dgm-line);
+  color: var(--dgm-text-soft);
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+.dgm-pill__dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+
+/* canvas surface */
+.canvas {
+  position: absolute;
+  inset: 70px 18px 50px 18px;
+  /* grid pattern background */
+  background-image:
+    linear-gradient(to right, rgba(160,195,230,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(160,195,230,0.04) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border-radius: var(--dgm-radius-md);
+}
+.canvas__svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.canvas__nodes {
+  position: absolute; inset: 0;
+}
+.canvas-foot {
+  position: absolute;
+  left: 18px; right: 18px; bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--dgm-text-dim);
+  font-family: "IBM Plex Mono", monospace;
+  pointer-events: none;
+}
+.canvas-foot small { font-family: "Inter", sans-serif; font-size: 10.5px; opacity: 0.7; }
+
+/* PRIMITIVE: container (group box for AI Core / AIC / AIV / IO-Die) */
+.dgm-container {
+  position: absolute;
+  border: 1px dashed var(--cont-border, var(--dgm-line-strong));
+  background: var(--cont-bg, transparent);
+  border-radius: var(--dgm-radius-md);
+  padding: 28px 14px 14px;
+  pointer-events: none; /* children get events */
+}
+.dgm-container__head {
+  position: absolute;
+  top: 6px; left: 12px; right: 12px;
+  display: flex; gap: 8px; align-items: center;
+  pointer-events: auto;
+}
+.dgm-container__name {
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.06em;
+  color: var(--cont-fg, var(--dgm-text-soft));
+  text-transform: uppercase;
+}
+.dgm-container__hint {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--dgm-text-dim);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* container themes */
+.dgm-container--core   { --cont-border: hsla(215, 60%, 65%, 0.35); --cont-fg: hsla(215, 75%, 80%, 0.9); }
+.dgm-container--aic    { --cont-border: hsla(var(--c-aic-h), 70%, 65%, 0.45); --cont-fg: hsla(var(--c-aic-h), 80%, 78%, 0.95); --cont-bg: hsla(var(--c-aic-h), 70%, 35%, 0.06); }
+.dgm-container--aiv    { --cont-border: hsla(var(--c-aiv-h), 60%, 60%, 0.45); --cont-fg: hsla(var(--c-aiv-h), 70%, 75%, 0.95); --cont-bg: hsla(var(--c-aiv-h), 60%, 30%, 0.06); }
+.dgm-container--shared { --cont-border: hsla(var(--c-shared-h), 60%, 60%, 0.35); --cont-fg: hsla(var(--c-shared-h), 70%, 75%, 0.9); }
+.dgm-container--io     { --cont-border: hsla(var(--c-claim-h), 60%, 65%, 0.4); --cont-fg: hsla(var(--c-claim-h), 70%, 80%, 0.85); --cont-bg: hsla(var(--c-claim-h), 60%, 30%, 0.04); border-style: dashed; }
+.dgm-container--external { --cont-border: hsla(var(--c-shared-h), 50%, 60%, 0.25); --cont-fg: hsla(var(--c-shared-h), 60%, 70%, 0.7); }
+
+/* PRIMITIVE: cell (storage / compute / mover / scalar) */
+.dgm-cell {
+  position: absolute;
+  border-radius: var(--dgm-radius-sm);
+  background: var(--cell-bg, hsla(var(--cell-h), 50%, 30%, 0.18));
+  border: 1px solid var(--cell-border, hsla(var(--cell-h), 60%, 60%, 0.45));
+  color: var(--dgm-text);
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+  transition: transform var(--dgm-fast) var(--dgm-ease),
+              border-color var(--dgm-fast),
+              box-shadow var(--dgm-fast),
+              opacity var(--dgm-fast);
+  pointer-events: auto;
+  z-index: 2;
+  --cell-h: var(--c-shared-h);
+}
+.dgm-cell:hover {
+  border-color: hsla(var(--cell-h), 80%, 70%, 0.7);
+  box-shadow: 0 4px 18px hsla(var(--cell-h), 60%, 30%, 0.35);
+}
+.dgm-cell.is-selected {
+  border-color: hsla(var(--cell-h), 90%, 75%, 0.95);
+  box-shadow: 0 0 0 2px hsla(var(--cell-h), 90%, 65%, 0.35), 0 6px 22px hsla(var(--cell-h), 60%, 30%, 0.45);
+}
+.dgm-cell.is-dim { opacity: 0.32; filter: saturate(0.5); }
+.dgm-cell.is-active {
+  border-color: hsla(var(--cell-h), 95%, 80%, 1);
+  box-shadow: 0 0 0 2px hsla(var(--cell-h), 90%, 65%, 0.4), 0 6px 22px hsla(var(--cell-h), 80%, 40%, 0.5);
+}
+
+.dgm-cell__name {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  color: var(--dgm-text);
+}
+.dgm-cell__sub {
+  font-size: 10px;
+  color: var(--dgm-text-dim);
+  font-weight: 400;
+}
+
+/* cell kind themes (set --cell-h + variations) */
+.dgm-cell--shared  { --cell-h: var(--c-shared-h); }
+.dgm-cell--aic     { --cell-h: var(--c-aic-h); }
+.dgm-cell--aiv     { --cell-h: var(--c-aiv-h); }
+.dgm-cell--mte     { --cell-h: var(--c-mte-h); }
+.dgm-cell--sdma    { --cell-h: var(--c-sdma-h); }
+.dgm-cell--claim   { --cell-h: var(--c-claim-h); opacity: 0.8; border-style: dashed; }
+
+/* compute = filled stronger, with chip notch */
+.dgm-cell--compute {
+  background: linear-gradient(180deg, hsla(var(--cell-h), 70%, 40%, 0.45), hsla(var(--cell-h), 70%, 25%, 0.2));
+  border-width: 1.5px;
+  position: relative;
+}
+.dgm-cell--compute::before,
+.dgm-cell--compute::after {
+  content: "";
+  position: absolute;
+  width: 5px; height: 5px;
+  background: hsla(var(--cell-h), 80%, 70%, 0.7);
+  border-radius: 50%;
+}
+.dgm-cell--compute::before { top: -3px; left: 8px; }
+.dgm-cell--compute::after  { bottom: -3px; right: 8px; }
+
+/* scalar = small grey controller */
+.dgm-cell--scalar {
+  --cell-h: var(--c-scalar-h);
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.18);
+  border-style: dotted;
+}
+.dgm-cell--scalar:hover { border-color: rgba(255,255,255,0.4); }
+.dgm-cell--scalar .dgm-cell__name { color: var(--dgm-text-soft); }
+
+/* mover = slim amber bar */
+.dgm-cell--mte {
+  padding: 4px 8px;
+  border-style: solid;
+  background: linear-gradient(90deg, hsla(var(--c-mte-h), 80%, 35%, 0.32), hsla(var(--c-mte-h), 80%, 35%, 0.12));
+  border-color: hsla(var(--c-mte-h), 80%, 60%, 0.5);
+}
+.dgm-cell--mte .dgm-cell__name { color: hsla(var(--c-mte-h), 90%, 80%, 0.95); }
+
+/* Status modifiers for cells */
+.dgm-cell.is-claim { opacity: var(--status-claim); border-style: dashed; }
+.dgm-cell.is-partial { opacity: var(--status-partial); }
+.dgm-cell.is-claim::after,
+.dgm-cell.is-partial::after {
+  content: attr(data-status-label);
+  position: absolute;
+  top: -8px; right: 6px;
+  font-size: 9px;
+  font-family: "IBM Plex Mono", monospace;
+  background: var(--dgm-bg-1);
+  border: 1px solid var(--dgm-line);
+  padding: 1px 5px;
+  border-radius: 99px;
+  color: var(--dgm-text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* PRIMITIVE: edge (SVG path) — styles via class */
+.dgm-edge {
+  fill: none;
+  stroke: hsla(var(--c-mte-h), 80%, 65%, 0.55);
+  stroke-width: 1.5;
+  transition: stroke var(--dgm-fast), stroke-width var(--dgm-fast), opacity var(--dgm-fast);
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.dgm-edge:hover { stroke-width: 2.5; }
+
+.dgm-edge--verified { stroke-dasharray: none; }
+.dgm-edge--partial  { stroke-dasharray: 6 3; }
+.dgm-edge--claim    { stroke-dasharray: 2 4; opacity: var(--status-claim); }
+
+.dgm-edge.is-dim { opacity: 0.18; }
+.dgm-edge.is-active {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px hsla(var(--c-mte-h), 90%, 60%, 0.6));
+  animation: dash-flow 1.6s linear infinite;
+  stroke-dasharray: 8 5;
+}
+@keyframes dash-flow {
+  to { stroke-dashoffset: -39; }
+}
+
+/* edge color variants by mover kind */
+.dgm-edge--mte    { stroke: hsla(var(--c-mte-h), 80%, 65%, 0.6); }
+.dgm-edge--mte.is-active { filter: drop-shadow(0 0 6px hsla(var(--c-mte-h), 90%, 60%, 0.55)); }
+.dgm-edge--sdma   { stroke: hsla(var(--c-sdma-h), 70%, 70%, 0.6); }
+.dgm-edge--sdma.is-active { filter: drop-shadow(0 0 6px hsla(var(--c-sdma-h), 90%, 60%, 0.55)); }
+.dgm-edge--bus    { stroke: hsla(var(--c-shared-h), 70%, 70%, 0.4); }
+.dgm-edge--cube   { stroke: hsla(var(--c-aic-h), 70%, 70%, 0.55); }
+.dgm-edge--vec    { stroke: hsla(var(--c-aiv-h), 70%, 70%, 0.55); }
+.dgm-edge--claim  { stroke: hsla(var(--c-claim-h), 70%, 75%, 0.55); }
+
+/* edge label (in foreignObject in SVG, styled here) */
+.dgm-edge-label {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  background: var(--dgm-bg-1);
+  border: 1px solid var(--dgm-line);
+  color: var(--dgm-text-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- right inspector ---------- */
+.inspector {
+  background: var(--dgm-panel);
+  border: 1px solid var(--dgm-line);
+  border-radius: var(--dgm-radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(14px);
+  overflow: auto;
+}
+.inspector__empty {
+  color: var(--dgm-text-dim);
+  font-size: 12px;
+  text-align: center;
+  padding: 30px 10px;
+  border: 1px dashed var(--dgm-line);
+  border-radius: var(--dgm-radius-md);
+}
+
+/* PRIMITIVE: badge */
+.dgm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+  border: 1px solid currentColor;
+}
+.dgm-badge[data-status="verified"] { color: hsl(145, 60%, 65%); background: hsla(145, 60%, 30%, 0.18); }
+.dgm-badge[data-status="partial"]  { color: hsl(40, 90%, 65%);  background: hsla(40, 90%, 35%, 0.18); }
+.dgm-badge[data-status="claim"]    { color: hsl(280, 60%, 75%); background: hsla(280, 60%, 35%, 0.18); }
+
+/* PRIMITIVE: inspector card */
+.dgm-card {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.dgm-card__head {
+  display: flex; align-items: center; gap: 10px;
+}
+.dgm-card__icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: hsla(var(--card-h, var(--c-shared-h)), 60%, 35%, 0.4);
+  border: 1px solid hsla(var(--card-h, var(--c-shared-h)), 70%, 60%, 0.5);
+  display: grid; place-items: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: hsla(var(--card-h, var(--c-shared-h)), 90%, 85%, 0.95);
+  flex-shrink: 0;
+}
+.dgm-card__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.dgm-card__title small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--dgm-text-dim);
+  font-weight: 400;
+  font-family: "IBM Plex Mono", monospace;
+  margin-top: 2px;
+  letter-spacing: 0.03em;
+}
+
+.dgm-card__row {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 8px 0;
+  border-top: 1px solid var(--dgm-line);
+  font-size: 12px;
+}
+.dgm-card__row:first-of-type { border-top: 0; padding-top: 0; }
+.dgm-card__key {
+  color: var(--dgm-text-dim);
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.dgm-card__val { color: var(--dgm-text); }
+.dgm-card__val code {
+  font-family: "IBM Plex Mono", monospace;
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+.dgm-card__source {
+  font-size: 10.5px;
+  color: var(--dgm-text-faint);
+  border-top: 1px solid var(--dgm-line);
+  padding-top: 8px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.03em;
+}
+
+/* ---------- bottom: legend + path ---------- */
+.bottom {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  background: var(--dgm-panel);
+  border: 1px solid var(--dgm-line);
+  border-radius: var(--dgm-radius-lg);
+  padding: 12px 18px;
+  align-items: center;
+  backdrop-filter: blur(14px);
+}
+
+/* PRIMITIVE: legend */
+.dgm-legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-right: 1px solid var(--dgm-line);
+  padding-right: 18px;
+}
+.dgm-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--dgm-text-soft);
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+}
+.dgm-legend__line {
+  width: 22px; height: 1px;
+}
+.dgm-legend__line--verified { border-top: 1.5px solid hsl(145, 60%, 60%); }
+.dgm-legend__line--partial  { border-top: 1.5px dashed hsl(40, 90%, 60%); }
+.dgm-legend__line--claim    { border-top: 1.5px dotted hsl(280, 60%, 65%); }
+
+/* PRIMITIVE: pathline (current path step chips) */
+.dgm-pathline {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+}
+.dgm-pathline__chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--dgm-line);
+  border-radius: 5px;
+  padding: 3px 8px;
+  color: var(--dgm-text-soft);
+  transition: all var(--dgm-fast);
+}
+.dgm-pathline__chip.is-active {
+  background: hsla(215, 70%, 50%, 0.25);
+  border-color: hsla(215, 80%, 65%, 0.55);
+  color: var(--dgm-text);
+  box-shadow: 0 0 0 2px hsla(215, 80%, 65%, 0.18);
+}
+.dgm-pathline__chip.is-done {
+  color: var(--dgm-text-dim);
+  background: rgba(255,255,255,0.02);
+}
+.dgm-pathline__via {
+  color: var(--dgm-text-dim);
+  font-size: 10px;
+  padding: 0 2px;
+}
+.dgm-pathline__arrow {
+  color: var(--dgm-text-faint);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* notice banner inside canvas (e.g. scenario not applicable) */
+.canvas-notice {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsla(40, 90%, 30%, 0.35);
+  border: 1px solid hsla(40, 90%, 60%, 0.5);
+  color: hsla(40, 90%, 88%, 0.95);
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+  z-index: 8;
+  display: none;
+}
+.canvas-notice.is-on { display: block; }
+
+/* small responsive: collapse rails */
+@media (max-width: 1180px) {
+  .workbench { grid-template-columns: 200px 1fr 270px; }
+}
+@media (max-width: 980px) {
+  .workbench { grid-template-columns: 1fr; }
+  .rail, .inspector { max-height: 180px; }
+}
+
+/* scrollbars subtle */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============== TOP BAR ============== -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__mark"></div>
+      <div>
+        <div class="brand__name">Ascend Hardware Map</div>
+        <div class="brand__sub">v1 · prototype · exploration-only</div>
+      </div>
+    </div>
+
+    <div class="dgm-tabbar" role="tablist" id="viewTabs">
+      <button class="dgm-tabbar__btn" role="tab" data-view="coupled" aria-selected="false">耦合架构<small>310 / 910 类</small></button>
+      <button class="dgm-tabbar__btn" role="tab" data-view="separated" aria-selected="true">分离架构<small>910B / A2 / A3 类</small></button>
+      <button class="dgm-tabbar__btn" role="tab" data-view="next-gen" aria-selected="false">950 演进<small>article claim 扩展</small></button>
+    </div>
+
+    <label class="dgm-toggle" title="是否显示 article claim 层（URMA / CCU / PTO 异步等）">
+      <input type="checkbox" id="claimToggle" checked />
+      <span class="dgm-toggle__track"><span class="dgm-toggle__thumb"></span></span>
+      <span>显示 claim 层</span>
+      <span class="dgm-toggle__hint">URMA · CCU · PTO async</span>
+    </label>
+  </header>
+
+  <!-- ============== WORKBENCH ============== -->
+  <div class="workbench">
+
+    <!-- LEFT RAIL -->
+    <aside class="rail">
+      <div>
+        <div class="rail__title">场景路径</div>
+        <div class="dgm-list" id="scenarioList"></div>
+      </div>
+
+      <div>
+        <div class="rail__title">路径播放</div>
+        <div class="player">
+          <button class="player__btn" id="playPrev" title="上一段">
+            <svg viewBox="0 0 12 12"><path d="M9 2L4 6l5 4z" fill="currentColor"/></svg>
+          </button>
+          <button class="player__btn" id="playToggle" title="播放/暂停">
+            <svg viewBox="0 0 12 12"><path d="M3 2l7 4-7 4z" fill="currentColor" id="playIcon"/></svg>
+          </button>
+          <button class="player__btn" id="playNext" title="下一段">
+            <svg viewBox="0 0 12 12"><path d="M3 2l5 4-5 4z" fill="currentColor"/></svg>
+          </button>
+          <div class="player__progress"><div class="player__bar" id="playBar"></div></div>
+          <div class="player__step" id="playStep">0/0</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CANVAS -->
+    <section class="canvas-wrap">
+      <div class="canvas-head">
+        <div>
+          <div class="canvas-head__title" id="canvasTitle">分离架构</div>
+          <div class="canvas-head__sub" id="canvasSub">Atlas A2 训练系列 · 910B / A2 / A3 类</div>
+        </div>
+        <div class="canvas-head__meta">
+          <span class="dgm-pill"><span class="dgm-pill__dot" style="background:hsl(215,80%,65%)"></span>example: 910B4 · 1 AIC : 2 AIV</span>
+        </div>
+      </div>
+
+      <div class="canvas" id="canvas">
+        <svg class="canvas__svg" id="edgeLayer">
+          <defs id="markerDefs"></defs>
+          <g id="edgeGroup"></g>
+        </svg>
+        <div class="canvas__nodes" id="nodeLayer"></div>
+        <div class="canvas-notice" id="canvasNotice"></div>
+      </div>
+
+      <div class="canvas-foot">
+        <span id="footHint">点击对象查看详情 · hover 通路看箭头方向</span>
+        <small>本图为单 AICore 内部视图；多核间协作不在此呈现</small>
+      </div>
+    </section>
+
+    <!-- RIGHT INSPECTOR -->
+    <aside class="inspector" id="inspector">
+      <div class="inspector__empty">
+        点击画布上的对象或通路查看详情
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============== BOTTOM ============== -->
+  <footer class="bottom">
+    <div class="dgm-legend">
+      <span class="dgm-legend__item"><span class="dgm-legend__line dgm-legend__line--verified"></span>verified</span>
+      <span class="dgm-legend__item"><span class="dgm-legend__line dgm-legend__line--partial"></span>partially verified</span>
+      <span class="dgm-legend__item"><span class="dgm-legend__line dgm-legend__line--claim"></span>article claim</span>
+    </div>
+    <div class="dgm-pathline" id="pathLine"></div>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   SAMPLE DATA
+   - All facts traced to:
+     · CANN 官方文档 (overview.md verified 标记)
+     · Claude review 2026-04-27 (P0 修复)
+   - Positions are hand-tuned for legibility, not auto-layout.
+   ============================================================ */
+
+// Reusable node descriptors are referenced by id from each view.
+// `kind`: cell type → maps to .dgm-cell--{kind}
+// `status`: verified | partial | claim
+// `owner`: "AIC" | "AIV" | "AI Core" | "shared" | "external" | "io-die"
+// `purpose`, `visibility` → inspector card
+const NODE_LIB = {
+  GM:    { name: "GM", full: "Global Memory", kind: "shared",  status: "verified",
+           purpose: "AI Core 外主存；分离架构下 AIC/AIV 通过 GM 传数据",
+           visibility: "AIC 与 AIV 均可访问；跨卡通信起点/终点" },
+  L2:    { name: "L2", full: "L2 Cache",      kind: "shared",  status: "verified",
+           purpose: "GM 访问的核外缓存层",
+           visibility: "AI Core 通过 BIU 访问；不在单个 AIC/AIV 内部" },
+
+  L1:    { name: "L1", full: "L1 Buffer",     kind: "aic",     status: "verified",
+           purpose: "Cube 输入数据中转/复用，从 GM 搬入后再进 L0A/L0B",
+           visibility: "AIC 代码可分配；AIV 代码不可见" },
+  L0A:   { name: "L0A", full: "L0A Buffer",   kind: "aic",     status: "verified",
+           purpose: "Cube 左矩阵输入",
+           visibility: "AIC / Cube 流水可访问" },
+  L0B:   { name: "L0B", full: "L0B Buffer",   kind: "aic",     status: "verified",
+           purpose: "Cube 右矩阵输入",
+           visibility: "AIC / Cube 流水可访问" },
+  L0C:   { name: "L0C", full: "L0C Buffer (CO1)", kind: "aic", status: "verified",
+           purpose: "Cube 输出 + 累加中间结果（可自反馈）",
+           visibility: "AIC / Cube 流水可访问" },
+  BT:    { name: "BT", full: "BiasTable Buffer", kind: "aic", status: "verified",
+           purpose: "存放矩阵计算的 Bias",
+           visibility: "AIC 内；分离架构特有" },
+  FP:    { name: "FP", full: "Fixpipe Buffer", kind: "aic", status: "verified",
+           purpose: "存放量化参数 / Relu 参数等",
+           visibility: "AIC 内；分离架构特有；与 FixPipe 单元配合（不是同一个对象）" },
+
+  UB:    { name: "UB", full: "Unified Buffer", kind: "aiv",   status: "verified",
+           purpose: "Vector / Scalar 计算输入输出；PTO 同步路径 staging tile",
+           visibility: "AIV 代码可分配；AIC 代码不可见" },
+
+  Cube:  { name: "Cube", full: "Cube Unit",    kind: "aic",   status: "verified", compute: true,
+           purpose: "矩阵计算 (GEMM 类)；访问 L0A/L0B/L0C",
+           visibility: "AIC 主计算单元" },
+  Vec:   { name: "Vector", full: "Vector Unit", kind: "aiv",  status: "verified", compute: true,
+           purpose: "向量计算；源/目的数据围绕 UB",
+           visibility: "AIV 主计算单元" },
+  ScalarC: { name: "Scalar", full: "Scalar Unit (AIC)", kind: "scalar", status: "verified",
+           purpose: "AIC 的指令发射、流程控制",
+           visibility: "分离架构下 AIC 独立一份" },
+  ScalarV: { name: "Scalar", full: "Scalar Unit (AIV)", kind: "scalar", status: "verified",
+           purpose: "AIV 的指令发射、流程控制",
+           visibility: "分离架构下 AIV 独立一份" },
+  Scalar:  { name: "Scalar", full: "Scalar Unit", kind: "scalar", status: "verified",
+           purpose: "指令发射、地址参数计算、流程控制、标量运算",
+           visibility: "耦合架构下 Cube / Vector 共享" },
+
+  MTE1:  { name: "MTE1", full: "MTE1 (L1→L0)", kind: "mte", status: "verified",
+           purpose: "L1 → L0A/L0B；分离架构含 L1 → BT",
+           visibility: "AIC 内部搬运通道" },
+  MTE2:  { name: "MTE2", full: "MTE2 (in)",    kind: "mte", status: "verified",
+           purpose: "GM → L1 / L0A / L0B / UB",
+           visibility: "AIC 与 AIV 均含相应搬入流水" },
+  MTE3:  { name: "MTE3", full: "MTE3 (out)",   kind: "mte", status: "verified",
+           purpose: "UB → GM；术语表也提到 UB → L1",
+           visibility: "AIV 主搬出通道" },
+  FixPipe: { name: "FixPipe", full: "FixPipe", kind: "mte", status: "verified",
+           purpose: "L0C → GM/L1，做量化反量化、Relu、格式转换等随路处理",
+           visibility: "AIC 内部，分离架构特有" },
+
+  // Independent engine
+  SDMA:  { name: "SDMA", full: "System DMA",   kind: "sdma", status: "verified",
+           purpose: "GM → GM 直传，绕过 UBuffer，大块连续数据",
+           visibility: "AICore 外独立 DMA 引擎" },
+
+  // 950 claim layer
+  URMA:  { name: "URMA", full: "URMA (Unified-bus RDMA)", kind: "claim", status: "claim",
+           purpose: "[claim] 用户态高带宽 RDMA，走灵衢 Unified Bus",
+           visibility: "[claim] AICore 外独立引擎；本轮未找到官方确认" },
+  CCU:   { name: "CCU", full: "Collective Comm Unit", kind: "claim", status: "claim",
+           purpose: "[claim] 集合通信硬件卸载，含 Memory Slice + 硬件 Reduce 引擎",
+           visibility: "[claim] 位于 IO-Die；本轮未找到官方确认" },
+  MemSlice: { name: "MemSlice", full: "CCU Memory Slice", kind: "claim", status: "claim",
+           purpose: "[claim] CCU 片上数据切片暂存",
+           visibility: "[claim] CCU 内部；待确认" },
+  RemoteGM: { name: "GM(remote)", full: "Remote GM", kind: "shared", status: "verified",
+           purpose: "跨卡远端主存",
+           visibility: "通过 SDMA / URMA 访问" },
+};
+
+/* --------- VIEWS ---------
+   pos: { x, y, w, h } in canvas %  (responsive to canvas size)
+   container: groups nodes; rendered first (under nodes)
+   edges:    { from, to, via, status, kind, label?, curve? }
+*/
+const VIEWS = {
+  coupled: {
+    label: "耦合架构",
+    sub: "Atlas 推理系列 / Atlas 训练系列 · 310 / 910 类",
+    pill: "无 AIC/AIV 解耦 · 共享 Scalar",
+    containers: [
+      { id: "core", kind: "core", name: "AI Core", hint: "Cube + Vector + Scalar 同核",
+        x: 18, y: 22, w: 64, h: 70 },
+    ],
+    nodes: [
+      { ref: "GM",  pos: { x: 6,  y: 4,  w: 12, h: 8 } },
+      { ref: "L2",  pos: { x: 22, y: 4,  w: 14, h: 8 } },
+
+      { ref: "Scalar", pos: { x: 21, y: 28, w: 12, h: 7 } },
+
+      { ref: "MTE2", pos: { x: 21, y: 38, w: 11, h: 6 } },
+      { ref: "L1",   pos: { x: 22, y: 47, w: 10, h: 7 } },
+      { ref: "MTE1", pos: { x: 21, y: 57, w: 11, h: 6 } },
+      { ref: "L0A",  pos: { x: 21, y: 66, w: 5, h: 7 } },
+      { ref: "L0B",  pos: { x: 27, y: 66, w: 5, h: 7 } },
+      { ref: "Cube", pos: { x: 22, y: 76, w: 10, h: 8 }, compute: true },
+      { ref: "L0C",  pos: { x: 22, y: 87, w: 10, h: 6 } },
+
+      { ref: "UB",   pos: { x: 50, y: 50, w: 11, h: 7 } },
+      { ref: "Vec",  pos: { x: 50, y: 60, w: 11, h: 8 }, compute: true },
+      { ref: "MTE3", pos: { x: 50, y: 70, w: 11, h: 6 } },
+    ],
+    edges: [
+      { from: "GM", to: "L2", kind: "bus", status: "verified", label: "BIU" },
+      { from: "L2", to: "MTE2", kind: "bus", status: "verified" },
+
+      { from: "MTE2", to: "L1",  kind: "mte", status: "verified", label: "MTE2" },
+      { from: "MTE2", to: "UB",  kind: "mte", status: "verified", curve: "right" },
+      { from: "L1",   to: "MTE1", kind: "mte", status: "verified" },
+      { from: "MTE1", to: "L0A",  kind: "mte", status: "verified" },
+      { from: "MTE1", to: "L0B",  kind: "mte", status: "verified" },
+      { from: "L0A",  to: "Cube", kind: "cube", status: "verified" },
+      { from: "L0B",  to: "Cube", kind: "cube", status: "verified" },
+      { from: "Cube", to: "L0C",  kind: "cube", status: "verified" },
+      { from: "L0C",  to: "GM",   kind: "cube", status: "partial", curve: "left", label: "L0C→GM (无独立 FixPipe 名义)" },
+      { from: "L0C",  to: "Cube", kind: "cube", status: "verified", label: "累加自反馈", curve: "loop-right" },
+
+      { from: "UB",   to: "Vec",  kind: "vec", status: "verified" },
+      { from: "Vec",  to: "UB",   kind: "vec", status: "verified", curve: "right-tight" },
+      { from: "UB",   to: "MTE3", kind: "mte", status: "verified" },
+      { from: "MTE3", to: "GM",   kind: "mte", status: "verified", curve: "right", label: "MTE3" },
+
+      // SDMA independent engine
+      { from: "GM", to: "RemoteGM", kind: "sdma", status: "verified", label: "SDMA · GM↔GM 直传", curve: "top" },
+    ],
+    extras: [
+      { ref: "RemoteGM", pos: { x: 84, y: 4, w: 13, h: 8 } },
+      { ref: "SDMA",     pos: { x: 84, y: 16, w: 13, h: 6 } },
+    ],
+  },
+
+  separated: {
+    label: "分离架构",
+    sub: "Atlas A2 训练系列 · 910B / A2 / A3 类",
+    pill: "AIC + AIV 物理拆开 · 各自独立 Scalar",
+    containers: [
+      { id: "core", kind: "core", name: "AI Core (= AIC + AIV)", hint: "1 AIC + N AIV，配比按子型号",
+        x: 16, y: 21, w: 66, h: 73 },
+      { id: "aic",  kind: "aic", name: "AIC · Cube Core", hint: "L1 / L0 / BT / FP / FixPipe / MTE1·2·3",
+        x: 19, y: 28, w: 30, h: 64 },
+      { id: "aiv",  kind: "aiv", name: "AIV · Vector Core", hint: "UB / Vector / MTE2·3",
+        x: 52, y: 28, w: 27, h: 64 },
+    ],
+    nodes: [
+      { ref: "GM",       pos: { x: 6,  y: 4,  w: 12, h: 8 } },
+      { ref: "L2",       pos: { x: 22, y: 4,  w: 14, h: 8 } },
+      { ref: "RemoteGM", pos: { x: 84, y: 4,  w: 13, h: 8 } },
+      { ref: "SDMA",     pos: { x: 84, y: 16, w: 13, h: 6 } },
+
+      // AIC side
+      { ref: "ScalarC", pos: { x: 22, y: 33, w: 11, h: 6 } },
+      { ref: "MTE2",    pos: { x: 35, y: 33, w: 11, h: 6 } },
+      { ref: "L1",      pos: { x: 22, y: 41, w: 10, h: 6 } },
+      { ref: "BT",      pos: { x: 35, y: 41, w: 11, h: 6 } },
+      { ref: "MTE1",    pos: { x: 22, y: 49, w: 11, h: 6 } },
+      { ref: "L0A",     pos: { x: 22, y: 57, w: 5,  h: 6 } },
+      { ref: "L0B",     pos: { x: 28, y: 57, w: 5,  h: 6 } },
+      { ref: "FP",      pos: { x: 35, y: 57, w: 11, h: 6 } },
+      { ref: "Cube",    pos: { x: 22, y: 65, w: 11, h: 7 }, compute: true },
+      { ref: "L0C",     pos: { x: 22, y: 74, w: 11, h: 6 } },
+      { ref: "FixPipe", pos: { x: 35, y: 74, w: 11, h: 6 } },
+      { ref: "MTE3",    pos: { x: 35, y: 65, w: 11, h: 6 }, _alt: "MTE3-aic" },
+
+      // AIV side
+      { ref: "ScalarV", pos: { x: 55, y: 33, w: 11, h: 6 } },
+      { ref: "MTE2",    pos: { x: 67, y: 33, w: 10, h: 6 }, _alt: "MTE2-aiv" },
+      { ref: "UB",      pos: { x: 55, y: 49, w: 22, h: 8 } },
+      { ref: "Vec",     pos: { x: 55, y: 60, w: 22, h: 8 }, compute: true },
+      { ref: "MTE3",    pos: { x: 55, y: 71, w: 22, h: 6 }, _alt: "MTE3-aiv" },
+    ],
+    edges: [
+      { from: "GM", to: "L2", kind: "bus", status: "verified" },
+
+      // AIC pipeline
+      { from: "L2", to: "MTE2", kind: "mte", status: "verified" },
+      { from: "MTE2", to: "L1",  kind: "mte", status: "verified", label: "MTE2" },
+      { from: "L1",  to: "MTE1", kind: "mte", status: "verified" },
+      { from: "L1",  to: "BT",   kind: "mte", status: "verified", label: "L1→BT (MTE1)" },
+      { from: "MTE1", to: "L0A", kind: "mte", status: "verified" },
+      { from: "MTE1", to: "L0B", kind: "mte", status: "verified" },
+      { from: "L0A", to: "Cube", kind: "cube", status: "verified" },
+      { from: "L0B", to: "Cube", kind: "cube", status: "verified" },
+      { from: "Cube", to: "L0C", kind: "cube", status: "verified" },
+      { from: "L0C", to: "Cube", kind: "cube", status: "verified", label: "累加自反馈", curve: "loop-left" },
+      { from: "L0C", to: "FixPipe", kind: "mte", status: "verified" },
+      { from: "FP",  to: "FixPipe", kind: "mte", status: "verified", label: "参数注入" },
+      { from: "BT",  to: "FixPipe", kind: "mte", status: "verified" },
+      { from: "FixPipe", to: "GM",  kind: "mte", status: "verified", label: "FixPipe→GM", curve: "left" },
+
+      // AIV pipeline
+      { from: "L2",   to: "MTE2-aiv", kind: "mte", status: "verified", curve: "right" },
+      { from: "MTE2-aiv", to: "UB",   kind: "mte", status: "verified", label: "MTE2" },
+      { from: "UB",   to: "Vec", kind: "vec", status: "verified" },
+      { from: "Vec",  to: "UB",  kind: "vec", status: "verified", curve: "right-tight" },
+      { from: "UB",   to: "MTE3-aiv", kind: "mte", status: "verified" },
+      { from: "MTE3-aiv", to: "GM", kind: "mte", status: "verified", label: "MTE3", curve: "right" },
+
+      // AIC ↔ AIV cooperation must go via GM (verified)
+      { from: "FixPipe", to: "GM", kind: "cube", status: "verified", label: "AIC→GM (workspace)", curve: "left2", _coop: true },
+      { from: "GM", to: "MTE2-aiv", kind: "vec", status: "verified", label: "GM→AIV", curve: "right2", _coop: true },
+
+      // SDMA independent
+      { from: "GM", to: "RemoteGM", kind: "sdma", status: "verified", label: "SDMA · GM↔GM 直传", curve: "top" },
+    ],
+  },
+
+  "next-gen": {
+    label: "950 演进",
+    sub: "在分离架构基础上 + URMA + CCU (article claim)",
+    pill: "claim 扩展层 · 待官方确认",
+    containers: [
+      { id: "core", kind: "core", name: "AI Core (separated)", hint: "沿用分离架构",
+        x: 16, y: 22, w: 50, h: 70 },
+      { id: "aic",  kind: "aic", name: "AIC", hint: "Cube Core",
+        x: 19, y: 28, w: 21, h: 62 },
+      { id: "aiv",  kind: "aiv", name: "AIV", hint: "Vector Core",
+        x: 41, y: 28, w: 22, h: 62 },
+      { id: "io",   kind: "io",  name: "IO-Die [claim]", hint: "CCU 集散中心",
+        x: 70, y: 38, w: 27, h: 38 },
+    ],
+    nodes: [
+      { ref: "GM",       pos: { x: 6,  y: 6,  w: 11, h: 8 } },
+      { ref: "L2",       pos: { x: 19, y: 6,  w: 13, h: 8 } },
+      { ref: "RemoteGM", pos: { x: 70, y: 6,  w: 13, h: 8 } },
+      { ref: "URMA",     pos: { x: 50, y: 6,  w: 13, h: 8 } },
+      { ref: "SDMA",     pos: { x: 84, y: 16, w: 13, h: 6 } },
+
+      // AIC side (compact)
+      { ref: "ScalarC", pos: { x: 21, y: 33, w: 11, h: 5 } },
+      { ref: "L1",      pos: { x: 21, y: 41, w: 11, h: 5 } },
+      { ref: "L0A",     pos: { x: 21, y: 49, w: 5,  h: 5 } },
+      { ref: "L0B",     pos: { x: 27, y: 49, w: 5,  h: 5 } },
+      { ref: "Cube",    pos: { x: 21, y: 57, w: 11, h: 6 }, compute: true },
+      { ref: "L0C",     pos: { x: 21, y: 66, w: 11, h: 5 } },
+      { ref: "FixPipe", pos: { x: 21, y: 74, w: 11, h: 5 } },
+      { ref: "MTE2",    pos: { x: 21, y: 84, w: 11, h: 5 } },
+
+      // AIV side
+      { ref: "ScalarV", pos: { x: 43, y: 33, w: 12, h: 5 } },
+      { ref: "MTE2",    pos: { x: 43, y: 41, w: 12, h: 5 }, _alt: "MTE2-aiv" },
+      { ref: "UB",      pos: { x: 43, y: 51, w: 18, h: 7 } },
+      { ref: "Vec",     pos: { x: 43, y: 62, w: 18, h: 7 }, compute: true },
+      { ref: "MTE3",    pos: { x: 43, y: 73, w: 18, h: 5 }, _alt: "MTE3-aiv" },
+
+      // CCU side (claim)
+      { ref: "CCU",     pos: { x: 73, y: 44, w: 21, h: 7 } },
+      { ref: "MemSlice", pos: { x: 73, y: 54, w: 21, h: 7 } },
+    ],
+    edges: [
+      { from: "GM", to: "L2", kind: "bus", status: "verified" },
+      { from: "L2", to: "MTE2", kind: "mte", status: "verified" },
+      { from: "MTE2", to: "L1", kind: "mte", status: "verified" },
+      { from: "L1", to: "L0A", kind: "mte", status: "verified", label: "MTE1" },
+      { from: "L1", to: "L0B", kind: "mte", status: "verified", label: "MTE1" },
+      { from: "L0A", to: "Cube", kind: "cube", status: "verified" },
+      { from: "L0B", to: "Cube", kind: "cube", status: "verified" },
+      { from: "Cube", to: "L0C", kind: "cube", status: "verified" },
+      { from: "L0C", to: "FixPipe", kind: "mte", status: "verified" },
+      { from: "FixPipe", to: "GM", kind: "mte", status: "verified", curve: "left" },
+
+      { from: "L2", to: "MTE2-aiv", kind: "mte", status: "verified", curve: "right" },
+      { from: "MTE2-aiv", to: "UB", kind: "mte", status: "verified", label: "MTE2" },
+      { from: "UB", to: "Vec", kind: "vec", status: "verified" },
+      { from: "Vec", to: "UB", kind: "vec", status: "verified", curve: "right-tight" },
+      { from: "UB", to: "MTE3-aiv", kind: "mte", status: "verified" },
+      { from: "MTE3-aiv", to: "GM", kind: "mte", status: "verified", curve: "right" },
+
+      // SDMA verified
+      { from: "GM", to: "RemoteGM", kind: "sdma", status: "verified", label: "SDMA", curve: "top" },
+
+      // claim layer
+      { from: "GM", to: "URMA", kind: "claim", status: "claim", label: "URMA via 灵衢" },
+      { from: "URMA", to: "RemoteGM", kind: "claim", status: "claim" },
+      { from: "GM", to: "CCU", kind: "claim", status: "claim", label: "AIC tile ready" },
+      { from: "CCU", to: "MemSlice", kind: "claim", status: "claim" },
+      { from: "CCU", to: "RemoteGM", kind: "claim", status: "claim", label: "Reduce / 直接吐出", curve: "right" },
+      { from: "MTE3-aiv", to: "CCU", kind: "claim", status: "claim", label: "AIV signal", curve: "right2" },
+    ],
+  },
+};
+
+/* --------- SCENARIOS ---------
+   Each scenario is a path of node ids (with optional via labels).
+   `applies`: which views support it; in others it'll be disabled.
+*/
+const SCENARIOS = [
+  { id: "vector", name: "Vector 路径", status: "verified",
+    applies: ["coupled", "separated", "next-gen"],
+    desc: "纯向量计算：MTE2 把 GM 数据搬入 UB，Vector 计算后 MTE3 写回 GM。",
+    paths: {
+      coupled:   ["GM", "L2", "MTE2", "UB", "Vec", "UB", "MTE3", "GM"],
+      separated: ["GM", "L2", "MTE2-aiv", "UB", "Vec", "UB", "MTE3-aiv", "GM"],
+      "next-gen":["GM", "L2", "MTE2-aiv", "UB", "Vec", "UB", "MTE3-aiv", "GM"],
+    },
+  },
+  { id: "cube", name: "Cube 路径", status: "verified",
+    applies: ["coupled", "separated", "next-gen"],
+    desc: "矩阵计算：MTE2→L1，MTE1→L0A/L0B，Cube→L0C；分离架构下经 FixPipe 出 GM，耦合架构下直接 L0C→GM (无独立 FixPipe 名义)。",
+    paths: {
+      coupled:   ["GM", "L2", "MTE2", "L1", "MTE1", "L0A", "Cube", "L0C", "GM"],
+      separated: ["GM", "L2", "MTE2", "L1", "MTE1", "L0A", "Cube", "L0C", "FixPipe", "GM"],
+      "next-gen":["GM", "L2", "MTE2", "L1", "L0A", "Cube", "L0C", "FixPipe", "GM"],
+    },
+  },
+  { id: "accumulate", name: "Cube 累加 (L0C 自反馈)", status: "verified",
+    applies: ["coupled", "separated", "next-gen"],
+    desc: "分块矩阵累加：L0C 既作 Cube 输入也作输出，结果不出 AICore，省掉一次外搬。仓库 opcode A_MULACC_B 正是此场景。",
+    paths: {
+      coupled:   ["L0A", "Cube", "L0C", "Cube"],
+      separated: ["L0A", "Cube", "L0C", "Cube"],
+      "next-gen":["L0A", "Cube", "L0C", "Cube"],
+    },
+  },
+  { id: "coop", name: "AIC/AIV 协作", status: "verified",
+    applies: ["separated", "next-gen"],
+    desc: "AIC 与 AIV 数据交换默认绕行 GM；不出现本地 buffer 直连。",
+    paths: {
+      separated: ["FixPipe", "GM", "MTE2-aiv", "UB", "Vec"],
+      "next-gen":["FixPipe", "GM", "MTE2-aiv", "UB", "Vec"],
+    },
+  },
+  { id: "sdma", name: "GM↔GM 直传 (SDMA)", status: "verified",
+    applies: ["coupled", "separated", "next-gen"],
+    desc: "SDMA 是独立硬件 DMA，不经 UBuffer，适合大块连续数据；910 全系与 950 都支持。",
+    paths: {
+      coupled:   ["GM", "SDMA", "RemoteGM"],
+      separated: ["GM", "SDMA", "RemoteGM"],
+      "next-gen":["GM", "SDMA", "RemoteGM"],
+    },
+  },
+  { id: "pto-sync", name: "PTO 同步搬运", status: "partial",
+    applies: ["coupled", "separated", "next-gen"],
+    desc: "PTO 同步: local GM → UB staging tile → remote GM。本地 pypto 镜像确认 TPUT/TGET，文章自动切块等机制为 claim。",
+    paths: {
+      coupled:   ["GM", "MTE2", "UB", "MTE3", "RemoteGM"],
+      separated: ["GM", "MTE2-aiv", "UB", "MTE3-aiv", "RemoteGM"],
+      "next-gen":["GM", "MTE2-aiv", "UB", "MTE3-aiv", "RemoteGM"],
+    },
+  },
+  { id: "pto-async", name: "PTO 异步搬运", status: "claim", isClaim: true,
+    applies: ["coupled", "separated", "next-gen"],
+    desc: "[claim] TPUT_ASYNC/TGET_ASYNC 后端：910 走 SDMA；950 可走 URMA。本地 pypto 镜像未命中，仅作 claim。",
+    paths: {
+      coupled:   ["GM", "SDMA", "RemoteGM"],
+      separated: ["GM", "SDMA", "RemoteGM"],
+      "next-gen":["GM", "URMA", "RemoteGM"],
+    },
+  },
+  { id: "ccu", name: "集合通信 / CCU", status: "claim", isClaim: true, splitLayer: true,
+    applies: ["separated", "next-gen"],
+    desc: "底层 AIC→GM→AIV 协作通路 verified；上层 950 CCU 集合通信卸载属 article claim，数据可不再回 AICore。",
+    paths: {
+      separated: ["FixPipe", "GM", "MTE2-aiv", "UB"],
+      "next-gen":["MTE3-aiv", "CCU", "MemSlice", "CCU", "RemoteGM"],
+    },
+  },
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  view: "separated",
+  scenarioId: "cube",
+  showClaim: true,
+  selectedNodeAlt: null, // node alt id
+  selectedEdge: null,
+  playing: false,
+  playStep: 0,
+  playTimer: null,
+};
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+const $canvas = document.getElementById("canvas");
+const $nodes  = document.getElementById("nodeLayer");
+const $svg    = document.getElementById("edgeLayer");
+const $edges  = document.getElementById("edgeGroup");
+const $defs   = document.getElementById("markerDefs");
+const $title  = document.getElementById("canvasTitle");
+const $sub    = document.getElementById("canvasSub");
+const $pillBox = document.querySelector(".canvas-head__meta");
+const $inspector = document.getElementById("inspector");
+const $pathLine = document.getElementById("pathLine");
+const $playStep = document.getElementById("playStep");
+const $playBar = document.getElementById("playBar");
+const $playIcon = document.getElementById("playIcon");
+const $notice = document.getElementById("canvasNotice");
+const $scenarioList = document.getElementById("scenarioList");
+
+// build markers (one per kind, color matches edge stroke)
+function buildMarkers() {
+  const kinds = [
+    ["mte",   "hsla(35, 80%, 65%, 0.85)"],
+    ["sdma",  "hsla(265, 70%, 75%, 0.85)"],
+    ["bus",   "hsla(195, 70%, 75%, 0.6)"],
+    ["cube",  "hsla(215, 70%, 75%, 0.85)"],
+    ["vec",   "hsla(145, 60%, 70%, 0.85)"],
+    ["claim", "hsla(280, 65%, 78%, 0.7)"],
+  ];
+  $defs.innerHTML = kinds.map(([k, c]) => `
+    <marker id="arr-${k}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="${c}" />
+    </marker>
+  `).join("");
+}
+
+function nodeKey(node) {
+  return node._alt || node.ref;
+}
+// pos cache (px) keyed by alt-or-ref
+let posCache = {};
+
+function renderView() {
+  const v = VIEWS[state.view];
+  $title.textContent = v.label;
+  $sub.textContent = v.sub;
+  $pillBox.innerHTML = `<span class="dgm-pill"><span class="dgm-pill__dot" style="background:hsl(215,80%,65%)"></span>${v.pill}</span>`;
+
+  // clear
+  $nodes.innerHTML = "";
+  $edges.innerHTML = "";
+  posCache = {};
+
+  // Containers (no event)
+  v.containers.forEach(c => {
+    const el = document.createElement("div");
+    el.className = `dgm-container dgm-container--${c.kind}`;
+    el.style.left = `${c.x}%`;
+    el.style.top = `${c.y}%`;
+    el.style.width = `${c.w}%`;
+    el.style.height = `${c.h}%`;
+    el.innerHTML = `<div class="dgm-container__head">
+      <span class="dgm-container__name">${c.name}</span>
+      <span class="dgm-container__hint">${c.hint || ""}</span>
+    </div>`;
+    $nodes.appendChild(el);
+  });
+
+  // Nodes (+ extras)
+  const allNodes = [...(v.nodes || []), ...(v.extras || [])];
+  allNodes.forEach(n => {
+    const def = NODE_LIB[n.ref];
+    if (!def) return;
+    const altId = nodeKey(n);
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = `dgm-cell dgm-cell--${def.kind}`;
+    if (def.compute || n.compute) el.classList.add("dgm-cell--compute");
+    if (def.kind === "scalar")    el.classList.add("dgm-cell--scalar");
+    if (def.status === "claim")   { el.classList.add("is-claim"); el.dataset.statusLabel = "claim"; }
+    if (def.status === "partial") { el.classList.add("is-partial"); el.dataset.statusLabel = "partial"; }
+    el.style.left = `${n.pos.x}%`;
+    el.style.top = `${n.pos.y}%`;
+    el.style.width = `${n.pos.w}%`;
+    el.style.height = `${n.pos.h}%`;
+    el.dataset.alt = altId;
+    el.dataset.ref = n.ref;
+    el.innerHTML = `
+      <div class="dgm-cell__name">${def.name}</div>
+      <div class="dgm-cell__sub">${def.full !== def.name ? def.full.replace(def.name, "").trim().replace(/^[·\(]\s*/,'').replace(/\s*\)$/,'') || def.full : ""}</div>
+    `;
+    el.addEventListener("click", () => selectNode(altId));
+    $nodes.appendChild(el);
+  });
+
+  // wait for layout to compute positions
+  requestAnimationFrame(() => {
+    cacheNodePositions();
+    renderEdges();
+    applyClaimVisibility();
+    selectScenario(state.scenarioId, /*reset*/ true);
+  });
+}
+
+function cacheNodePositions() {
+  const cRect = $canvas.getBoundingClientRect();
+  document.querySelectorAll(".dgm-cell").forEach(el => {
+    const r = el.getBoundingClientRect();
+    posCache[el.dataset.alt] = {
+      x: r.left - cRect.left,
+      y: r.top - cRect.top,
+      w: r.width,
+      h: r.height,
+      cx: r.left - cRect.left + r.width / 2,
+      cy: r.top - cRect.top + r.height / 2,
+    };
+  });
+}
+
+function curvePath(p1, p2, curve) {
+  // returns SVG path d string (cubic bezier) plus midpoint for label
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  let cp1x, cp1y, cp2x, cp2y;
+  if (curve === "right" || curve === "right2") {
+    const off = curve === "right2" ? 90 : 60;
+    cp1x = p1.x + off; cp1y = p1.y;
+    cp2x = p2.x + off; cp2y = p2.y;
+  } else if (curve === "left" || curve === "left2") {
+    const off = curve === "left2" ? 80 : 50;
+    cp1x = p1.x - off; cp1y = p1.y;
+    cp2x = p2.x - off; cp2y = p2.y;
+  } else if (curve === "top") {
+    const off = 80;
+    cp1x = p1.x; cp1y = p1.y - off;
+    cp2x = p2.x; cp2y = p2.y - off;
+  } else if (curve === "right-tight") {
+    cp1x = p1.x + 30; cp1y = p1.y;
+    cp2x = p2.x + 30; cp2y = p2.y;
+  } else if (curve === "loop-right") {
+    cp1x = p1.x + 60; cp1y = p1.y - 20;
+    cp2x = p2.x + 60; cp2y = p2.y + 20;
+  } else if (curve === "loop-left") {
+    cp1x = p1.x - 60; cp1y = p1.y - 20;
+    cp2x = p2.x - 60; cp2y = p2.y + 20;
+  } else {
+    // straight-ish with slight bow
+    const mx = (p1.x + p2.x) / 2;
+    const my = (p1.y + p2.y) / 2;
+    cp1x = mx; cp1y = p1.y;
+    cp2x = mx; cp2y = p2.y;
+  }
+  const d = `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  // approximate midpoint
+  const mid = bezierMid(p1, {x:cp1x,y:cp1y}, {x:cp2x,y:cp2y}, p2);
+  return { d, mid };
+}
+function bezierMid(p0, p1, p2, p3) {
+  const t = 0.5;
+  const x = (1-t)**3*p0.x + 3*(1-t)**2*t*p1.x + 3*(1-t)*t**2*p2.x + t**3*p3.x;
+  const y = (1-t)**3*p0.y + 3*(1-t)**2*t*p1.y + 3*(1-t)*t**2*p2.y + t**3*p3.y;
+  return { x, y };
+}
+
+function pickAnchor(p1, p2) {
+  // pick edge anchors on each cell so connector starts/ends at the boundary
+  // simple: nearest side midpoint
+  function side(a, b) {
+    const dx = b.cx - a.cx;
+    const dy = b.cy - a.cy;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      return dx > 0 ? { x: a.x + a.w, y: a.cy } : { x: a.x, y: a.cy };
+    } else {
+      return dy > 0 ? { x: a.cx, y: a.y + a.h } : { x: a.cx, y: a.y };
+    }
+  }
+  return [side(p1, p2), side(p2, p1)];
+}
+
+function renderEdges() {
+  const v = VIEWS[state.view];
+  $edges.innerHTML = "";
+  v.edges.forEach((e, idx) => {
+    const a = posCache[e.from];
+    const b = posCache[e.to];
+    if (!a || !b) return;
+    const [pa, pb] = pickAnchor(a, b);
+    const { d, mid } = curvePath(pa, pb, e.curve);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.setAttribute("class", `dgm-edge dgm-edge--${e.kind} dgm-edge--${e.status}`);
+    path.setAttribute("marker-end", `url(#arr-${e.kind})`);
+    path.dataset.from = e.from;
+    path.dataset.to = e.to;
+    path.dataset.idx = idx;
+    path.dataset.status = e.status;
+    if (e._coop) path.dataset.coop = "1";
+    path.addEventListener("click", () => selectEdge(idx));
+    $edges.appendChild(path);
+
+    if (e.label) {
+      const fo = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+      const w = Math.max(60, e.label.length * 7);
+      fo.setAttribute("x", mid.x - w/2);
+      fo.setAttribute("y", mid.y - 10);
+      fo.setAttribute("width", w);
+      fo.setAttribute("height", 22);
+      fo.style.pointerEvents = "none";
+      fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" class="dgm-edge-label">${e.label}</div>`;
+      $edges.appendChild(fo);
+    }
+  });
+}
+
+function applyClaimVisibility() {
+  const showClaim = state.showClaim;
+  // nodes
+  document.querySelectorAll(".dgm-cell").forEach(el => {
+    const isClaim = el.classList.contains("is-claim");
+    el.style.display = (isClaim && !showClaim) ? "none" : "";
+  });
+  // edges
+  $edges.querySelectorAll("path").forEach(p => {
+    const isClaim = p.dataset.status === "claim";
+    p.style.display = (isClaim && !showClaim) ? "none" : "";
+  });
+  // edge labels — find foreignObjects whose adjacent path is hidden
+  $edges.querySelectorAll("foreignObject").forEach(fo => {
+    // simple heuristic: hide labels for claim edges by pairing position
+    // skipped (acceptable trade-off for v1)
+  });
+  // scenario list disable
+  buildScenarioList();
+}
+
+function buildScenarioList() {
+  $scenarioList.innerHTML = "";
+  SCENARIOS.forEach(s => {
+    const supported = s.applies.includes(state.view);
+    const disabledByClaim = s.isClaim && !state.showClaim;
+    const disabled = !supported || disabledByClaim;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dgm-list__item";
+    btn.dataset.scenario = s.id;
+    btn.setAttribute("aria-selected", state.scenarioId === s.id ? "true" : "false");
+    if (disabled) {
+      btn.setAttribute("disabled", "");
+      btn.title = !supported ? `当前视图 ${VIEWS[state.view].label} 下不适用` : "已隐藏 claim 层，开启后可查看";
+    }
+    btn.innerHTML = `
+      <span class="dgm-list__bullet" data-status="${s.status}"></span>
+      <span class="dgm-list__name">${s.name}</span>
+      <span class="dgm-list__count">${(s.paths[state.view]||[]).length || "—"}</span>
+    `;
+    btn.addEventListener("click", () => {
+      if (disabled) return;
+      selectScenario(s.id);
+    });
+    $scenarioList.appendChild(btn);
+  });
+}
+
+/* ============================================================
+   SELECTION & SCENARIOS
+   ============================================================ */
+function getScenario(id) {
+  return SCENARIOS.find(s => s.id === id);
+}
+
+function selectScenario(id, reset = false) {
+  const s = getScenario(id);
+  if (!s) return;
+  const supported = s.applies.includes(state.view);
+  $notice.classList.remove("is-on");
+
+  if (!supported) {
+    $notice.textContent = `场景 “${s.name}” 在当前视图下不适用`;
+    $notice.classList.add("is-on");
+    state.scenarioId = id;
+    buildScenarioList();
+    clearActive();
+    renderPathLine([]);
+    return;
+  }
+  state.scenarioId = id;
+  state.playStep = 0;
+  if (reset) stopPlay();
+  buildScenarioList();
+  highlightScenario(s);
+  renderPathLine(s.paths[state.view] || [], 0);
+}
+
+function highlightScenario(s) {
+  clearActive();
+  const path = s.paths[state.view];
+  if (!path) return;
+
+  // dim all cells/edges first
+  document.querySelectorAll(".dgm-cell").forEach(c => c.classList.add("is-dim"));
+  $edges.querySelectorAll("path").forEach(p => p.classList.add("is-dim"));
+
+  // activate cells in path
+  path.forEach(altId => {
+    const cell = document.querySelector(`.dgm-cell[data-alt="${altId}"]`);
+    if (cell) { cell.classList.remove("is-dim"); cell.classList.add("is-active"); }
+  });
+  // activate edges that match consecutive path pairs
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i], b = path[i+1];
+    const edge = $edges.querySelector(`path[data-from="${a}"][data-to="${b}"]`);
+    if (edge) { edge.classList.remove("is-dim"); edge.classList.add("is-active"); }
+  }
+}
+
+function clearActive() {
+  document.querySelectorAll(".dgm-cell").forEach(c => {
+    c.classList.remove("is-dim", "is-active");
+  });
+  $edges.querySelectorAll("path").forEach(p => p.classList.remove("is-dim", "is-active"));
+}
+
+function selectNode(altId) {
+  state.selectedEdge = null;
+  state.selectedNodeAlt = altId;
+  document.querySelectorAll(".dgm-cell").forEach(c => c.classList.remove("is-selected"));
+  const cell = document.querySelector(`.dgm-cell[data-alt="${altId}"]`);
+  if (cell) cell.classList.add("is-selected");
+  renderInspectorForNode(altId);
+}
+
+function selectEdge(idx) {
+  state.selectedNodeAlt = null;
+  state.selectedEdge = idx;
+  document.querySelectorAll(".dgm-cell").forEach(c => c.classList.remove("is-selected"));
+  renderInspectorForEdge(idx);
+}
+
+/* ============================================================
+   INSPECTOR
+   ============================================================ */
+function renderInspectorForNode(altId) {
+  // resolve ref
+  const view = VIEWS[state.view];
+  const all = [...(view.nodes || []), ...(view.extras || [])];
+  const n = all.find(x => nodeKey(x) === altId);
+  const def = NODE_LIB[n?.ref];
+  if (!def) { $inspector.innerHTML = `<div class="inspector__empty">未找到对象</div>`; return; }
+
+  const ownerHint = inferOwner(def);
+  const compute = def.compute ? "计算单元" : (def.kind === "mte" ? "搬运 / 随路处理单元" : (def.kind === "sdma" ? "独立 DMA 引擎" : (def.kind === "scalar" ? "调度 / 控制单元" : "存储单元")));
+
+  $inspector.innerHTML = `
+    <div class="dgm-card">
+      <div class="dgm-card__head">
+        <div class="dgm-card__icon" style="--card-h: var(--c-${def.kind})">${def.name.slice(0,2)}</div>
+        <div>
+          <div class="dgm-card__title">${def.name}<small>${def.full}</small></div>
+        </div>
+        <div style="margin-left:auto"><span class="dgm-badge" data-status="${def.status}">${def.status}</span></div>
+      </div>
+      <div class="dgm-card__row">
+        <span class="dgm-card__key">类型</span>
+        <span class="dgm-card__val">${compute}</span>
+      </div>
+      <div class="dgm-card__row">
+        <span class="dgm-card__key">归属</span>
+        <span class="dgm-card__val">${ownerHint}</span>
+      </div>
+      <div class="dgm-card__row">
+        <span class="dgm-card__key">用途</span>
+        <span class="dgm-card__val">${def.purpose}</span>
+      </div>
+      <div class="dgm-card__row">
+        <span class="dgm-card__key">软件可见性</span>
+        <span class="dgm-card__val">${def.visibility}</span>
+      </div>
+      ${def.kind === "aic" || def.ref === "AIC" ? `<div class="dgm-card__row">
+        <span class="dgm-card__key">配比注</span>
+        <span class="dgm-card__val">参考型号 910B4：1 AIC : 2 AIV；SKU 间会有差异</span>
+      </div>` : ""}
+      <div class="dgm-card__source">来源 · 02-knowledge/00-shared/ascend-aicore-hardware/overview.md</div>
+    </div>
+  `;
+}
+
+function renderInspectorForEdge(idx) {
+  const e = VIEWS[state.view].edges[idx];
+  if (!e) { $inspector.innerHTML = `<div class="inspector__empty">未找到通路</div>`; return; }
+  const fromDef = NODE_LIB[posRefOf(e.from)];
+  const toDef = NODE_LIB[posRefOf(e.to)];
+  $inspector.innerHTML = `
+    <div class="dgm-card">
+      <div class="dgm-card__head">
+        <div class="dgm-card__icon" style="--card-h: var(--c-${e.kind === 'cube' ? 'aic' : (e.kind === 'vec' ? 'aiv' : (e.kind === 'sdma' ? 'sdma' : (e.kind === 'claim' ? 'claim' : 'mte')))})">→</div>
+        <div>
+          <div class="dgm-card__title">${fromDef?.name || e.from} → ${toDef?.name || e.to}<small>${e.label || "通路"}</small></div>
+        </div>
+        <div style="margin-left:auto"><span class="dgm-badge" data-status="${e.status}">${e.status}</span></div>
+      </div>
+      <div class="dgm-card__row">
+        <span class="dgm-card__key">类型</span>
+        <span class="dgm-card__val">${edgeKindLabel(e.kind)}</span>
+      </div>
+      <div class="dgm-card__row">
+        <span class="dgm-card__key">方向</span>
+        <span class="dgm-card__val"><code>${e.from}</code> → <code>${e.to}</code></span>
+      </div>
+      ${e.label ? `<div class="dgm-card__row">
+        <span class="dgm-card__key">PyPTO 对应</span>
+        <span class="dgm-card__val">${edgeOpcodeHint(e)}</span>
+      </div>` : ""}
+      <div class="dgm-card__source">来源 · ${e.status === 'claim' ? 'CSDN PTO ISA 文章 (claim)' : 'CANN 官方文档'}</div>
+    </div>
+  `;
+}
+
+function posRefOf(altId) {
+  const v = VIEWS[state.view];
+  const all = [...(v.nodes||[]), ...(v.extras||[])];
+  const n = all.find(x => nodeKey(x) === altId);
+  return n?.ref || altId;
+}
+function edgeKindLabel(k) {
+  return ({
+    mte: "MTE 搬运 (同步, 经 UB / Local Memory)",
+    sdma: "SDMA (异步, GM↔GM 直传, 不经 UB)",
+    bus: "总线 / BIU",
+    cube: "AIC 内部计算流水",
+    vec: "AIV 内部计算流水",
+    claim: "[claim] 待官方/源码确认",
+  })[k] || k;
+}
+function edgeOpcodeHint(e) {
+  // map common edges to PyPTO opcodes seen in block-graph.md
+  if (e.kind === "mte" && e.label?.includes("MTE2")) return "<code>COPY_IN</code>";
+  if (e.kind === "mte" && e.label?.includes("MTE3")) return "<code>COPY_OUT</code>";
+  if (e.from === "MTE1" && (e.to === "L0A" || e.to === "L0B")) return "<code>L1_TO_L0A</code> / <code>L1_TO_L0Bt</code>";
+  if (e.from === "L0A" && e.to === "Cube") return "<code>A_MULACC_B</code> 输入端";
+  if (e.from === "L0C" && e.to === "Cube") return "<code>A_MULACC_B</code> 累加端";
+  return "—";
+}
+function inferOwner(def) {
+  if (def.kind === "shared") return "AI Core 外（共享）";
+  if (def.kind === "sdma")   return "AI Core 外独立引擎";
+  if (def.kind === "claim")  return "[claim] 待确认归属";
+  if (state.view === "coupled") return "AI Core 内（耦合架构下 Cube/Vector 同核）";
+  if (def.kind === "aic" || def.kind === "scalar" && def.full?.includes("AIC")) return "AIC / Cube Core";
+  if (def.kind === "aiv" || def.kind === "scalar" && def.full?.includes("AIV")) return "AIV / Vector Core";
+  if (def.kind === "scalar") return state.view === "coupled" ? "AI Core 共享" : "各核独立";
+  return "AI Core 内";
+}
+
+/* ============================================================
+   PATH LINE (bottom)
+   ============================================================ */
+function renderPathLine(path, activeIdx = -1) {
+  if (!path.length) {
+    $pathLine.innerHTML = `<span class="dgm-pathline__chip" style="opacity:.5">— 无适用路径 —</span>`;
+    $playStep.textContent = "0/0";
+    $playBar.style.width = "0%";
+    return;
+  }
+  const items = [];
+  path.forEach((id, i) => {
+    const def = NODE_LIB[posRefOf(id)] || { name: id };
+    let cls = "dgm-pathline__chip";
+    if (i === activeIdx) cls += " is-active";
+    else if (activeIdx >= 0 && i < activeIdx) cls += " is-done";
+    items.push(`<span class="${cls}">${def.name}</span>`);
+    if (i < path.length - 1) {
+      items.push(`<span class="dgm-pathline__arrow">→</span>`);
+    }
+  });
+  $pathLine.innerHTML = items.join("");
+  $playStep.textContent = `${Math.max(0, activeIdx + 1)}/${path.length}`;
+  $playBar.style.width = `${path.length ? ((activeIdx + 1) / path.length) * 100 : 0}%`;
+}
+
+/* ============================================================
+   PLAY CONTROLS
+   ============================================================ */
+function tickPlay() {
+  const s = getScenario(state.scenarioId);
+  if (!s) return;
+  const path = s.paths[state.view];
+  if (!path) return;
+  state.playStep = (state.playStep + 1) % path.length;
+  renderPathLine(path, state.playStep);
+  pulseStep(path, state.playStep);
+}
+
+function pulseStep(path, step) {
+  // dim everything off-path; pulse the current cell + incoming edge
+  clearActive();
+  document.querySelectorAll(".dgm-cell").forEach(c => c.classList.add("is-dim"));
+  $edges.querySelectorAll("path").forEach(p => p.classList.add("is-dim"));
+
+  // light up cumulative path up to step
+  for (let i = 0; i <= step; i++) {
+    const cell = document.querySelector(`.dgm-cell[data-alt="${path[i]}"]`);
+    if (cell) {
+      cell.classList.remove("is-dim");
+      if (i === step) cell.classList.add("is-active");
+    }
+    if (i > 0) {
+      const edge = $edges.querySelector(`path[data-from="${path[i-1]}"][data-to="${path[i]}"]`);
+      if (edge) {
+        edge.classList.remove("is-dim");
+        if (i === step) edge.classList.add("is-active");
+      }
+    }
+  }
+}
+
+function startPlay() {
+  state.playing = true;
+  $playIcon.setAttribute("d", "M3 2h2v8H3zm4 0h2v8H7z");
+  state.playTimer = setInterval(tickPlay, 900);
+}
+function stopPlay() {
+  state.playing = false;
+  $playIcon.setAttribute("d", "M3 2l7 4-7 4z");
+  if (state.playTimer) { clearInterval(state.playTimer); state.playTimer = null; }
+}
+
+document.getElementById("playToggle").addEventListener("click", () => {
+  if (state.playing) stopPlay();
+  else {
+    const s = getScenario(state.scenarioId);
+    if (!s || !s.paths[state.view]) return;
+    state.playStep = -1;
+    startPlay();
+  }
+});
+document.getElementById("playPrev").addEventListener("click", () => {
+  const s = getScenario(state.scenarioId);
+  const path = s?.paths[state.view];
+  if (!path) return;
+  state.playStep = (state.playStep - 1 + path.length) % path.length;
+  renderPathLine(path, state.playStep);
+  pulseStep(path, state.playStep);
+});
+document.getElementById("playNext").addEventListener("click", () => {
+  const s = getScenario(state.scenarioId);
+  const path = s?.paths[state.view];
+  if (!path) return;
+  state.playStep = (state.playStep + 1) % path.length;
+  renderPathLine(path, state.playStep);
+  pulseStep(path, state.playStep);
+});
+
+/* ============================================================
+   TOP CONTROLS
+   ============================================================ */
+document.querySelectorAll(".dgm-tabbar__btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const v = btn.dataset.view;
+    if (v === state.view) return;
+    state.view = v;
+    document.querySelectorAll(".dgm-tabbar__btn").forEach(b => b.setAttribute("aria-selected", b.dataset.view === v ? "true" : "false"));
+    // try to keep current scenario; if not supported, fall back to first verified
+    const cur = getScenario(state.scenarioId);
+    if (!cur || !cur.applies.includes(v)) {
+      state.scenarioId = SCENARIOS.find(s => s.applies.includes(v) && !s.isClaim)?.id || SCENARIOS[0].id;
+    }
+    stopPlay();
+    renderView();
+  });
+});
+
+document.getElementById("claimToggle").addEventListener("change", e => {
+  state.showClaim = e.target.checked;
+  applyClaimVisibility();
+  // re-highlight current scenario
+  const s = getScenario(state.scenarioId);
+  if (s) selectScenario(state.scenarioId);
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildMarkers();
+// set initial tab
+document.querySelectorAll(".dgm-tabbar__btn").forEach(b => b.setAttribute("aria-selected", b.dataset.view === state.view ? "true" : "false"));
+renderView();
+
+// re-render on resize (recompute edges)
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    cacheNodePositions();
+    renderEdges();
+    const s = getScenario(state.scenarioId);
+    if (s) highlightScenario(s);
+  }, 120);
+});
+</script>
+
+</body>
+</html>

@@ -6,6 +6,7 @@
 - `02-knowledge/00-shared/common-glossary`
 - `02-knowledge/00-shared/pypto-sample-datasets`
 - `02-knowledge/00-shared/pypto-toolkit`
+- `02-knowledge/00-shared/ascend-aicore-hardware`
 
 ## UX Design
 
