@@ -7,8 +7,14 @@
 | 类型 | 来源 | 路径 / URL | 用途 |
 | --- | --- | --- | --- |
 | 本地知识库 | 昇腾 AI Core 硬件对象与数据搬移路径 | `02-knowledge/00-shared/ascend-aicore-hardware/overview.md` | 通用 AI Core 对象、AIC/AIV 分离架构、Vector/Cube 数据流、MTE/FixPipe 路径。 |
-| CANN 开发者社区文章 | 面向 950 的架构详解 / PTO 通信指令集系列 | `https://cann.csdn.net/69d8a96e54b52172bc684f2e.html` | 950PR/950DT、Cube-Vector 融合、NDDMA、128B Sector L2、BufferID、UnifiedBus、URMA、CCU 等公开材料入口。 |
 | 本地 `pypto` 镜像 | PyPTO 泳道图 / 计算图联动字段 | `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto` | `rootHash`、`callOpMagic`、`leafHash`、`wrapId`、`TPUT/TGET` 等工具字段和源码事实。 |
+
+## Official Community Materials
+
+| 类型 | 来源 | 路径 / URL | 用途 | 可信度处理 |
+| --- | --- | --- | --- | --- |
+| CANN 开发者社区文章 | CANN NEXT系列干货：面向950的架构详解 | `https://cann.csdn.net/69d8a96e54b52172bc684f2e.html` | 950PR/950DT、Cube-Vector 融合、NDDMA、128B Sector L2、BufferID、UnifiedBus、URMA、CCU 等公开能力线索。 | `public material / official-community-material`；可作为 A5/950 阶段性官方社区材料，不替代正式 CANN 文档或 PyPTO 源码事实。 |
+| GitCode 目录 | `events/meetup/slides/950` | `https://gitcode.com/cann/community/tree/master/events/meetup/slides/950` | A5/950 meetup slides 附件入口和后续增量更新线索。 | `public material / official-community-material`；按问题单点读取相关 slide 文件，不把 `cann/community` 整仓当作当前检索对象。 |
 
 ## Supporting Sources
 
@@ -21,7 +27,7 @@
 ## 当前已吸收的事实
 
 - `Ascend 950` 可按 `950PR` / `950DT` 两类产品形态理解；当前按 `public material` 处理。
-- 950 公开材料中出现 `Cube-Vector fused path`、`NDDMA`、`128B Sector L2`、`BufferID`、`UnifiedBus`、`URMA`、`CCU` 等关键词；当前按 `public material` 处理。
+- 950 官方社区材料中出现 `Cube-Vector fused path`、`NDDMA`、`128B Sector L2`、`BufferID`、`UnifiedBus`、`URMA`、`CCU` 等关键词；当前按 `public material / official-community-material` 处理。
 - 通用 AI Core 主路径仍应复用已有 `AIC / AIV`、`GM / L2`、`UB / L1 / L0`、`MTE / FixPipe` 口径。
 - 当前 PyPTO Mix demo 中，硬件路径只能标为基于 trace 字段和硬件结构的 `L2 storyboard`，不能标为 950 真机 trace。
 

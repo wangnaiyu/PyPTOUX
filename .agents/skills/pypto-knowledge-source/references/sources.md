@@ -9,6 +9,7 @@
 - 跨问题类型时分别查对应 primary，回答时分别引用来源。
 - PyPTO 顶层设计、架构规划、方向把控、专题设计或 design decision 类问题，先把专家设计文档纳入候选，不因某个已知子主题（例如 runtime redesign）过窄而跳过。
 - CANN 官方文档默认从官网文档总入口选择当前最新版社区版；只有用户明确指定版本时，才使用特定版本链接。
+- A5 / Ascend 950 topic overlay：先按用户诉求选择 primary source，再用 `curated-external-links` 中 `a5-950` / `ascend-950` topic 的官方社区材料补充和交叉对比。
 - 有本地镜像的 source 才 refresh/search local mirror；在线只读 source 直接在线检索。
 - 如果本地 checkout 有未提交改动，不要直接替换，先征求确认。
 - `PyPTO` 相关问题，先按问题类型决定 source；只有路由到 `pypto` 且属于概念、教程、API 探索、排障、调性能或工具链类问题时，才参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 收敛目录级 hint。
@@ -23,11 +24,14 @@
 | `pypto.gitcode.com/**` | `pypto-official-docs` |
 | `github.com/hengliao1972/**` | `pypto-top-level-design-documents` |
 | `hiascend.com/**` | `cann-docs-community-edition` |
+| `cann.csdn.net/**` | `curated-external-links (official-community-material)` |
+| `gitcode.com/cann/community/tree/master/events/meetup/slides/950/**` | `curated-external-links (official-community-material)` |
+| `gitcode.com/cann/community/tree/master/events/meetup/slides/950` | `curated-external-links (official-community-material)` |
 | `zhihu.com/**`、`zhuanlan.zhihu.com/**` | `curated-external-links` |
 | `mp.weixin.qq.com/**` | `curated-external-links` |
 | 其他 | `curated-external-links (unknown)` |
 
-未列 domain 视为 `curated-external-links`；先识别，再走对应 source 流程。curated / unknown 外链必须抽 claim 并回 primary source 校验。
+未列 domain 视为 `curated-external-links`；先识别，再走对应 source 流程。`official-community-material` 可作为高可信公开材料入口，但仍不是长期 primary source；curated / unknown 外链必须抽 claim 并回 primary source 校验。
 
 ## Registered Sources | 已登记来源
 

@@ -8,6 +8,8 @@
 
 - 知乎：WebSearch + `site:zhihu.com`，或站内搜索。
 - 微信公众号：无官方公开搜索；走搜狗微信搜索 `https://weixin.sogou.com/`，或使用用户提供的具体文章 URL。
+- CANN 开发者社区：WebSearch + `site:cann.csdn.net`，或使用用户提供的具体文章 URL。
+- GitCode：使用用户提供的具体仓库 / 目录 URL；只做单点读取，不把整仓当 curated 镜像。
 - 博客 / Medium：站内搜、RSS、WebSearch + `site:` 限定。
 - 未列平台：先问用户期望的检索路径，再固化进本节。
 
@@ -22,6 +24,9 @@
 - `sample-data`
 - `profiling`
 - `visualization`
+- `a5-950`
+- `ascend-950`
+- `cann-next`
 
 允许扩展：未匹配时可新增 topic，但需要同步登记在本节。
 
@@ -32,9 +37,9 @@
 ### `<Title>`
 
 - URL:
-- Platform: `zhihu` / `wechat` / `medium` / `blog` / `other`
+- Platform: `zhihu` / `wechat` / `cann-developer-community` / `gitcode` / `medium` / `blog` / `other`
 - Author / Account:
-- Source authority: `official-account` / `expert-personal` / `community` / `personal-blog` / `unknown`
+- Source authority: `official-account` / `official-community-material` / `expert-personal` / `community` / `personal-blog` / `unknown`
 - Topics:
 - Why useful:
 - Cross-checked against primary: `yes` / `no` / `pending`
@@ -53,6 +58,58 @@ Conflicts:
 Empirical notes:
 
 - `<经验/窍门摘要>` (`unverifiable-empirical`)
+
+## 已登记条目
+
+### CANN NEXT系列干货：面向950的架构详解
+
+- URL: `https://cann.csdn.net/69d8a96e54b52172bc684f2e.html`
+- Platform: `cann-developer-community`
+- Author / Account: `昇腾CANN`
+- Source authority: `official-community-material`
+- Topics: `cann`, `a5-950`, `ascend-950`, `cann-next`
+- Why useful: A5 / Ascend 950 阶段性官方社区材料入口，适合发现 950PR / 950DT、CV 融合、NDDMA、BufferID、UnifiedBus、URMA、CCU 等公开能力线索。
+- Cross-checked against primary: `pending`
+- Added date: `2026-04-28`
+- Last verified date: `2026-04-28`
+- Short excerpts / anchors: 文章发布时间为 `2026-04-10`；重点锚点包括 `Ascend 950PR`、`Ascend 950DT`、`AICORE`、`NDDMA`、`BufferID`、`灵衢互联`、`URMA`。
+
+Verified claims:
+
+- 暂无；后续需要按 claim 回 `cann-docs-community-edition`、`pypto` 或其他 primary source 校验。
+
+Conflicts:
+
+- 暂无。
+
+Empirical notes:
+
+- 暂无。
+
+### CANN community meetup slides 950
+
+- URL: `https://gitcode.com/cann/community/tree/master/events/meetup/slides/950`
+- Platform: `gitcode`
+- Author / Account: `cann/community`
+- Source authority: `official-community-material`
+- Topics: `cann`, `a5-950`, `ascend-950`, `cann-next`
+- Why useful: A5 / Ascend 950 meetup slides 目录，适合作为官方社区分享材料的附件入口和后续增量更新线索。
+- Cross-checked against primary: `pending`
+- Added date: `2026-04-28`
+- Last verified date: `2026-04-28`
+- Short excerpts / anchors: 目录锚点为 `events/meetup/slides/950`；只按用户问题单点读取相关 slide 文件，不把 `cann/community` 整仓当作当前检索对象。
+
+Verified claims:
+
+- 暂无；后续需要按 claim 回 `cann-docs-community-edition`、`pypto` 或其他 primary source 校验。
+
+Conflicts:
+
+- 暂无。
+
+Empirical notes:
+
+- 暂无。
 
 ## 维护规则
 
