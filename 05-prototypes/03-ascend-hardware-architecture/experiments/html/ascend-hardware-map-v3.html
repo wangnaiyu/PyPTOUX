@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ascend Hardware Map · v3 — Editorial Brass</title>
+<style>
+/* ============================================================
+   v3 — editorial dark · brass on slate
+   register: premium tech magazine · single warm accent · type-led
+   ============================================================ */
+:root {
+  /* surface */
+  --bg:        #0e0f14;
+  --surface:   #16171f;
+  --lift:      #1d1f29;
+  --card:      #252734;
+  --card-hi:   #2c2e3c;
+
+  --hair:      rgba(255,255,255,0.07);
+  --hair-2:    rgba(255,255,255,0.13);
+  --hair-3:    rgba(255,255,255,0.22);
+  --inner-hi:  rgba(255,255,255,0.04);
+
+  /* text */
+  --t1: #f3efe3;
+  --t2: #a39f95;
+  --t3: #6b6960;
+  --t4: #3f3e3a;
+
+  /* single hero accent — brass */
+  --br:    #e8a948;
+  --br-hi: #ffc972;
+  --br-bg: rgba(232,169,72,0.13);
+  --br-line: rgba(232,169,72,0.32);
+
+  /* tier hints — desaturated */
+  --tier-shared: #8a8a92;
+  --tier-aic:    #7a96b8;
+  --tier-aiv:    #84a896;
+  --tier-claim:  #9c948a;
+
+  /* status colors (used sparingly in pills) */
+  --st-verified: #a4c4a8;
+  --st-partial:  #d8c184;
+  --st-claim:    #b8a89a;
+
+  /* metrics */
+  --r-lg: 6px;
+  --r-md: 4px;
+  --r-sm: 2px;
+
+  --t-fast: 140ms;
+  --t-med:  280ms;
+  --ease:   cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 12% 6%, rgba(232,169,72,0.045), transparent 32%),
+    radial-gradient(circle at 88% 94%, rgba(255,255,255,0.025), transparent 36%);
+  color: var(--t1);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+               "PingFang SC", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0;
+  min-height: 100vh;
+}
+
+button, input, select { font: inherit; color: inherit; cursor: pointer; }
+
+.mono { font-family: "SF Mono", "Menlo", "Consolas", monospace; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app {
+  display: grid;
+  grid-template-columns: 244px 1fr 332px;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "top  top  top"
+    "side main rail"
+    "foot foot foot";
+  gap: 14px;
+  padding: 16px;
+  min-height: 100vh;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-lg);
+  position: relative;
+}
+.surface::before {
+  /* inner highlight — brass-on-slate */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 0 var(--inner-hi);
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar {
+  grid-area: top;
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  display: flex; gap: 14px; align-items: center;
+}
+.brand__mark {
+  width: 32px; height: 32px;
+  background: var(--lift);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-md);
+  position: relative;
+  overflow: hidden;
+}
+.brand__mark::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  background: var(--br);
+  border-radius: 1px;
+  clip-path: polygon(0 0, 100% 0, 70% 30%, 100% 30%, 70% 60%, 100% 60%, 0 100%);
+}
+.brand__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.07);
+  border-radius: inherit;
+}
+.brand__title { display: flex; flex-direction: column; gap: 2px; }
+.brand__title b {
+  font-size: 14px; font-weight: 600; letter-spacing: 0.01em;
+}
+.brand__title small {
+  font-size: 9.5px;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* segmented control */
+.tabbar {
+  display: inline-flex;
+  background: var(--lift);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-md);
+  padding: 3px;
+  gap: 2px;
+  justify-self: center;
+  position: relative;
+}
+.tabbar__btn {
+  border: 0;
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: 3px;
+  color: var(--t2);
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 1px;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.tabbar__btn b {
+  font-size: 12.5px; font-weight: 600;
+}
+.tabbar__btn small {
+  font-size: 9px;
+  font-family: "SF Mono", monospace;
+  letter-spacing: 0.12em;
+  color: var(--t3);
+  text-transform: uppercase;
+}
+.tabbar__btn:hover { color: var(--t1); background: var(--card); }
+.tabbar__btn[aria-selected="true"] {
+  background: var(--card-hi);
+  color: var(--t1);
+  box-shadow: inset 0 0 0 1px var(--br-line);
+}
+.tabbar__btn[aria-selected="true"] small { color: var(--br); }
+
+.controls { display: inline-flex; gap: 18px; align-items: center; }
+
+.toggle {
+  display: inline-flex; gap: 10px; align-items: center;
+  font-size: 12px; color: var(--t2); user-select: none;
+}
+.toggle input { display: none; }
+.toggle__track {
+  width: 30px; height: 16px;
+  background: var(--lift);
+  border: 1px solid var(--hair-2);
+  border-radius: 999px;
+  position: relative;
+  transition: background var(--t-fast);
+}
+.toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 12px; height: 12px;
+  background: var(--t3);
+  border-radius: 50%;
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast);
+}
+.toggle input:checked + .toggle__track { background: var(--br); border-color: var(--br); }
+.toggle input:checked + .toggle__track::after {
+  transform: translateX(12px);
+  background: var(--bg);
+}
+.toggle__label small {
+  display: block;
+  font-size: 9.5px;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  letter-spacing: 0.16em;
+}
+
+.iconbtn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-md);
+  background: var(--lift);
+  color: var(--t2);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.iconbtn:hover { background: var(--card); color: var(--t1); }
+.iconbtn[aria-pressed="true"], .iconbtn--accent:hover {
+  background: var(--br-bg); color: var(--br); border-color: var(--br-line);
+}
+.iconbtn svg { width: 14px; height: 14px; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.section-head {
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid var(--hair);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.section-head h3 {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  font-weight: 600;
+}
+.section-head h3 b { color: var(--t1); font-weight: 600; }
+.section-head p {
+  font-size: 11.5px;
+  color: var(--t3);
+  margin-top: 2px;
+}
+
+.scenarios {
+  list-style: none;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow-y: auto;
+}
+.scenario {
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.scenario:hover { background: var(--lift); }
+.scenario[aria-selected="true"] {
+  background: var(--card);
+  border-color: var(--br-line);
+  box-shadow: inset 2px 0 0 0 var(--br);
+}
+.scenario__num {
+  font-family: "SF Mono", monospace;
+  font-size: 10px;
+  color: var(--t3);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.scenario[aria-selected="true"] .scenario__num { color: var(--br); }
+.scenario__main b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t1);
+  margin-bottom: 1px;
+  letter-spacing: 0.005em;
+}
+.scenario__main span {
+  display: block;
+  font-size: 10px;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  letter-spacing: 0.02em;
+}
+.scenario[aria-disabled="true"] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.scenario[aria-disabled="true"] .scenario__main b { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot--verified { background: var(--st-verified); }
+.status-dot--partial  { background: var(--st-partial); }
+.status-dot--claim    { background: var(--st-claim); opacity: 0.6; }
+
+.sidebar__foot {
+  border-top: 1px solid var(--hair);
+  padding: 12px 16px;
+}
+.sidebar__foot h4 {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  margin-bottom: 8px;
+}
+.legend-row {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  align-items: center;
+  font-size: 10.5px;
+  color: var(--t2);
+  margin: 5px 0;
+}
+.legend-row b { color: var(--t1); font-weight: 600; }
+.legend-stroke {
+  height: 2px; flex-shrink: 0;
+  background: var(--t1);
+}
+.legend-stroke--partial {
+  background-image: linear-gradient(to right, var(--t1) 50%, transparent 50%);
+  background-size: 6px 2px;
+  background-color: transparent;
+}
+.legend-stroke--claim {
+  background-image: linear-gradient(to right, var(--t3) 50%, transparent 50%);
+  background-size: 3px 1.5px;
+  background-color: transparent;
+  height: 1px;
+}
+
+/* ============================================================
+   MAIN — canvas
+   ============================================================ */
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.main__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: end;
+  gap: 16px;
+  padding: 16px 22px 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.main__head .title-block { display: flex; flex-direction: column; gap: 4px; }
+.main__head .title-block .kicker {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+}
+.main__head h2 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+.main__head .meta {
+  font-size: 10.5px;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.canvas-wrap {
+  flex: 1;
+  background: var(--bg);
+  position: relative;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+.canvas-wrap::before {
+  /* very subtle dot grid */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 280px);
+  user-select: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   SVG primitives — node, edge, container
+   v3: clean geometry, no hatch, type-led
+   ============================================================ */
+
+/* container — paneled with figure annotation top-left */
+.dgm-container__bg {
+  fill: var(--lift);
+  stroke: var(--hair-2);
+  stroke-width: 1;
+}
+.dgm-container__bg-inner {
+  fill: var(--surface);
+  stroke: var(--hair);
+  stroke-width: 1;
+}
+.dgm-container__hi {
+  /* inner 1px highlight on top edge */
+  fill: none;
+  stroke: rgba(255,255,255,0.05);
+  stroke-width: 1;
+}
+.dgm-container__fig {
+  font-family: "SF Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  fill: var(--t3);
+  text-transform: uppercase;
+}
+.dgm-container__title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  fill: var(--t1);
+}
+.dgm-container--claim .dgm-container__bg-inner {
+  stroke-dasharray: 3 4;
+  stroke: var(--hair-2);
+  fill: rgba(156,148,138,0.04);
+}
+.dgm-container--claim .dgm-container__title { fill: var(--tier-claim); }
+.dgm-container--claim .dgm-container__fig { color: var(--tier-claim); }
+
+/* base node */
+.dgm-node {
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease);
+}
+.dgm-node__bg {
+  fill: var(--card);
+  stroke: var(--hair-2);
+  stroke-width: 1;
+  transition: stroke var(--t-fast), fill var(--t-fast);
+}
+.dgm-node__hi {
+  fill: none;
+  stroke: rgba(255,255,255,0.04);
+  stroke-width: 1;
+  pointer-events: none;
+}
+.dgm-node__tier {
+  /* 6x6 corner swatch */
+}
+.dgm-node__label {
+  font-family: "SF Mono", "Menlo", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--t1);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.dgm-node__sub {
+  font-size: 9.5px;
+  fill: var(--t3);
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+.dgm-node__fig {
+  font-family: "SF Mono", monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.2em;
+  fill: var(--t4);
+  pointer-events: none;
+}
+.dgm-node[data-status="partial"] .dgm-node__bg {
+  stroke-dasharray: 6 3;
+  stroke: rgba(216,193,132,0.4);
+}
+.dgm-node[data-status="claim"] {
+  opacity: 0.55;
+}
+.dgm-node[data-status="claim"] .dgm-node__bg {
+  stroke: var(--hair-2);
+  stroke-dasharray: 2 3;
+  fill: var(--lift);
+}
+.dgm-node:hover .dgm-node__bg {
+  stroke: var(--hair-3);
+}
+.dgm-node[aria-selected="true"] .dgm-node__bg {
+  stroke: var(--br);
+  stroke-width: 1.5;
+  fill: var(--card-hi);
+}
+.dgm-node[aria-selected="true"] .dgm-node__label { fill: var(--br); }
+
+/* compute — internal quartered grid */
+.dgm-node--compute .dgm-node__inner {
+  fill: none;
+  stroke: var(--hair-2);
+  stroke-width: 0.5;
+  pointer-events: none;
+}
+.dgm-node--compute .dgm-node__diag {
+  fill: none;
+  stroke: var(--hair);
+  stroke-width: 0.5;
+  pointer-events: none;
+}
+
+/* control — solid pill */
+.dgm-node--control .dgm-node__bg {
+  fill: var(--t1);
+  stroke: var(--hair-3);
+}
+.dgm-node--control .dgm-node__label { fill: var(--bg); }
+.dgm-node--control .dgm-node__sub   { fill: var(--t4); }
+
+/* mte — flow-pill (FixPipe etc) */
+.dgm-node--mte .dgm-node__bg {
+  fill: var(--br-bg);
+  stroke: var(--br-line);
+}
+.dgm-node--mte .dgm-node__label { fill: var(--br); }
+.dgm-node--mte .dgm-node__sub   { fill: var(--t2); }
+
+/* engine — hex */
+.dgm-node--engine .dgm-node__bg {
+  fill: var(--lift);
+  stroke: var(--hair-3);
+}
+
+/* claim layer */
+.dgm-node--claim .dgm-node__bg {
+  fill: rgba(156,148,138,0.04);
+  stroke: var(--hair-2);
+  stroke-dasharray: 2.5 3.5;
+}
+.dgm-node--claim .dgm-node__label { fill: var(--t2); }
+
+/* edges */
+.dgm-edge { cursor: pointer; }
+.dgm-edge__line {
+  fill: none;
+  stroke: var(--t4);
+  stroke-width: 1;
+  transition: stroke var(--t-fast), stroke-width var(--t-fast);
+}
+.dgm-edge[data-status="partial"] .dgm-edge__line {
+  stroke-dasharray: 5 3;
+  stroke: rgba(216,193,132,0.4);
+}
+.dgm-edge[data-status="claim"] .dgm-edge__line {
+  stroke-dasharray: 1.5 3;
+  stroke: var(--t4);
+  opacity: 0.7;
+}
+.dgm-edge:hover .dgm-edge__line {
+  stroke: var(--t2);
+}
+.dgm-edge--active .dgm-edge__line {
+  stroke: var(--br);
+  stroke-width: 1.8;
+  opacity: 1;
+}
+.dgm-edge--active[data-status="partial"] .dgm-edge__line {
+  stroke-dasharray: 0;
+}
+.dgm-edge--active[data-status="claim"] .dgm-edge__line {
+  stroke-dasharray: 4 3;
+}
+
+.dgm-edge__badge {
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  pointer-events: none;
+}
+.dgm-edge__badge-bg {
+  fill: var(--card);
+  stroke: var(--hair-2);
+  stroke-width: 1;
+}
+.dgm-edge__badge-tx {
+  font-family: "SF Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  fill: var(--t1);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.dgm-edge--active .dgm-edge__badge,
+.dgm-edge:hover .dgm-edge__badge { opacity: 1; }
+.dgm-edge--active .dgm-edge__badge-bg {
+  fill: var(--br);
+  stroke: var(--br);
+}
+.dgm-edge--active .dgm-edge__badge-tx { fill: var(--bg); }
+
+/* pulse — data packet */
+.dgm-pulse__core {
+  fill: var(--br-hi);
+  filter: drop-shadow(0 0 6px var(--br));
+  pointer-events: none;
+}
+.dgm-pulse__halo {
+  fill: var(--br);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+/* canvas frame ticks (subtle) */
+.canvas-corner {
+  stroke: var(--t4);
+  stroke-width: 1;
+  fill: none;
+}
+.canvas-fig {
+  font-family: "SF Mono", monospace;
+  font-size: 8px;
+  fill: var(--t4);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   RIGHT RAIL — detail
+   ============================================================ */
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.rail__head {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--hair);
+}
+.rail__head .kicker {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  font-weight: 600;
+}
+.rail__head h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.rail__head .sub {
+  font-size: 11.5px;
+  color: var(--t3);
+  margin-top: 4px;
+  font-family: "SF Mono", monospace;
+}
+.status-pill {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: "SF Mono", monospace;
+  margin-top: 12px;
+}
+.status-pill--verified { color: var(--st-verified); }
+.status-pill--partial  { color: var(--st-partial);  }
+.status-pill--claim    { color: var(--st-claim);    }
+
+.rail__body {
+  padding: 14px 18px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.rail-section h4 {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--t3);
+  margin-bottom: 8px;
+  font-family: "SF Mono", monospace;
+  font-weight: 600;
+}
+.rail-section p {
+  font-size: 13px;
+  color: var(--t1);
+  line-height: 1.55;
+}
+.rail-section .lit {
+  font-family: "SF Mono", monospace;
+  background: var(--lift);
+  padding: 1px 5px;
+  border: 1px solid var(--hair-2);
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--br);
+}
+.rail-grid {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  row-gap: 8px;
+  column-gap: 12px;
+  font-size: 12px;
+}
+.rail-grid dt {
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 9px;
+  padding-top: 2px;
+  font-weight: 600;
+}
+.rail-grid dd {
+  color: var(--t1);
+}
+.rail-source {
+  font-size: 10px;
+  color: var(--t3);
+  font-family: "SF Mono", monospace;
+  border-top: 1px dashed var(--hair-2);
+  padding-top: 10px;
+  letter-spacing: 0.04em;
+}
+
+.empty {
+  color: var(--t3);
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.empty b { color: var(--t1); font-style: normal; }
+
+/* ============================================================
+   FOOTER — path bar
+   ============================================================ */
+.foot {
+  grid-area: foot;
+  padding: 14px 22px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+}
+.foot__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+}
+.foot__title b {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+.foot__title small {
+  font-size: 9.5px;
+  font-family: "SF Mono", monospace;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.path-steps {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.path-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 5px;
+  font-size: 11px;
+  font-family: "SF Mono", monospace;
+  border: 1px solid var(--hair-2);
+  background: var(--lift);
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  color: var(--t2);
+  transition: all var(--t-fast);
+}
+.path-step__no {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  background: var(--card);
+  color: var(--t3);
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 50%;
+  border: 1px solid var(--hair-2);
+}
+.path-step--via {
+  background: transparent;
+  border-color: transparent;
+  font-style: italic;
+  color: var(--t3);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 5px 4px;
+}
+.path-step--active {
+  border-color: var(--br);
+  background: var(--br-bg);
+  color: var(--br-hi);
+}
+.path-step--active .path-step__no {
+  background: var(--br); color: var(--bg); border-color: var(--br);
+}
+.path-step--lit {
+  /* currently animated step */
+  animation: stepPulse 1.6s var(--ease) infinite;
+}
+@keyframes stepPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,169,72,0.4); }
+  50%      { box-shadow: 0 0 0 4px rgba(232,169,72,0); }
+}
+
+.path-arrow {
+  font-family: "SF Mono", monospace;
+  color: var(--t4);
+  font-size: 11px;
+}
+
+.play-controls { display: flex; gap: 8px; }
+
+/* scrollbar (webkit) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--card); border: 2px solid var(--surface); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--card-hi); }
+
+/* responsive */
+@media (max-width: 1320px) {
+  .app { grid-template-columns: 220px 1fr 300px; }
+}
+@media (max-width: 1080px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-areas: "top" "main" "side" "rail" "foot";
+  }
+  .canvas { max-height: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============================ TOP ============================ -->
+  <header class="topbar surface">
+    <div class="brand">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__title">
+        <b>Ascend Hardware Map</b>
+        <small>v3 · editorial brass</small>
+      </div>
+    </div>
+
+    <div class="tabbar" role="tablist" id="archTabs">
+      <button class="tabbar__btn" role="tab" data-arch="coupled" aria-selected="false">
+        <b>耦合架构</b><small>310 / 910</small>
+      </button>
+      <button class="tabbar__btn" role="tab" data-arch="separated" aria-selected="true">
+        <b>分离架构</b><small>910B / A2</small>
+      </button>
+      <button class="tabbar__btn" role="tab" data-arch="evolved" aria-selected="false">
+        <b>950 演进</b><small>article claim</small>
+      </button>
+    </div>
+
+    <div class="controls">
+      <label class="toggle">
+        <input type="checkbox" id="claimToggle" checked>
+        <span class="toggle__track"></span>
+        <span class="toggle__label">显示 Claim 层<small>URMA · CCU · PTO ASYNC</small></span>
+      </label>
+    </div>
+  </header>
+
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside class="sidebar surface">
+    <div class="section-head">
+      <h3>SCENE · <b>场景路径</b></h3>
+      <p>选一条路径在画布高亮；切换视图时不可用的会置灰。</p>
+    </div>
+    <ul class="scenarios" id="scenarioList"></ul>
+    <div class="sidebar__foot">
+      <h4>Status · 线型图例</h4>
+      <div class="legend-row">
+        <span class="legend-stroke"></span>
+        <span><b>verified</b> · CANN 官方核对</span>
+      </div>
+      <div class="legend-row">
+        <span class="legend-stroke legend-stroke--partial"></span>
+        <span><b>partial</b> · 主路径已确认</span>
+      </div>
+      <div class="legend-row">
+        <span class="legend-stroke legend-stroke--claim"></span>
+        <span><b>claim</b> · 待官方确认</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================ MAIN ============================ -->
+  <main class="main surface">
+    <div class="main__head">
+      <div class="title-block">
+        <span class="kicker">Architecture View · FIG.<span id="archFig">02</span></span>
+        <h2 id="archTitle">分离架构</h2>
+      </div>
+      <div></div>
+      <div class="meta" id="archMeta">// Atlas A2 / A3 训练系列 — 含 BT / FP / FixPipe</div>
+    </div>
+    <div class="canvas-wrap">
+      <svg id="canvas" class="canvas" viewBox="0 0 1180 720" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="arr-default" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="8" markerHeight="8" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#6b6960"/>
+          </marker>
+          <marker id="arr-active" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="11" markerHeight="11" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#e8a948"/>
+          </marker>
+          <marker id="arr-claim" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#5a5a62"/>
+          </marker>
+        </defs>
+
+        <g id="layerCanvasFrame"></g>
+        <g id="layerContainers"></g>
+        <g id="layerEdges"></g>
+        <g id="layerNodes"></g>
+        <g id="layerPulse"></g>
+      </svg>
+    </div>
+  </main>
+
+  <!-- ============================ RAIL ============================ -->
+  <aside class="rail surface">
+    <div class="rail__head">
+      <span class="kicker" id="railKicker">SELECT · 选中对象</span>
+      <h3 id="railTitle">点选画布对象</h3>
+      <div class="sub" id="railSub">— 节点或通路 —</div>
+      <span class="status-pill" id="railPill" hidden></span>
+    </div>
+    <div class="rail__body" id="railBody">
+      <div class="empty">
+        悬停或点击画布上的<b>存储 / 计算 / 通路</b>对象，这里会显示归属、用途、可信度与来源。
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================ FOOT ============================ -->
+  <footer class="foot surface">
+    <div class="foot__title">
+      <b id="footTitle">Cube 路径</b>
+      <small id="footSub">SCENARIO · 8 STEPS</small>
+    </div>
+    <div class="path-steps" id="pathSteps"></div>
+    <div class="play-controls">
+      <button class="iconbtn iconbtn--accent" id="btnPlay" title="播放">
+        <svg viewBox="0 0 14 14"><path d="M3.5 2 L3.5 12 L11 7 Z" fill="currentColor"/></svg>
+      </button>
+      <button class="iconbtn" id="btnStop" title="停止">
+        <svg viewBox="0 0 14 14"><rect x="3.5" y="3.5" width="7" height="7" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     DATA
+     ============================================================ -->
+<script>
+"use strict";
+
+const ARCH_META = {
+  coupled:   { fig:'01', title:'耦合架构',  meta:'// Atlas 推理系列 / 训练系列 / 200I / 500 A2 推理' },
+  separated: { fig:'02', title:'分离架构',  meta:'// Atlas A2 / A3 训练系列 — 含 BT / FP / FixPipe' },
+  evolved:   { fig:'03', title:'950 演进',  meta:'// 在分离架构基础上叠加 URMA · CCU · IO-Die（claim）' },
+};
+
+const OBJECTS = {
+  GM:    { kind:'storage', tier:'shared', label:'GM',  sub:'Global Memory',
+           desc:'AI Core 外部主内存。所有 AICore 共享；跨卡通信起止点。',
+           tags:{ '所在层级':'AI Core 外', '可分配':'AIC / AIV 均可见', '相对容量':'最大' } },
+  L2:    { kind:'storage', tier:'shared', label:'L2',  sub:'L2 Cache',
+           desc:'核外缓存层，缓存对 GM 的访问。',
+           tags:{ '所在层级':'AI Core 外', '可分配':'多 AICore 共享', '相对容量':'较大' } },
+  L1:    { kind:'storage', tier:'aic',  label:'L1',   sub:'L1 Buffer',
+           desc:'Cube 路径主中转区；从 GM 搬入后再喂 L0A / L0B。',
+           tags:{ '所在层级':'AIC（分离架构）', '可分配':'AIC 代码可分配', '相对容量':'中等' } },
+  L0A:   { kind:'storage', tier:'aic',  label:'L0A',  sub:'矩阵 A 输入',
+           desc:'Cube 左矩阵输入。',
+           tags:{ '所在层级':'AIC', '可分配':'Cube 直读', '相对容量':'小' } },
+  L0B:   { kind:'storage', tier:'aic',  label:'L0B',  sub:'矩阵 B 输入',
+           desc:'Cube 右矩阵输入。',
+           tags:{ '所在层级':'AIC', '可分配':'Cube 直读', '相对容量':'小' } },
+  L0C:   { kind:'storage', tier:'aic',  label:'L0C',  sub:'输出 / 累加',
+           desc:'Cube 输出；也作累加输入（自反馈不出 AICore）。',
+           tags:{ '所在层级':'AIC', '可分配':'Cube I/O', '相对容量':'小-中' } },
+  BT:    { kind:'storage', tier:'aic',  label:'BT',   sub:'Bias Table',
+           desc:'存放 Bias，给 FixPipe 累加用。仅分离架构存在。',
+           tags:{ '所在层级':'AIC（分离架构新增）', '可分配':'FixPipe 取用', '相对容量':'极小' } },
+  FP:    { kind:'storage', tier:'aic',  label:'FP',   sub:'Fixpipe Buffer',
+           desc:'量化参数 / Relu 参数等。仅分离架构存在。',
+           tags:{ '所在层级':'AIC（分离架构新增）', '可分配':'FixPipe 取用', '相对容量':'极小' } },
+  UB:    { kind:'storage', tier:'aiv',  label:'UB',   sub:'Unified Buffer',
+           desc:'Vector / Scalar 计算的输入输出；PTO 同步路径的 staging tile（≈256 B）。',
+           tags:{ '所在层级':'AIV（分离架构）', '可分配':'AIV 代码可分配', '相对容量':'较大' } },
+
+  Cube:  { kind:'compute', tier:'aic',  label:'Cube', sub:'Matrix Engine',
+           desc:'矩阵乘 (GEMM) 主力。读取 L0A/L0B，写入 L0C。',
+           tags:{ '所在层级':'AIC', '能力':'16×16 矩阵 1 cycle (FP16)' } },
+  Vector:{ kind:'compute', tier:'aiv',  label:'Vector', sub:'Vector Engine',
+           desc:'向量计算（Softmax / Norm / Activation）。源/目标在 UB。',
+           tags:{ '所在层级':'AIV', '数据位置':'UB' } },
+
+  Scalar:    { kind:'control', tier:'shared', label:'Scalar', sub:'shared',
+               desc:'取指、地址计算、流程控制。耦合架构下 Cube 与 Vector 共用一个。',
+               tags:{ '所在层级':'AICore 共用', '角色':'调度' } },
+  ScalarAIC: { kind:'control', tier:'aic',    label:'Scalar', sub:'AIC',
+               desc:'AIC 独立 Scalar，独立加载代码段。',
+               tags:{ '所在层级':'AIC（分离架构）', '角色':'调度' } },
+  ScalarAIV: { kind:'control', tier:'aiv',    label:'Scalar', sub:'AIV',
+               desc:'AIV 独立 Scalar，独立加载代码段。',
+               tags:{ '所在层级':'AIV（分离架构）', '角色':'调度' } },
+
+  FixPipe: { kind:'mte', tier:'aic',  label:'FixPipe', sub:'L0C 后端通路',
+             desc:'L0C → GM/L1，可做随路量化 / Relu / 类型转换。仅分离架构。',
+             tags:{ '所在层级':'AIC', '方向':'L0C → GM 或 L1' } },
+
+  SDMA:  { kind:'engine', tier:'shared', label:'SDMA', sub:'GM ↔ GM',
+           desc:'独立硬件 DMA 引擎，绕过 UB 做 GM↔GM 大块直传。verified。',
+           tags:{ '所在层级':'AICore 外', '类型':'异步', '用途':'大块连续搬运' } },
+
+  URMA:    { kind:'engine', tier:'claim', label:'URMA', sub:'灵衢 RDMA',
+             desc:'文章称 950 新增的用户态 RDMA，走 Unified Bus 跨卡 GM↔GM。',
+             tags:{ '所在层级':'AICore 外', '类型':'异步' }, status:'claim' },
+  CCU:     { kind:'claim', tier:'claim', label:'CCU', sub:'集合通信单元',
+             desc:'文章称位于 IO-Die，含 Memory Slice + 硬件 Reduce；数据不回 AICore。',
+             tags:{ '所在层级':'IO-Die', '接口':'AIV 握手' }, status:'claim' },
+  MemSlice:{ kind:'claim', tier:'claim', label:'Memory Slice', sub:'CCU 片内',
+             desc:'CCU 内部缓存，承接 reduce 中间结果。',
+             tags:{ '所在层级':'IO-Die' }, status:'claim' },
+};
+
+const COUPLED = {
+  containers: [
+    { id:'aicore', label:'AI Core', figRef:'F.1.A', x:60, y:170, w:1060, h:520, kind:'aicore' },
+  ],
+  nodes: [
+    { ref:'GM',   x:60,  y:30,  w:1060, h:54, status:'verified', fig:'A1' },
+    { ref:'L2',   x:60,  y:100, w:1060, h:38, status:'verified', fig:'A2' },
+
+    { ref:'L1',     x:120, y:240, w:160, h:60, status:'verified', fig:'B1' },
+    { ref:'L0A',    x:120, y:340, w:75,  h:50, status:'verified', fig:'B2' },
+    { ref:'L0B',    x:205, y:340, w:75,  h:50, status:'verified', fig:'B3' },
+    { ref:'Cube',   x:120, y:440, w:160, h:80, status:'verified', fig:'C1' },
+    { ref:'L0C',    x:120, y:560, w:160, h:50, status:'verified', fig:'B4' },
+
+    { ref:'UB',     x:560, y:240, w:230, h:60, status:'verified', fig:'B5' },
+    { ref:'Vector', x:565, y:440, w:220, h:80, status:'verified', fig:'C2' },
+
+    { ref:'Scalar', x:880, y:300, w:180, h:50, status:'verified', fig:'D1' },
+
+    { ref:'SDMA',   x:880, y:560, w:200, h:90, status:'verified', fig:'E1' },
+  ],
+  edges: [
+    { id:'gm-ub',     from:'GM', to:'UB',   via:'MTE2', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'ub-vec',    from:'UB', to:'Vector', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'vec-ub',    from:'Vector', to:'UB', status:'verified', anchor:{from:'tr', to:'br'}, curve:'arc-right' },
+    { id:'ub-gm',     from:'UB', to:'GM',   via:'MTE3', status:'verified', anchor:{from:'tl', to:'bl'} },
+
+    { id:'gm-l1',     from:'GM', to:'L1',   via:'MTE2', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l1-l0a',    from:'L1', to:'L0A',  via:'MTE1', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l1-l0b',    from:'L1', to:'L0B',  via:'MTE1', status:'verified', anchor:{from:'b', to:'t'}, hideBadge:true },
+    { id:'l0a-cube',  from:'L0A',to:'Cube', status:'verified', anchor:{from:'b', to:'tl'} },
+    { id:'l0b-cube',  from:'L0B',to:'Cube', status:'verified', anchor:{from:'b', to:'tr'} },
+    { id:'cube-l0c',  from:'Cube',to:'L0C', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l0c-cube-fb', from:'L0C', to:'Cube', via:'累加', status:'verified', anchor:{from:'r', to:'br'}, curve:'arc-right' },
+    { id:'l0c-gm',    from:'L0C', to:'GM',  via:'写回', status:'verified', anchor:{from:'l', to:'bl'} },
+
+    { id:'gm-sdma',   from:'GM', to:'SDMA', via:'描述符', status:'verified', anchor:{from:'br', to:'tr'} },
+    { id:'sdma-gm',   from:'SDMA', to:'GM', via:'GM↔GM', status:'verified', anchor:{from:'tl', to:'bl'} },
+  ],
+  scenarios: [
+    { id:'vector', label:'Vector 路径', sub:'GM → UB → Vector → UB → GM', status:'verified',
+      steps:['gm-ub','ub-vec','vec-ub','ub-gm'] },
+    { id:'cube', label:'Cube 路径', sub:'GM → L1 → L0A/B → Cube → L0C → GM', status:'verified',
+      steps:['gm-l1','l1-l0a','l1-l0b','l0a-cube','l0b-cube','cube-l0c','l0c-gm'] },
+    { id:'accumulate', label:'L0C 累加', sub:'L0C 自反馈，不出 AICore', status:'verified',
+      steps:['gm-l1','l1-l0a','l1-l0b','l0a-cube','l0b-cube','cube-l0c','l0c-cube-fb'] },
+    { id:'sdma',   label:'GM↔GM 直传 (SDMA)', sub:'独立 DMA 引擎', status:'verified',
+      steps:['gm-sdma','sdma-gm'] },
+    { id:'aic-aiv', label:'AIC ↔ AIV 协作', sub:'仅分离架构', status:'verified', disabled:true },
+    { id:'pto-sync', label:'PTO 同步', sub:'GM → UB staging → 远端 GM', status:'partial',
+      steps:['gm-ub','ub-gm'] },
+    { id:'pto-async', label:'PTO 异步', sub:'仅分离架构 / 950', status:'claim', claim:true, disabled:true },
+    { id:'ccu', label:'集合通信 / CCU', sub:'仅 950', status:'claim', claim:true, disabled:true },
+  ],
+  default: 'cube'
+};
+
+const SEPARATED = {
+  containers: [
+    { id:'aicore', label:'AI Core', figRef:'F.2', x:60, y:170, w:1060, h:520, kind:'aicore' },
+    { id:'aic',    label:'AIC · Cube Core',   figRef:'F.2.1', x:80, y:210, w:520,  h:470, kind:'aic' },
+    { id:'aiv',    label:'AIV · Vector Core', figRef:'F.2.2', x:620,y:210, w:380,  h:470, kind:'aiv' },
+  ],
+  nodes: [
+    { ref:'GM',   x:60,  y:30,  w:1060, h:54, status:'verified', fig:'A1' },
+    { ref:'L2',   x:60,  y:100, w:1060, h:38, status:'verified', fig:'A2' },
+
+    { ref:'L1',         x:100, y:255, w:200, h:50, status:'verified', fig:'B1' },
+    { ref:'L0A',        x:100, y:340, w:90,  h:48, status:'verified', fig:'B2' },
+    { ref:'L0B',        x:200, y:340, w:90,  h:48, status:'verified', fig:'B3' },
+    { ref:'Cube',       x:100, y:415, w:190, h:75, status:'verified', fig:'C1' },
+    { ref:'L0C',        x:100, y:510, w:190, h:46, status:'verified', fig:'B4' },
+    { ref:'FixPipe',    x:100, y:580, w:190, h:38, status:'verified', fig:'M1' },
+    { ref:'BT',         x:330, y:340, w:90,  h:48, status:'verified', fig:'B5' },
+    { ref:'FP',         x:430, y:340, w:90,  h:48, status:'verified', fig:'B6' },
+    { ref:'ScalarAIC',  x:330, y:255, w:190, h:50, status:'verified', fig:'D1' },
+
+    { ref:'UB',         x:640, y:255, w:340, h:60, status:'verified', fig:'B7' },
+    { ref:'Vector',     x:680, y:415, w:260, h:75, status:'verified', fig:'C2' },
+    { ref:'ScalarAIV',  x:640, y:580, w:340, h:38, status:'verified', fig:'D2' },
+
+    { ref:'SDMA', x:1020, y:30,  w:100, h:108, status:'verified', fig:'E1' },
+  ],
+  edges: [
+    { id:'gm-ub',     from:'GM', to:'UB',     via:'MTE2', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'ub-vec',    from:'UB', to:'Vector', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'vec-ub',    from:'Vector', to:'UB', status:'verified', anchor:{from:'tr', to:'br'}, curve:'arc-right' },
+    { id:'ub-gm',     from:'UB', to:'GM',     via:'MTE3', status:'verified', anchor:{from:'tl', to:'bl'} },
+
+    { id:'gm-l1',     from:'GM', to:'L1',     via:'MTE2', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l1-l0a',    from:'L1', to:'L0A',    via:'MTE1', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l1-l0b',    from:'L1', to:'L0B',    via:'MTE1', status:'verified', anchor:{from:'b', to:'t'}, hideBadge:true },
+    { id:'l1-bt',     from:'L1', to:'BT',     via:'MTE1', status:'verified', anchor:{from:'r', to:'t'}, curve:'corner' },
+    { id:'l0a-cube',  from:'L0A',to:'Cube',   status:'verified', anchor:{from:'b', to:'tl'} },
+    { id:'l0b-cube',  from:'L0B',to:'Cube',   status:'verified', anchor:{from:'b', to:'tr'} },
+    { id:'cube-l0c',  from:'Cube',to:'L0C',   status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l0c-cube-fb', from:'L0C', to:'Cube', via:'累加', status:'verified', anchor:{from:'r', to:'br'}, curve:'arc-right' },
+    { id:'l0c-fp',    from:'L0C', to:'FixPipe', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'fp-gm',     from:'FixPipe', to:'GM', via:'FixPipe', status:'verified', anchor:{from:'l', to:'bl'} },
+    { id:'bt-fp',     from:'BT',  to:'FixPipe', status:'verified', anchor:{from:'b', to:'r'}, curve:'corner', hideBadge:true },
+    { id:'fpb-fp',    from:'FP',  to:'FixPipe', status:'verified', anchor:{from:'b', to:'r'}, curve:'corner', hideBadge:true },
+
+    { id:'aic-gm',    from:'FixPipe', to:'GM', via:'AIC→GM', status:'verified', anchor:{from:'r', to:'b'}, curve:'corner', hideBadge:true },
+    { id:'gm-aiv',    from:'GM', to:'UB',      via:'GM→AIV', status:'verified', anchor:{from:'b', to:'t'}, hideBadge:true },
+
+    { id:'gm-sdma',   from:'GM', to:'SDMA',  via:'描述符', status:'verified', anchor:{from:'tr', to:'l'} },
+    { id:'sdma-gm',   from:'SDMA', to:'GM',  via:'GM↔GM', status:'verified', anchor:{from:'b', to:'tr'} },
+
+    { id:'pto-async-sdma', from:'UB', to:'SDMA', via:'PTO ASYNC', status:'claim', claim:true, anchor:{from:'tr', to:'l'} },
+  ],
+  scenarios: [
+    { id:'vector', label:'Vector 路径', sub:'GM → UB → Vector → UB → GM', status:'verified',
+      steps:['gm-ub','ub-vec','vec-ub','ub-gm'] },
+    { id:'cube', label:'Cube 路径', sub:'GM → L1 → L0A/B → Cube → L0C → FixPipe → GM', status:'verified',
+      steps:['gm-l1','l1-l0a','l1-l0b','l0a-cube','l0b-cube','cube-l0c','l0c-fp','fp-gm'] },
+    { id:'accumulate', label:'L0C 累加', sub:'L0C 自反馈，不出 AICore', status:'verified',
+      steps:['gm-l1','l1-l0a','l1-l0b','l0a-cube','l0b-cube','cube-l0c','l0c-cube-fb'] },
+    { id:'aic-aiv', label:'AIC ↔ AIV 协作', sub:'必经 GM；无片上专用通道', status:'verified',
+      steps:['gm-l1','l0a-cube','cube-l0c','l0c-fp','aic-gm','gm-aiv','ub-vec'] },
+    { id:'sdma',   label:'GM↔GM 直传 (SDMA)', sub:'独立 DMA 引擎', status:'verified',
+      steps:['gm-sdma','sdma-gm'] },
+    { id:'pto-sync', label:'PTO 同步', sub:'GM → UB staging → 远端 GM', status:'partial',
+      steps:['gm-ub','ub-gm'] },
+    { id:'pto-async', label:'PTO 异步', sub:'PTO 借 SDMA / URMA 后端', status:'claim', claim:true,
+      steps:['pto-async-sdma','sdma-gm'] },
+    { id:'ccu', label:'集合通信 / CCU', sub:'仅 950', status:'claim', claim:true, disabled:true },
+  ],
+  default: 'cube'
+};
+
+const EVOLVED = {
+  containers: [
+    { id:'aicore', label:'AI Core', figRef:'F.3', x:60, y:170, w:1060, h:420, kind:'aicore' },
+    { id:'aic',    label:'AIC · Cube Core',   figRef:'F.3.1', x:80, y:210, w:520,  h:370, kind:'aic' },
+    { id:'aiv',    label:'AIV · Vector Core', figRef:'F.3.2', x:620,y:210, w:380,  h:370, kind:'aiv' },
+    { id:'iodie',  label:'IO-Die · Article Claim 扩展层', figRef:'F.3.X', x:60, y:610, w:1060, h:90, kind:'iodie', claim:true },
+  ],
+  nodes: [
+    { ref:'GM',   x:60,  y:30,  w:1060, h:54, status:'verified', fig:'A1' },
+    { ref:'L2',   x:60,  y:100, w:1060, h:38, status:'verified', fig:'A2' },
+
+    { ref:'L1',         x:100, y:255, w:200, h:46, status:'verified', fig:'B1' },
+    { ref:'L0A',        x:100, y:325, w:90,  h:42, status:'verified', fig:'B2' },
+    { ref:'L0B',        x:200, y:325, w:90,  h:42, status:'verified', fig:'B3' },
+    { ref:'Cube',       x:100, y:390, w:190, h:60, status:'verified', fig:'C1' },
+    { ref:'L0C',        x:100, y:470, w:190, h:38, status:'verified', fig:'B4' },
+    { ref:'FixPipe',    x:100, y:528, w:190, h:34, status:'verified', fig:'M1' },
+    { ref:'BT',         x:330, y:325, w:90,  h:42, status:'verified', fig:'B5' },
+    { ref:'FP',         x:430, y:325, w:90,  h:42, status:'verified', fig:'B6' },
+    { ref:'ScalarAIC',  x:330, y:255, w:190, h:46, status:'verified', fig:'D1' },
+
+    { ref:'UB',         x:640, y:255, w:340, h:54, status:'verified', fig:'B7' },
+    { ref:'Vector',     x:680, y:380, w:260, h:65, status:'verified', fig:'C2' },
+    { ref:'ScalarAIV',  x:640, y:528, w:340, h:34, status:'verified', fig:'D2' },
+
+    { ref:'SDMA',  x:1020, y:30,  w:100, h:108, status:'verified', fig:'E1' },
+    { ref:'URMA',  x:90,  y:625,  w:160, h:60, status:'claim', fig:'X1' },
+    { ref:'CCU',   x:300, y:625,  w:240, h:60, status:'claim', fig:'X2' },
+    { ref:'MemSlice', x:580, y:625, w:180, h:60, status:'claim', fig:'X3' },
+  ],
+  edges: [
+    { id:'gm-ub',     from:'GM', to:'UB',     via:'MTE2', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'ub-vec',    from:'UB', to:'Vector', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'vec-ub',    from:'Vector', to:'UB', status:'verified', anchor:{from:'tr', to:'br'}, curve:'arc-right' },
+    { id:'ub-gm',     from:'UB', to:'GM',     via:'MTE3', status:'verified', anchor:{from:'tl', to:'bl'} },
+
+    { id:'gm-l1',     from:'GM', to:'L1',     via:'MTE2', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l1-l0a',    from:'L1', to:'L0A',    via:'MTE1', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l1-l0b',    from:'L1', to:'L0B',    via:'MTE1', status:'verified', anchor:{from:'b', to:'t'}, hideBadge:true },
+    { id:'l1-bt',     from:'L1', to:'BT',     via:'MTE1', status:'verified', anchor:{from:'r', to:'t'}, curve:'corner' },
+    { id:'l0a-cube',  from:'L0A',to:'Cube',   status:'verified', anchor:{from:'b', to:'tl'} },
+    { id:'l0b-cube',  from:'L0B',to:'Cube',   status:'verified', anchor:{from:'b', to:'tr'} },
+    { id:'cube-l0c',  from:'Cube',to:'L0C',   status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'l0c-cube-fb', from:'L0C', to:'Cube', via:'累加', status:'verified', anchor:{from:'r', to:'br'}, curve:'arc-right' },
+    { id:'l0c-fp',    from:'L0C', to:'FixPipe', status:'verified', anchor:{from:'b', to:'t'} },
+    { id:'fp-gm',     from:'FixPipe', to:'GM', via:'FixPipe', status:'verified', anchor:{from:'l', to:'bl'} },
+    { id:'bt-fp',     from:'BT',  to:'FixPipe', status:'verified', anchor:{from:'b', to:'r'}, curve:'corner', hideBadge:true },
+    { id:'fpb-fp',    from:'FP',  to:'FixPipe', status:'verified', anchor:{from:'b', to:'r'}, curve:'corner', hideBadge:true },
+
+    { id:'aic-gm',    from:'FixPipe', to:'GM', via:'AIC→GM', status:'verified', anchor:{from:'r', to:'b'}, curve:'corner', hideBadge:true },
+    { id:'gm-aiv',    from:'GM', to:'UB',      via:'GM→AIV', status:'verified', anchor:{from:'b', to:'t'}, hideBadge:true },
+
+    { id:'gm-sdma',   from:'GM', to:'SDMA',  via:'描述符', status:'verified', anchor:{from:'tr', to:'l'} },
+    { id:'sdma-gm',   from:'SDMA', to:'GM',  via:'GM↔GM', status:'verified', anchor:{from:'b', to:'tr'} },
+
+    { id:'gm-urma',   from:'GM', to:'URMA', via:'灵衢', status:'claim', claim:true, anchor:{from:'bl', to:'t'} },
+    { id:'urma-rem',  from:'URMA', to:'GM', via:'远端 GM', status:'claim', claim:true, anchor:{from:'r', to:'bl'} },
+    { id:'aiv-ccu',   from:'ScalarAIV', to:'CCU', via:'AIV_LAUNCH', status:'claim', claim:true, anchor:{from:'b', to:'t'} },
+    { id:'ccu-ms',    from:'CCU', to:'MemSlice', status:'claim', claim:true, anchor:{from:'r', to:'l'}, hideBadge:true },
+    { id:'ccu-gm',    from:'CCU', to:'GM',  via:'Reduce 写回', status:'claim', claim:true, anchor:{from:'t', to:'b'}, hideBadge:true },
+  ],
+  scenarios: [
+    { id:'vector', label:'Vector 路径', sub:'GM → UB → Vector → UB → GM', status:'verified',
+      steps:['gm-ub','ub-vec','vec-ub','ub-gm'] },
+    { id:'cube', label:'Cube 路径', sub:'GM → L1 → L0A/B → Cube → L0C → FixPipe → GM', status:'verified',
+      steps:['gm-l1','l1-l0a','l1-l0b','l0a-cube','l0b-cube','cube-l0c','l0c-fp','fp-gm'] },
+    { id:'accumulate', label:'L0C 累加', sub:'L0C 自反馈', status:'verified',
+      steps:['gm-l1','l1-l0a','l1-l0b','l0a-cube','l0b-cube','cube-l0c','l0c-cube-fb'] },
+    { id:'aic-aiv', label:'AIC ↔ AIV 协作', sub:'必经 GM', status:'verified',
+      steps:['gm-l1','l0a-cube','cube-l0c','l0c-fp','aic-gm','gm-aiv','ub-vec'] },
+    { id:'sdma',   label:'GM↔GM 直传 (SDMA)', sub:'独立 DMA', status:'verified',
+      steps:['gm-sdma','sdma-gm'] },
+    { id:'pto-sync', label:'PTO 同步', sub:'staging via UB', status:'partial',
+      steps:['gm-ub','ub-gm'] },
+    { id:'pto-async', label:'PTO 异步 (URMA)', sub:'走灵衢跨卡 GM↔GM', status:'claim', claim:true,
+      steps:['gm-urma','urma-rem'] },
+    { id:'ccu', label:'集合通信 / CCU', sub:'IO-Die reduce + 写回', status:'claim', claim:true,
+      steps:['cube-l0c','l0c-fp','aic-gm','aiv-ccu','ccu-ms','ccu-gm'] },
+  ],
+  default: 'cube'
+};
+
+const SCENES = { coupled: COUPLED, separated: SEPARATED, evolved: EVOLVED };
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  arch: 'separated',
+  scenario: 'cube',
+  showClaim: true,
+  selected: null,
+  playing: false,
+  playStepIdx: -1,
+  playRAF: null,
+  playTimer: null,
+};
+
+/* ============================================================
+   GEOMETRY HELPERS
+   ============================================================ */
+function anchorPoint(node, where) {
+  const x = node.x, y = node.y, w = node.w, h = node.h;
+  switch(where) {
+    case 't':  return { x: x + w/2, y };
+    case 'b':  return { x: x + w/2, y: y + h };
+    case 'l':  return { x, y: y + h/2 };
+    case 'r':  return { x: x + w, y: y + h/2 };
+    case 'tl': return { x: x + w*0.25, y };
+    case 'tr': return { x: x + w*0.75, y };
+    case 'bl': return { x: x + w*0.25, y: y + h };
+    case 'br': return { x: x + w*0.75, y: y + h };
+    default:   return { x: x + w/2, y: y + h/2 };
+  }
+}
+function pathD(p1, p2, mode) {
+  if (mode === 'arc-right') {
+    const cx = Math.max(p1.x, p2.x) + 28;
+    return `M ${p1.x} ${p1.y} C ${cx} ${p1.y}, ${cx} ${p2.y}, ${p2.x} ${p2.y}`;
+  }
+  if (mode === 'corner') {
+    return `M ${p1.x} ${p1.y} L ${p2.x} ${p1.y} L ${p2.x} ${p2.y}`;
+  }
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  if (Math.abs(dx) < 4 || Math.abs(dy) < 4) {
+    return `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+  }
+  const my = p1.y + dy/2;
+  return `M ${p1.x} ${p1.y} L ${p1.x} ${my} L ${p2.x} ${my} L ${p2.x} ${p2.y}`;
+}
+function pathMidpoint(p1, p2, mode) {
+  if (mode === 'arc-right') return { x: (Math.max(p1.x, p2.x) + 28), y: (p1.y + p2.y) / 2 };
+  if (mode === 'corner') return { x: p2.x, y: p1.y };
+  return { x: (p1.x + p2.x) / 2, y: p1.y + (p2.y - p1.y) / 2 };
+}
+
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs={}, parent=null) {
+  const n = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) {
+    if (attrs[k] !== undefined && attrs[k] !== null) n.setAttribute(k, attrs[k]);
+  }
+  if (parent) parent.appendChild(n);
+  return n;
+}
+
+const TIER_COLORS = {
+  shared:'#8a8a92', aic:'#7a96b8', aiv:'#84a896', claim:'#9c948a',
+};
+
+/* ============================================================
+   PRIMITIVES
+   ============================================================ */
+
+function drawContainer(parent, c) {
+  const claim = !!c.claim;
+  const g = el('g', { class:`dgm-container dgm-container--${c.kind}${claim?' dgm-container--claim':''}` }, parent);
+  el('rect', { class:'dgm-container__bg-inner', x:c.x, y:c.y, width:c.w, height:c.h, rx:4 }, g);
+  // figure annotation top-left, outside the box
+  el('text', { class:'dgm-container__fig', x:c.x, y:c.y - 8 }, g).textContent = c.figRef || '';
+  el('text', { class:'dgm-container__title', x:c.x + 36, y:c.y - 8 }, g).textContent = c.label;
+  // small bracket at top-left
+  el('path', {
+    d: `M ${c.x - 6} ${c.y - 4} L ${c.x - 6} ${c.y + 6}`,
+    stroke: claim ? 'var(--tier-claim)' : 'var(--br)',
+    'stroke-width': 1.5,
+  }, g);
+  return g;
+}
+
+function drawNode(parent, n, def) {
+  const builders = {
+    storage: drawStorage,
+    compute: drawCompute,
+    control: drawControl,
+    mte:     drawMte,
+    engine:  drawEngine,
+    claim:   drawClaim,
+  };
+  return (builders[def.kind] || drawStorage)(parent, n, def);
+}
+
+function drawStorage(parent, n, def) {
+  const status = n.status || def.status || 'verified';
+  const g = el('g', {
+    class: `dgm-node dgm-node--storage`,
+    'data-id': def._id, 'data-status': status, 'data-kind':'storage', 'data-tier':def.tier,
+  }, parent);
+
+  el('rect', { class:'dgm-node__bg', x:n.x, y:n.y, width:n.w, height:n.h, rx:3 }, g);
+  // tier swatch top-left (8x8 small filled)
+  el('rect', {
+    class:'dgm-node__tier',
+    x:n.x + 9, y:n.y + 9, width:8, height:8,
+    fill: TIER_COLORS[def.tier] || '#666',
+    rx:1,
+  }, g);
+
+  // label / sub
+  el('text', { class:'dgm-node__label', x:n.x + 23, y:n.y + 17 }, g).textContent = def.label;
+  if (n.h >= 30 && def.sub) {
+    el('text', { class:'dgm-node__sub', x:n.x + 23, y:n.y + 30 }, g).textContent = def.sub;
+  }
+  // figure annotation in bottom-right
+  if (n.fig && n.h >= 36) {
+    el('text', { class:'dgm-node__fig', x:n.x + n.w - 9, y:n.y + n.h - 9, 'text-anchor':'end' }, g).textContent = n.fig;
+  }
+  // inner highlight on top
+  el('line', { class:'dgm-node__hi',
+    x1:n.x + 1, y1:n.y + 1, x2:n.x + n.w - 1, y2:n.y + 1 }, g);
+
+  return g;
+}
+
+function drawCompute(parent, n, def) {
+  const status = n.status || def.status || 'verified';
+  const g = el('g', {
+    class: `dgm-node dgm-node--compute`,
+    'data-id': def._id, 'data-status': status, 'data-kind':'compute', 'data-tier':def.tier,
+  }, parent);
+
+  el('rect', { class:'dgm-node__bg', x:n.x, y:n.y, width:n.w, height:n.h, rx:4 }, g);
+
+  // 2x2 quartered grid (matrix hint for Cube; horizontal stripes for Vector)
+  if (def.label === 'Cube') {
+    el('line', { class:'dgm-node__inner',
+      x1:n.x + n.w/2, y1:n.y + 6, x2:n.x + n.w/2, y2:n.y + n.h - 6 }, g);
+    el('line', { class:'dgm-node__inner',
+      x1:n.x + 6, y1:n.y + n.h/2, x2:n.x + n.w - 6, y2:n.y + n.h/2 }, g);
+    // tiny corner ticks suggesting cells
+    el('path', { class:'dgm-node__diag',
+      d:`M ${n.x + 6} ${n.y + 6} L ${n.x + 12} ${n.y + 6} L ${n.x + 12} ${n.y + 12}` }, g);
+    el('path', { class:'dgm-node__diag',
+      d:`M ${n.x + n.w - 6} ${n.y + n.h - 6} L ${n.x + n.w - 12} ${n.y + n.h - 6} L ${n.x + n.w - 12} ${n.y + n.h - 12}` }, g);
+  } else {
+    // vector — three horizontal stripes
+    for (let i = 1; i <= 3; i++) {
+      el('line', { class:'dgm-node__inner',
+        x1: n.x + 8, y1: n.y + (n.h * i / 4),
+        x2: n.x + n.w - 8, y2: n.y + (n.h * i / 4) }, g);
+    }
+  }
+
+  // tier swatch
+  el('rect', { x:n.x + 9, y:n.y + 9, width:8, height:8,
+               fill: TIER_COLORS[def.tier], rx:1 }, g);
+
+  el('text', { class:'dgm-node__label', x:n.x + n.w/2, y:n.y + n.h/2 - 2, 'text-anchor':'middle' }, g).textContent = def.label;
+  el('text', { class:'dgm-node__sub',   x:n.x + n.w/2, y:n.y + n.h/2 + 14, 'text-anchor':'middle' }, g).textContent = def.sub;
+  if (n.fig) {
+    el('text', { class:'dgm-node__fig', x:n.x + n.w - 9, y:n.y + n.h - 9, 'text-anchor':'end' }, g).textContent = n.fig;
+  }
+  return g;
+}
+
+function drawControl(parent, n, def) {
+  const status = n.status || def.status || 'verified';
+  const g = el('g', {
+    class:`dgm-node dgm-node--control`,
+    'data-id': def._id, 'data-status':status, 'data-kind':'control', 'data-tier':def.tier,
+  }, parent);
+  el('rect', { class:'dgm-node__bg', x:n.x, y:n.y, width:n.w, height:n.h, rx:n.h/2 }, g);
+  el('text', { class:'dgm-node__label', x:n.x + 16, y:n.y + n.h/2 + 4 }, g).textContent = def.label;
+  if (def.sub) {
+    el('text', { class:'dgm-node__sub', x:n.x + n.w - 14, y:n.y + n.h/2 + 4, 'text-anchor':'end' }, g).textContent = '· ' + def.sub;
+  }
+  return g;
+}
+
+function drawMte(parent, n, def) {
+  const status = n.status || def.status || 'verified';
+  const g = el('g', {
+    class:`dgm-node dgm-node--mte`,
+    'data-id': def._id, 'data-status':status, 'data-kind':'mte', 'data-tier':def.tier,
+  }, parent);
+  el('rect', { class:'dgm-node__bg', x:n.x, y:n.y, width:n.w, height:n.h, rx:n.h/2 }, g);
+  el('text', { class:'dgm-node__label', x:n.x + 18, y:n.y + n.h/2 + 4 }, g).textContent = def.label;
+  el('text', { class:'dgm-node__sub', x:n.x + n.w - 14, y:n.y + n.h/2 + 4, 'text-anchor':'end' }, g).textContent = def.sub;
+  return g;
+}
+
+function drawEngine(parent, n, def) {
+  const status = n.status || def.status || 'verified';
+  const g = el('g', {
+    class:`dgm-node dgm-node--engine`,
+    'data-id': def._id, 'data-status':status, 'data-kind':'engine', 'data-tier':def.tier,
+  }, parent);
+  // notched rect
+  const x = n.x, y = n.y, w = n.w, h = n.h, c = 8;
+  const d = `M ${x} ${y+c} L ${x+c} ${y} L ${x+w} ${y} L ${x+w} ${y+h-c} L ${x+w-c} ${y+h} L ${x} ${y+h} Z`;
+  el('path', { class:'dgm-node__bg', d }, g);
+  // detail lines (heat fins)
+  for (let i = 0; i < 4; i++) {
+    el('line', {
+      x1: x + 14 + i*4, y1: y + 10, x2: x + 14 + i*4, y2: y + 22,
+      stroke:'var(--hair-3)', 'stroke-width':1
+    }, g);
+  }
+  el('text', { class:'dgm-node__label', x:x + 12, y:y + h/2 + 8 }, g).textContent = def.label;
+  el('text', { class:'dgm-node__sub', x:x + 12, y:y + h/2 + 22 }, g).textContent = def.sub;
+  if (n.fig) {
+    el('text', { class:'dgm-node__fig', x:x + w - 9, y:y + h - 9, 'text-anchor':'end' }, g).textContent = n.fig;
+  }
+  return g;
+}
+
+function drawClaim(parent, n, def) {
+  const g = el('g', {
+    class:`dgm-node dgm-node--claim`,
+    'data-id': def._id, 'data-status':'claim', 'data-kind':'claim', 'data-tier':'claim',
+  }, parent);
+  el('rect', { class:'dgm-node__bg', x:n.x, y:n.y, width:n.w, height:n.h, rx:3 }, g);
+  el('rect', { x:n.x + 9, y:n.y + 9, width:8, height:8,
+               fill: TIER_COLORS.claim, rx:1, opacity:0.55 }, g);
+  el('text', { class:'dgm-node__label', x:n.x + 23, y:n.y + 19 }, g).textContent = def.label;
+  el('text', { class:'dgm-node__sub', x:n.x + 23, y:n.y + 33 }, g).textContent = def.sub;
+  if (n.fig) {
+    el('text', { class:'dgm-node__fig', x:n.x + n.w - 9, y:n.y + n.h - 9, 'text-anchor':'end' }, g).textContent = n.fig;
+  }
+  return g;
+}
+
+function drawEdge(parent, e, nodes) {
+  const fromNode = nodes[e.from];
+  const toNode   = nodes[e.to];
+  if (!fromNode || !toNode) return null;
+
+  const anchor = e.anchor || { from:'b', to:'t' };
+  const p1 = anchorPoint(fromNode, anchor.from);
+  const p2 = anchorPoint(toNode, anchor.to);
+  const d = pathD(p1, p2, e.curve);
+  const mid = pathMidpoint(p1, p2, e.curve);
+
+  const g = el('g', { class:'dgm-edge', 'data-id':e.id, 'data-status': e.status || 'verified' }, parent);
+  const markerStatus = e.status === 'claim' ? 'claim' : (e.status === 'verified' ? 'default' : 'default');
+  el('path', { class:'dgm-edge__line', d, fill:'none', 'marker-end':`url(#arr-${markerStatus})` }, g);
+
+  if (e.via && !e.hideBadge) {
+    const text = e.via;
+    const w = text.length * 6.4 + 16;
+    const h = 16;
+    const bx = mid.x - w/2, by = mid.y - h/2;
+    const bg = el('g', { class:'dgm-edge__badge' }, g);
+    el('rect', { class:'dgm-edge__badge-bg', x:bx, y:by, width:w, height:h, rx:8 }, bg);
+    el('text', { class:'dgm-edge__badge-tx', x:mid.x, y:mid.y + 3.2, 'text-anchor':'middle' }, bg).textContent = text;
+  }
+  return g;
+}
+
+function drawCanvasFrame(parent) {
+  const w = 1180, h = 720, c = 14;
+  [[0,0,1,1],[w,0,-1,1],[0,h,1,-1],[w,h,-1,-1]].forEach(([x,y,sx,sy]) => {
+    el('path', {
+      class:'canvas-corner',
+      d:`M ${x + c*sx} ${y} L ${x} ${y} L ${x} ${y + c*sy}`,
+    }, parent);
+  });
+  el('text', { class:'canvas-fig', x:14, y:h - 12 }, parent).textContent = 'ASCEND HW MAP · v3';
+  el('text', { class:'canvas-fig', x:w - 14, y:h - 12, 'text-anchor':'end' }, parent)
+    .textContent = `FIG.${ARCH_META[state.arch].fig}`;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function getScene() { return SCENES[state.arch]; }
+function getEdge(id) {
+  return getScene().edges.find(e => e.id === id);
+}
+function nodeMap(scene) {
+  const m = {};
+  scene.nodes.forEach(n => {
+    if (OBJECTS[n.ref]) m[n.ref] = { ...n, _id:n.ref };
+  });
+  return m;
+}
+
+function render() {
+  const scene = getScene();
+  const meta = ARCH_META[state.arch];
+  document.getElementById('archTitle').textContent = meta.title;
+  document.getElementById('archMeta').textContent = meta.meta;
+  document.getElementById('archFig').textContent = meta.fig;
+
+  document.querySelectorAll('#archTabs .tabbar__btn').forEach(b => {
+    b.setAttribute('aria-selected', b.dataset.arch === state.arch ? 'true' : 'false');
+  });
+
+  renderCanvas();
+  renderScenarios();
+  renderPathBar();
+  renderDetail();
+  applyScenarioHighlight();
+  applyClaimVisibility();
+}
+
+function renderCanvas() {
+  const lF = document.getElementById('layerCanvasFrame');
+  const lC = document.getElementById('layerContainers');
+  const lE = document.getElementById('layerEdges');
+  const lN = document.getElementById('layerNodes');
+  const lP = document.getElementById('layerPulse');
+  [lF, lC, lE, lN, lP].forEach(l => l.innerHTML = '');
+
+  drawCanvasFrame(lF);
+
+  const scene = getScene();
+  scene.containers.forEach(c => drawContainer(lC, c));
+  const nodes = nodeMap(scene);
+  scene.edges.forEach(e => drawEdge(lE, e, nodes));
+  scene.nodes.forEach(n => {
+    const def = OBJECTS[n.ref];
+    if (!def) return;
+    drawNode(lN, n, { ...def, _id:n.ref });
+  });
+
+  lN.querySelectorAll('.dgm-node').forEach(g => {
+    const id = g.getAttribute('data-id');
+    g.addEventListener('mouseenter', () => peekNode(id));
+    g.addEventListener('mouseleave', () => clearPeek());
+    g.addEventListener('click', e => { e.stopPropagation(); selectNode(id); });
+  });
+  lE.querySelectorAll('.dgm-edge').forEach(g => {
+    const id = g.getAttribute('data-id');
+    g.addEventListener('mouseenter', () => peekEdge(id));
+    g.addEventListener('mouseleave', () => clearPeek());
+    g.addEventListener('click', e => { e.stopPropagation(); selectEdge(id); });
+  });
+}
+
+function renderScenarios() {
+  const ul = document.getElementById('scenarioList');
+  const scene = getScene();
+  ul.innerHTML = '';
+  scene.scenarios.forEach((s, idx) => {
+    const li = document.createElement('li');
+    const disabled = s.disabled || (s.claim && !state.showClaim);
+    li.className = 'scenario';
+    li.dataset.id = s.id;
+    li.setAttribute('aria-selected', state.scenario === s.id ? 'true' : 'false');
+    if (disabled) li.setAttribute('aria-disabled', 'true');
+
+    const num = document.createElement('span');
+    num.className = 'scenario__num';
+    num.textContent = String(idx + 1).padStart(2, '0');
+    li.appendChild(num);
+
+    const main = document.createElement('div');
+    main.className = 'scenario__main';
+    main.innerHTML = `<b>${s.label}</b><span>${s.sub || ''}</span>`;
+    li.appendChild(main);
+
+    const dot = document.createElement('span');
+    dot.className = `status-dot status-dot--${s.status}`;
+    li.appendChild(dot);
+
+    if (!disabled) li.addEventListener('click', () => selectScenario(s.id));
+    else li.title = s.claim && !state.showClaim
+      ? '当前 Claim 层已关闭，开启后可查看'
+      : '当前架构视图不支持此场景';
+    ul.appendChild(li);
+  });
+}
+
+function renderPathBar() {
+  const scene = getScene();
+  const sc = scene.scenarios.find(s => s.id === state.scenario);
+  const title = document.getElementById('footTitle');
+  const sub   = document.getElementById('footSub');
+  const steps = document.getElementById('pathSteps');
+  steps.innerHTML = '';
+  if (!sc || !sc.steps) {
+    title.textContent = sc ? sc.label : '—';
+    sub.textContent = '此架构视图下不可用';
+    return;
+  }
+  title.textContent = sc.label;
+  sub.textContent = `SCENARIO · ${sc.steps.length} STEPS · ${sc.status.toUpperCase()}`;
+
+  let lastTo = null;
+  let stepCount = 0;
+  sc.steps.forEach((eid, i) => {
+    const e = scene.edges.find(x => x.id === eid);
+    if (!e) return;
+    if (lastTo !== e.from) {
+      stepCount++;
+      addStep(steps, e.from, stepCount);
+    }
+    addArrow(steps);
+    if (e.via) {
+      addVia(steps, e.via);
+      addArrow(steps);
+    }
+    stepCount++;
+    addStep(steps, e.to, stepCount);
+    lastTo = e.to;
+  });
+}
+function addStep(parent, label, n) {
+  const span = document.createElement('span');
+  span.className = 'path-step';
+  span.dataset.step = String(n);
+  span.innerHTML = `<span class="path-step__no">${String(n).padStart(2, '0')}</span><span>${label}</span>`;
+  parent.appendChild(span);
+}
+function addVia(parent, text) {
+  const span = document.createElement('span');
+  span.className = 'path-step path-step--via';
+  span.textContent = text;
+  parent.appendChild(span);
+}
+function addArrow(parent) {
+  const span = document.createElement('span');
+  span.className = 'path-arrow';
+  span.textContent = '→';
+  parent.appendChild(span);
+}
+
+function renderDetail() {
+  const railK = document.getElementById('railKicker');
+  const railT = document.getElementById('railTitle');
+  const railS = document.getElementById('railSub');
+  const railP = document.getElementById('railPill');
+  const railB = document.getElementById('railBody');
+
+  if (!state.selected) {
+    railK.textContent = 'SELECT · 选中对象';
+    railT.textContent = '点选画布对象';
+    railS.textContent = '— 节点或通路 —';
+    railP.hidden = true;
+    railB.innerHTML = '<div class="empty">悬停或点击画布上的<b>存储 / 计算 / 通路</b>对象，这里会显示归属、用途、可信度与来源。</div>';
+    return;
+  }
+
+  if (state.selected.type === 'node') {
+    const def = OBJECTS[state.selected.id];
+    if (!def) return;
+    const status = def.status || 'verified';
+    const kindLabel = ({
+      storage:'存储单元', compute:'计算单元', control:'调度单元',
+      mte:'随路通路', engine:'独立引擎', claim:'IO-Die · Claim'
+    })[def.kind] || 'OBJECT';
+    railK.textContent = `${kindLabel.toUpperCase()} · ${state.selected.id}`;
+    railT.textContent = def.label;
+    railS.textContent = def.sub || '';
+    railP.hidden = false;
+    railP.className = `status-pill status-pill--${status}`;
+    railP.textContent = status;
+
+    let html = '';
+    html += `<div class="rail-section"><h4>Description</h4><p>${def.desc || '—'}</p></div>`;
+    if (def.tags) {
+      html += '<div class="rail-section"><h4>Properties</h4><dl class="rail-grid">';
+      for (const k in def.tags) html += `<dt>${k}</dt><dd>${def.tags[k]}</dd>`;
+      html += '</dl></div>';
+    }
+    html += `<div class="rail-source">SOURCE · 02-knowledge/00-shared/ascend-aicore-hardware/overview.md</div>`;
+    railB.innerHTML = html;
+    return;
+  }
+
+  if (state.selected.type === 'edge') {
+    const e = getEdge(state.selected.id);
+    if (!e) return;
+    const status = e.status || 'verified';
+    railK.textContent = '通路 / EDGE';
+    railT.textContent = e.via || `${e.from} → ${e.to}`;
+    railS.textContent = `${e.from} → ${e.to}`;
+    railP.hidden = false;
+    railP.className = `status-pill status-pill--${status}`;
+    railP.textContent = status;
+
+    let html = '';
+    html += `<div class="rail-section"><h4>Direction</h4>`;
+    html += `<p><span class="lit">${e.from}</span> &nbsp;→&nbsp; <span class="lit">${e.to}</span></p></div>`;
+    if (e.via) {
+      html += `<div class="rail-section"><h4>Via</h4><p><span class="lit">${e.via}</span></p></div>`;
+    }
+    html += `<div class="rail-section"><h4>Architecture</h4><p>${ARCH_META[state.arch].title}</p></div>`;
+    html += `<div class="rail-source">SOURCE · interaction-spec.md §4 + overview.md</div>`;
+    railB.innerHTML = html;
+    return;
+  }
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+function selectScenario(id) {
+  if (state.scenario === id) return;
+  state.scenario = id;
+  stop();
+  document.querySelectorAll('#scenarioList .scenario').forEach(li => {
+    li.setAttribute('aria-selected', li.dataset.id === id ? 'true' : 'false');
+  });
+  renderPathBar();
+  applyScenarioHighlight();
+}
+
+function applyScenarioHighlight() {
+  const scene = getScene();
+  const sc = scene.scenarios.find(s => s.id === state.scenario);
+  const activeIds = new Set((sc && sc.steps) || []);
+  document.querySelectorAll('#layerEdges .dgm-edge').forEach(g => {
+    g.classList.toggle('dgm-edge--active', activeIds.has(g.getAttribute('data-id')));
+  });
+}
+
+function applyClaimVisibility() {
+  const v = state.showClaim;
+  document.querySelectorAll('.dgm-node[data-status="claim"], .dgm-container--claim, .dgm-edge[data-status="claim"]').forEach(g => {
+    g.style.display = v ? '' : 'none';
+  });
+}
+
+function selectNode(id) {
+  state.selected = { type:'node', id };
+  document.querySelectorAll('#layerNodes .dgm-node').forEach(g => {
+    if (g.getAttribute('data-id') === id) g.setAttribute('aria-selected', 'true');
+    else g.removeAttribute('aria-selected');
+  });
+  renderDetail();
+}
+function selectEdge(id) {
+  state.selected = { type:'edge', id };
+  document.querySelectorAll('#layerNodes .dgm-node').forEach(g => g.removeAttribute('aria-selected'));
+  renderDetail();
+}
+function peekNode(id) {
+  if (state.selected) return;
+  state.selected = { type:'node', id };
+  renderDetail();
+  state.selected = null;
+}
+function peekEdge(id) {
+  if (state.selected) return;
+  state.selected = { type:'edge', id };
+  renderDetail();
+  state.selected = null;
+}
+function clearPeek() {
+  if (!state.selected) renderDetail();
+}
+
+function selectArch(arch) {
+  if (state.arch === arch) return;
+  state.arch = arch;
+  const scene = getScene();
+  const sc = scene.scenarios.find(s => s.id === state.scenario);
+  if (!sc || sc.disabled || (sc.claim && !state.showClaim)) {
+    state.scenario = scene.default;
+  }
+  state.selected = null;
+  stop();
+  render();
+}
+
+function toggleClaim(checked) {
+  state.showClaim = checked;
+  const scene = getScene();
+  const sc = scene.scenarios.find(s => s.id === state.scenario);
+  if (sc && sc.claim && !state.showClaim) {
+    state.scenario = scene.default;
+  }
+  render();
+}
+
+/* ============================================================
+   PLAYBACK — sequential pulse + sync path-bar step lit
+   ============================================================ */
+function highlightStep(stepIndex) {
+  const steps = document.querySelectorAll('#pathSteps .path-step:not(.path-step--via)');
+  steps.forEach(s => s.classList.remove('path-step--lit'));
+  if (stepIndex >= 0 && stepIndex < steps.length) {
+    steps[stepIndex].classList.add('path-step--lit');
+  }
+}
+
+function play() {
+  const scene = getScene();
+  const sc = scene.scenarios.find(s => s.id === state.scenario);
+  if (!sc || !sc.steps) return;
+  stop();
+  state.playing = true;
+  document.getElementById('btnPlay').setAttribute('aria-pressed', 'true');
+
+  const layer = document.getElementById('layerPulse');
+  const nodes = nodeMap(scene);
+
+  let i = 0;
+  const STEP_MS = 720;
+  const PAUSE_MS = 120;
+
+  const tick = () => {
+    if (!state.playing) return;
+    layer.innerHTML = '';
+    const eid = sc.steps[i % sc.steps.length];
+    const e = scene.edges.find(x => x.id === eid);
+    if (!e) { i++; state.playTimer = setTimeout(tick, 60); return; }
+    const fromN = nodes[e.from], toN = nodes[e.to];
+    if (!fromN || !toN) { i++; state.playTimer = setTimeout(tick, 60); return; }
+    highlightStep(i + 1);
+    const anchor = e.anchor || { from:'b', to:'t' };
+    const p1 = anchorPoint(fromN, anchor.from);
+    const p2 = anchorPoint(toN, anchor.to);
+    const d = pathD(p1, p2, e.curve);
+    const lenPath = el('path', { d, fill:'none', stroke:'transparent' }, layer);
+    const halo = el('circle', { class:'dgm-pulse__halo', r:14, cx:p1.x, cy:p1.y }, layer);
+    const core = el('circle', { class:'dgm-pulse__core', r:5,  cx:p1.x, cy:p1.y }, layer);
+    const total = lenPath.getTotalLength();
+    const start = performance.now();
+    const animate = (now) => {
+      if (!state.playing) return;
+      const t = Math.min(1, (now - start) / STEP_MS);
+      const eased = 0.5 - 0.5 * Math.cos(Math.PI * t); // smooth in/out
+      const pt = lenPath.getPointAtLength(eased * total);
+      core.setAttribute('cx', pt.x);
+      core.setAttribute('cy', pt.y);
+      halo.setAttribute('cx', pt.x);
+      halo.setAttribute('cy', pt.y);
+      halo.setAttribute('r', 11 + Math.sin(t * Math.PI * 3) * 4);
+      if (t < 1) {
+        state.playRAF = requestAnimationFrame(animate);
+      } else {
+        i++;
+        state.playTimer = setTimeout(tick, PAUSE_MS);
+      }
+    };
+    state.playRAF = requestAnimationFrame(animate);
+  };
+  tick();
+}
+
+function stop() {
+  state.playing = false;
+  if (state.playTimer) clearTimeout(state.playTimer);
+  if (state.playRAF)   cancelAnimationFrame(state.playRAF);
+  document.getElementById('layerPulse').innerHTML = '';
+  document.getElementById('btnPlay').removeAttribute('aria-pressed');
+  highlightStep(-1);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  document.querySelectorAll('#archTabs .tabbar__btn').forEach(b => {
+    b.addEventListener('click', () => selectArch(b.dataset.arch));
+  });
+  document.getElementById('claimToggle').addEventListener('change', e => toggleClaim(e.target.checked));
+  document.getElementById('btnPlay').addEventListener('click', play);
+  document.getElementById('btnStop').addEventListener('click', stop);
+
+  // canvas blank click — clear selection
+  document.getElementById('canvas').addEventListener('click', (e) => {
+    if (e.target.tagName === 'svg' || e.target.id === 'layerCanvasFrame') {
+      state.selected = null;
+      document.querySelectorAll('#layerNodes .dgm-node').forEach(g => g.removeAttribute('aria-selected'));
+      renderDetail();
+    }
+  });
+
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
