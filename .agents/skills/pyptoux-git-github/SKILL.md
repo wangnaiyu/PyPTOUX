@@ -36,6 +36,10 @@ description: Use this skill when working inside the PyPTOUX repository and you n
    - 能用 `gh pr create` 就优先用它。
    - 如果 GitHub connector 可用，也可以使用，但 `gh` 是更可靠的 fallback。
    - 如果 connector 报 `must be a collaborator` 之类的权限问题，不要反复重试，直接切换到 `gh`。
+   - 如果本轮没有由 agent 直接完成 PR 创建，而是把 PR 创建交给用户，包括只提供 GitHub PR 创建链接的情况，必须主动提供：
+     - 一个建议的 PR title
+     - 一份可直接粘贴的中文 PR description/body
+     - 一句简短提示，请用户完成 `create pr` / `merge` / `delete branch` 后通知 agent 做本地 cleanup
 9. PR merge 之后：
    - 切回 `main`
    - 拉取最新的 `origin/main`
@@ -48,16 +52,18 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 - 优先使用小而聚焦的 task branch，不要反复复用旧分支。
 - 不要把 tokens、device codes 或其他敏感凭据写进仓库文件。
 - 判断 CLI 是否能创建 PR 时，以 `gh auth status` 为准。
-- 如果因为 `gh` 未登录或权限不足而无法创建 PR，主动提供：
+- 只要本轮没有由 agent 直接完成 PR 创建，而是需要用户去 GitHub 手动创建 PR，主动提供：
   - 一个建议的 PR title
   - 一份可直接粘贴的中文 PR description/body
   - 一句简短提示，请用户去 GitHub 完成 `create pr`、`merge`、`delete branch`
-- 用户确认这些 GitHub 侧动作已经完成后，主动做本地清理：
+- 用户确认 PR 已创建 / 已 merge / 已删除远端分支 / GitHub 侧动作已经完成后，不要只给命令建议；必须立即主动做本地 cleanup：
   - `git switch main`
   - `git pull origin main`
   - `git branch -d <working-branch>`
   - `git fetch --prune`
+  - `git status -sb`
   - 确认本地仓库已回到干净的 `main`
+- 如果 cleanup 中遇到本地未提交变更、分支未合并、或无法判断 `<working-branch>`，先说明具体风险，再询问用户如何处理。
 
 ## 安全规则 | Safety Rules
 
