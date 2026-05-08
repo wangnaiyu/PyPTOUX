@@ -8,6 +8,7 @@
 | --- | --- |
 | PyPTO 架构、编译链路、术语、业务机制 | `02-knowledge/` |
 | 通用业务框架、通用流程、公共概念 | `02-knowledge/00-shared/` |
+| Graph 节点显示参数、Tensor Graph / Tile Graph / Block Graph / Execute Graph 节点 | `02-knowledge/00-shared/pypto-computation-graph-nodes/` |
 | A5、Ascend 950、950PR、950DT、950 硬件流 | `02-knowledge/00-shared/ascend-a5-950-hardware/` |
 | 竞品、案例、灵感、模式对照 | `03-insights/` |
 | 通用交互模式、IDE 模式、可视化策略 | `04-uxdesign/00-shared/` 或 `03-insights/00-shared/` |
