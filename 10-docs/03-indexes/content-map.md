@@ -26,7 +26,7 @@
 | --- | --- |
 | Block Level Coding | `02-knowledge/01-block-level-coding/` `04-uxdesign/01-block-level-coding/` `05-prototypes/01-block-level-coding/` |
 | Swimlane Profiler | `02-knowledge/02-swimlane-profiler/` `04-uxdesign/02-swimlane-profiler/` `05-prototypes/02-swimlane-profiler/` |
-| Operator Doc Assistant | `05-prototypes/03-operator-doc-assistant/` |
+| Operator Doc Assistant | `05-prototypes/04-operator-doc-assistant/` |
 
 ## Shared Buckets
 
