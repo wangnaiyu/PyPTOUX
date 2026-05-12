@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>PyPTO Studio · Compile/Runtime 统一调优工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/layout.css">
+<link rel="stylesheet" href="styles/runtime.css">
+<link rel="stylesheet" href="styles/swimlane.css">
+<link rel="stylesheet" href="styles/compile.css">
+</head>
+<body data-mode="runtime" data-step="1">
+
+<!-- ===================== Top Bar ===================== -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">PS</div>
+    <div class="brand-name">PyPTO Studio<span class="secondary">v0.4</span></div>
+  </div>
+
+  <div class="session-info">
+    <span class="kernel-name">glm_attention.py</span>
+    <span class="sep">·</span>
+    <span>session</span>
+    <span class="mono">#c4a7e21</span>
+    <span class="sep">·</span>
+    <span>Ascend910B</span>
+  </div>
+
+  <!-- Mode switch: Compile / Runtime -->
+  <div class="mode-switch" role="tablist">
+    <button class="mode" data-mode-target="compile" role="tab">
+      <span class="mico">⚒</span>
+      <span class="mlabel">Compile</span>
+      <span class="mstat ok">✓</span>
+    </button>
+    <button class="mode active" data-mode-target="runtime" role="tab">
+      <span class="mico">⚡</span>
+      <span class="mlabel">Runtime</span>
+      <span class="mstat warn">⚠</span>
+    </button>
+  </div>
+
+  <!-- Sub-tab bar — visible content differs per mode -->
+  <div class="tab-bar runtime-tabs">
+    <div class="tab active"><span class="ico">▶</span>Playbook</div>
+    <div class="tab"><span class="ico">≡</span>性能对比</div>
+    <div class="tab"><span class="ico">⟳</span>历史会话</div>
+  </div>
+  <div class="tab-bar compile-tabs">
+    <div class="tab active"><span class="ico">⚠</span>失败诊断</div>
+    <div class="tab"><span class="ico">⚙</span>调参实验</div>
+    <div class="tab"><span class="ico">⟳</span>历史对比</div>
+  </div>
+
+  <div class="topbar-spacer"></div>
+
+  <div class="health-pill">
+    <span class="hp-item"><span class="hp-k">compile</span><span class="hp-v ok">✓ 1.8s</span></span>
+    <span class="hp-sep">·</span>
+    <span class="hp-item"><span class="hp-k">runtime</span><span class="hp-v warn">2.3× baseline</span></span>
+    <span class="hp-sep">·</span>
+    <span class="hp-item"><span class="hp-k">cube</span><span class="hp-v warn">28%</span></span>
+  </div>
+
+  <button class="btn ghost" id="btn-help">
+    <span class="ico">?</span>演示路径
+  </button>
+</header>
+
+<!-- ===================== Runtime Mode Workspace ===================== -->
+<main class="workspace runtime-workspace">
+
+  <!-- LEFT: Playbook outline -->
+  <aside class="left-panel" id="playbook-outline">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Playbook</div>
+        <div class="panel-sub" id="playbook-name">Mix 流水阻塞</div>
+      </div>
+      <div class="panel-meta">
+        <span id="playbook-progress">1/7</span>
+      </div>
+    </div>
+
+    <!-- Author/Trust strip -->
+    <div class="pb-author">
+      <div class="avatar">张</div>
+      <div class="pb-author-meta">
+        <div class="pb-author-name">@张明 <span class="pb-author-team">· 性能调优组</span></div>
+        <div class="pb-author-stats">
+          <span class="ico">▶</span> 47 次走过
+          <span class="dot-sep">·</span>
+          <span class="ok">89%</span> 成功
+          <span class="dot-sep">·</span>
+          ⌀ 8 min
+        </div>
+      </div>
+    </div>
+
+    <div class="pb-steps" id="pb-steps">
+      <!-- populated by render/playbook.js -->
+    </div>
+
+    <div class="pb-foot">
+      <button class="btn block ghost" id="btn-doc-mode">
+        <span class="ico">📄</span>看纯文档版
+      </button>
+    </div>
+  </aside>
+
+  <!-- CENTER: Current step (See / Suspect / Try) -->
+  <section class="center-panel" id="step-viewer">
+    <!-- populated by render/playbook.js -->
+  </section>
+
+  <!-- RIGHT: Swimlane (msprof overlay) -->
+  <aside class="right-panel" id="swimlane-panel">
+    <div class="panel-head sticky">
+      <div>
+        <div class="panel-title">msprof · 泳道图</div>
+        <div class="panel-sub">
+          <span class="mono">t = 0 → 500μs</span>
+          <span class="dot-sep">·</span>
+          <span id="swimlane-overlay-label">step 1 关注: cube_0</span>
+        </div>
+      </div>
+      <div class="sl-toolbar">
+        <button class="sl-tool" title="缩小"><span class="ico">−</span></button>
+        <button class="sl-tool" title="放大"><span class="ico">+</span></button>
+        <button class="sl-tool" title="跳到失败点"><span class="ico">⌖</span></button>
+      </div>
+    </div>
+    <div class="swimlane-host" id="swimlane-host">
+      <!-- SVG injected by render/swimlane.js -->
+    </div>
+  </aside>
+
+</main>
+
+<!-- ===================== Compile Mode Workspace (lightweight stub) ===================== -->
+<main class="workspace compile-workspace">
+  <div class="compile-stub" id="compile-stub">
+    <!-- populated by render/topbar.js when entering compile mode -->
+  </div>
+</main>
+
+<!-- ===================== Bottom: Knobs + Experiment compare ===================== -->
+<footer class="bottombar">
+  <div class="bb-section knobs">
+    <div class="bb-section-head">
+      <span class="bb-title">旋钮</span>
+      <span class="bb-hint">同一组旋钮 · 编译期影响 Pass 路径 · 运行期影响调度</span>
+    </div>
+    <div class="knob-row" id="knob-row">
+      <!-- populated by render/knobs.js -->
+    </div>
+  </div>
+  <div class="bb-section experiments">
+    <div class="bb-section-head">
+      <span class="bb-title">实验对比</span>
+      <span class="bb-hint">本 session 历次 run</span>
+    </div>
+    <div class="exp-table" id="exp-table">
+      <!-- populated by render/knobs.js -->
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== Modals ===================== -->
+
+<!-- Entry: Symptom Fingerprint matching -->
+<div class="modal-backdrop" id="modal-fingerprint">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="ico">✦</span>
+        Symptom Fingerprint · 匹配 Playbook
+      </div>
+      <button class="modal-x" data-close="modal-fingerprint">×</button>
+    </div>
+    <div class="modal-body" id="fingerprint-body">
+      <!-- populated by render/modals.js -->
+    </div>
+  </div>
+</div>
+
+<!-- Contribute Back -->
+<div class="modal-backdrop" id="modal-contribute">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="ico">⤴</span>
+        贡献回 Playbook
+      </div>
+      <button class="modal-x" data-close="modal-contribute">×</button>
+    </div>
+    <div class="modal-body" id="contribute-body">
+      <!-- populated by render/modals.js -->
+    </div>
+  </div>
+</div>
+
+<!-- Cross-mode jump transition layer -->
+<div class="mode-transition" id="mode-transition">
+  <div class="mt-card">
+    <div class="mt-from">Runtime · Playbook</div>
+    <div class="mt-arrow">→</div>
+    <div class="mt-to">Compile · Pass Tracer</div>
+    <div class="mt-reason" id="mt-reason"></div>
+  </div>
+</div>
+
+<!-- Help / demo path overlay -->
+<div class="modal-backdrop" id="modal-help">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><span class="ico">?</span>演示路径</div>
+      <button class="modal-x" data-close="modal-help">×</button>
+    </div>
+    <div class="modal-body">
+      <ol class="demo-path">
+        <li>初始进入：从慢 kernel 触发 <b>Symptom Fingerprint</b> 匹配。</li>
+        <li>跟随 Playbook Step 1 → 2 → 3，每步在右侧泳道图上有<b>关注区域高亮</b>。</li>
+        <li>Step 3 改 <code>mix_mode</code> 重跑 → Step 4 假设被证伪。</li>
+        <li>Step 5 触发 <b>跨模式跳转</b>，回到 Compile · Pass Tracer 看 AxisFusion 当时为何被禁。</li>
+        <li>Step 6 用新组合 <code>axis_fusion=on + stitch_mode=concat</code> 重新编译。</li>
+        <li>Step 7 验收：cube_util 71% / runtime 1.06×。</li>
+        <li>弹 <b>Contribute Back</b>，把新分支贡献回 Playbook。</li>
+      </ol>
+      <div class="demo-tip">
+        Tip: 底栏旋钮跨模式共享；改任意旋钮会同时影响编译期决策与运行期调度。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Scripts ===================== -->
+<script src="scripts/data/kernel.js"></script>
+<script src="scripts/data/swimlane.js"></script>
+<script src="scripts/data/playbook.js"></script>
+<script src="scripts/data/fingerprint.js"></script>
+<script src="scripts/render/topbar.js"></script>
+<script src="scripts/render/swimlane.js"></script>
+<script src="scripts/render/playbook.js"></script>
+<script src="scripts/render/knobs.js"></script>
+<script src="scripts/render/modals.js"></script>
+<script src="scripts/render/compile-stub.js"></script>
+<script src="scripts/main.js"></script>
+
+</body>
+</html>

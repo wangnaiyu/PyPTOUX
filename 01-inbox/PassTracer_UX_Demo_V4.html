@@ -1,0 +1,3486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pass Tracer · PyPTO 编译决策可视化器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 深色专业工具配色 */
+  --bg-base: #0d1117;
+  --bg-elev-1: #161b22;
+  --bg-elev-2: #1c2128;
+  --bg-elev-3: #21262d;
+  --bg-hover: #2a3038;
+  --border: #30363d;
+  --border-strong: #484f58;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --text-muted: #484f58;
+
+  /* 状态色 */
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.15);
+  --yellow: #d29922;
+  --yellow-dim: rgba(210,153,34,0.15);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.13);
+  --red-strong: rgba(248,81,73,0.22);
+  --blue: #58a6ff;
+  --blue-dim: rgba(88,166,255,0.15);
+  --purple: #bc8cff;
+  --purple-dim: rgba(188,140,255,0.15);
+  --orange: #db6d28;
+  --orange-dim: rgba(219,109,40,0.15);
+  --pink: #f778ba;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ===== Top Bar ===== */
+.topbar {
+  height: 44px;
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  margin-right: 24px;
+}
+.brand-logo {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -0.05em;
+}
+.brand-name { color: var(--text-primary); }
+.brand-name .secondary { color: var(--text-secondary); font-weight: 400; margin-left: 4px; }
+
+.session-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 0 16px;
+  border-left: 1px solid var(--border);
+  height: 100%;
+}
+.session-info .kernel-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.session-info .sep { color: var(--text-muted); }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid var(--red-strong);
+}
+.status-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.topbar-spacer { flex: 1; }
+
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-right: 14px;
+}
+.tab {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+.tab.active {
+  background: var(--bg-elev-3);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.tab .ico { font-family: 'JetBrains Mono', monospace; font-size: 13px; opacity: 0.7; }
+
+.btn {
+  padding: 5px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.btn.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #0d1117;
+  font-weight: 600;
+}
+.btn.primary:hover { background: #79b8ff; }
+.btn .ico { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+/* ===== Main Workspace ===== */
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr 440px;
+  min-height: 0;
+}
+
+/* ===== Left: Pass Timeline ===== */
+.left-panel {
+  background: var(--bg-elev-1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.panel-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.panel-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.pipeline-summary {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+}
+.pipeline-summary .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pipeline-summary .stat .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+.pipeline-summary .stat .label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stat.success .num { color: var(--green); }
+.stat.fail .num { color: var(--red); }
+.stat.skip .num { color: var(--text-tertiary); }
+.stat.total .num { color: var(--text-primary); }
+
+.timeline {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.timeline-group {
+  margin-bottom: 4px;
+}
+.timeline-group-head {
+  padding: 6px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.timeline-group-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.pass-item {
+  display: grid;
+  grid-template-columns: 14px 18px 1fr auto;
+  align-items: center;
+  padding: 5px 14px 5px 6px;
+  cursor: pointer;
+  position: relative;
+  gap: 6px;
+  transition: background 0.1s;
+  user-select: none;
+}
+.pass-item:hover { background: var(--bg-elev-2); }
+.pass-item.selected {
+  background: var(--bg-elev-3);
+  border-left: 2px solid var(--blue);
+  padding-left: 4px;
+}
+.pass-item.selected.fail {
+  border-left-color: var(--red);
+  background: var(--red-dim);
+}
+
+/* 展开箭头 */
+.pass-caret {
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s;
+  user-select: none;
+  width: 14px;
+  line-height: 1;
+}
+.pass-caret:hover { color: var(--text-primary); }
+.pass-node.open .pass-caret { transform: rotate(90deg); }
+.pass-node.no-schema .pass-caret { color: var(--text-muted); cursor: default; }
+.pass-node.no-schema .pass-caret:hover { color: var(--text-muted); }
+
+.pass-node.fail .pass-caret { color: var(--red); }
+.pass-node.warn .pass-caret { color: var(--yellow); }
+.pass-node.selected .pass-caret { color: var(--text-primary); }
+
+/* 展开后的 schema 容器 */
+.pass-schema {
+  display: none;
+  background: var(--bg-base);
+  border-left: 2px solid var(--bg-elev-3);
+  margin-left: 14px;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  animation: slideIn 0.15s ease;
+}
+.pass-node.open .pass-schema { display: block; }
+.pass-node.open.fail .pass-schema { border-left-color: var(--red); }
+.pass-node.open.warn .pass-schema { border-left-color: var(--yellow); }
+.pass-node.open.selected .pass-schema { border-left-color: var(--blue); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.schema-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  padding: 4px 12px 4px 14px;
+  gap: 10px;
+  align-items: flex-start;
+}
+.schema-row .sr-label {
+  color: var(--text-tertiary);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 3px;
+}
+.schema-row.in .sr-label { color: var(--blue); }
+.schema-row.out .sr-label { color: var(--green); }
+.schema-row.action .sr-label { color: var(--purple); }
+.schema-row.meta .sr-label { color: var(--orange); }
+.schema-row.fail-out .sr-label { color: var(--red); }
+
+.schema-row .sr-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* Tensor chip */
+.tensor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 10.5px;
+  max-width: 100%;
+  overflow: hidden;
+}
+.tensor:hover { border-color: var(--border-strong); }
+.tensor .t-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tensor .t-shape {
+  color: var(--text-tertiary);
+  font-size: 10px;
+}
+.tensor .t-dtype {
+  color: var(--purple);
+  font-size: 10px;
+  padding: 0 4px;
+  background: var(--purple-dim);
+  border-radius: 2px;
+}
+.tensor.new { border-color: rgba(63,185,80,0.3); background: rgba(63,185,80,0.04); }
+.tensor.new .t-name { color: var(--green); }
+.tensor.removed { border-color: rgba(248,81,73,0.25); background: rgba(248,81,73,0.04); opacity: 0.7; text-decoration: line-through; }
+.tensor.changed { border-color: rgba(210,153,34,0.3); background: rgba(210,153,34,0.04); }
+.tensor.changed .t-name { color: var(--yellow); }
+
+.tensor-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.schema-action {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+}
+.schema-action code {
+  background: var(--bg-elev-2);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--pink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+}
+.schema-action .action-tag {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--bg-elev-2);
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-secondary);
+  margin-right: 4px;
+  border: 1px solid var(--border);
+}
+
+.schema-meta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+.schema-meta-row .m-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.schema-meta-row .m-item .m-key { color: var(--text-tertiary); }
+.schema-meta-row .m-item .m-val { color: var(--text-secondary); }
+.schema-meta-row .m-item .m-val.on { color: var(--green); }
+.schema-meta-row .m-item .m-val.off { color: var(--red); }
+
+.schema-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  color: var(--blue);
+  cursor: pointer;
+  margin-top: 2px;
+  padding: 2px 0;
+}
+.schema-jump:hover { text-decoration: underline; }
+.schema-jump .arrow { font-family: 'JetBrains Mono', monospace; }
+
+.schema-error-msg {
+  background: var(--red-dim);
+  border-left: 2px solid var(--red);
+  padding: 6px 10px;
+  margin: 2px 0;
+  border-radius: 0 3px 3px 0;
+  color: var(--red);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.schema-divider {
+  margin: 2px 14px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ===== Schema Diff Row ===== */
+.schema-diff {
+  background: linear-gradient(90deg, rgba(88,166,255,0.05) 0%, transparent 100%);
+  border-top: 1px dashed var(--border);
+  padding: 6px 12px 8px 14px;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+}
+.schema-diff .sr-label {
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.schema-diff .diff-summary {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 10.5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.diff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  border: 1px solid transparent;
+}
+.diff-chip.add { background: rgba(63,185,80,0.12); color: var(--green); border-color: rgba(63,185,80,0.25); }
+.diff-chip.add::before { content: '+'; font-weight: 700; }
+.diff-chip.del { background: rgba(248,81,73,0.1); color: var(--red); border-color: rgba(248,81,73,0.22); }
+.diff-chip.del::before { content: '−'; font-weight: 700; }
+.diff-chip.mod { background: rgba(210,153,34,0.12); color: var(--yellow); border-color: rgba(210,153,34,0.25); }
+.diff-chip.mod::before { content: '~'; font-weight: 700; }
+.diff-chip.empty { color: var(--text-tertiary); font-style: italic; padding: 0; border: none; background: transparent; }
+
+/* ===== Tensor Tracking Mode ===== */
+.tracking-bar {
+  display: none;
+  height: 36px;
+  background: linear-gradient(90deg, rgba(210,153,34,0.18), rgba(210,153,34,0.06));
+  border-bottom: 1px solid var(--yellow);
+  padding: 0 16px;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  flex-shrink: 0;
+  gap: 12px;
+}
+body.tracking .tracking-bar { display: flex; }
+.tracking-bar .tb-icon { color: var(--yellow); font-size: 13px; }
+.tracking-bar .tb-label {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.tracking-bar .tb-tensor {
+  color: var(--yellow);
+  font-weight: 700;
+  background: rgba(210,153,34,0.15);
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(210,153,34,0.3);
+}
+.tracking-bar .tb-stats {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.tracking-bar .tb-stats strong { color: var(--text-primary); }
+.tracking-bar .tb-spacer { flex: 1; }
+.tracking-bar .tb-action {
+  padding: 3px 10px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tracking-bar .tb-action:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.tracking-bar .tb-close {
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.tracking-bar .tb-close:hover { color: var(--text-primary); background: var(--bg-elev-2); }
+
+/* tensor 高亮态 (追踪中) */
+body.tracking .tensor { opacity: 0.3; transition: opacity 0.15s, box-shadow 0.15s, border-color 0.15s; }
+body.tracking .tensor.track-hit {
+  opacity: 1;
+  border-color: var(--yellow) !important;
+  background: rgba(210,153,34,0.15) !important;
+  box-shadow: 0 0 0 1px var(--yellow), 0 0 8px rgba(210,153,34,0.4);
+}
+body.tracking .tensor.track-hit .t-name { color: var(--yellow) !important; }
+
+/* Pass 节点暗淡 (无追踪 tensor) */
+body.tracking .pass-node:not(.track-relevant) { opacity: 0.35; transition: opacity 0.15s; }
+body.tracking .pass-node.track-relevant { opacity: 1; }
+
+/* Pass 节点 lifecycle 标记 */
+.lifecycle-marker {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--yellow);
+  z-index: 5;
+}
+body.tracking .pass-node.track-relevant .lifecycle-marker {
+  display: block;
+}
+body.tracking .pass-node.track-relevant .lifecycle-marker.birth {
+  background: linear-gradient(180deg, transparent 0%, var(--yellow) 30%, var(--yellow) 100%);
+}
+body.tracking .pass-node.track-relevant .lifecycle-marker.death {
+  background: linear-gradient(180deg, var(--yellow) 0%, var(--yellow) 70%, transparent 100%);
+}
+body.tracking .pass-node.track-relevant .lifecycle-marker.transform {
+  background: var(--orange);
+}
+
+.pass-node { position: relative; }
+
+/* 可点击的 tensor chip 增加 hover 提示 */
+.tensor.clickable { cursor: pointer; }
+.tensor.clickable:hover {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 1px var(--blue);
+}
+
+/* ===== Flow View (Tensor × Pass Matrix) ===== */
+.flow-view-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  z-index: 90;
+  display: none;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease;
+}
+.flow-view-overlay.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.fv-header {
+  height: 56px;
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.fv-header .fv-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.fv-header .fv-title-icon {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, var(--yellow), var(--orange));
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg-base);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 11px;
+}
+.fv-header .fv-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding-left: 14px;
+  border-left: 1px solid var(--border);
+}
+.fv-header .fv-spacer { flex: 1; }
+
+.fv-add-tensor {
+  position: relative;
+}
+.fv-add-tensor-btn {
+  padding: 5px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fv-add-tensor-btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.fv-add-tensor-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  min-width: 240px;
+  max-height: 360px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 100;
+  padding: 4px 0;
+}
+.fv-add-tensor.open .fv-add-tensor-dropdown { display: block; }
+.fv-dropdown-item {
+  padding: 6px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.fv-dropdown-item:hover { background: var(--bg-hover); }
+.fv-dropdown-item.tracked {
+  color: var(--text-tertiary);
+  background: var(--bg-elev-3);
+  cursor: default;
+}
+.fv-dropdown-item.tracked::after { content: '✓ tracked'; font-size: 10px; color: var(--yellow); }
+.fv-dropdown-item .occur-count {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+.fv-dropdown-search {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.fv-dropdown-search input {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  border-radius: 3px;
+  outline: none;
+}
+.fv-dropdown-search input:focus { border-color: var(--blue); }
+.fv-dropdown-empty {
+  padding: 12px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  font-style: italic;
+}
+
+.fv-close {
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: 4px;
+}
+.fv-close:hover { background: var(--bg-elev-3); color: var(--text-primary); }
+
+.fv-tracked-chips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 600px;
+}
+.fv-tracked-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 4px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(210,153,34,0.18);
+  border: 1px solid rgba(210,153,34,0.4);
+  color: var(--yellow);
+}
+.fv-tracked-chip .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.fv-tracked-chip .chip-remove {
+  cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  padding: 0 2px;
+  font-size: 12px;
+  font-weight: 400;
+}
+.fv-tracked-chip .chip-remove:hover { color: white; }
+
+/* Flow Body — 矩阵布局 */
+.fv-body {
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Pass 列头（横向时间轴） */
+.fv-pass-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.fv-pass-row-label {
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.fv-pass-row-label .label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.fv-pass-row-label .stat {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+.fv-pass-row-label .stat strong { color: var(--text-primary); }
+.fv-pass-row-label .stat .fail { color: var(--red); font-weight: 700; }
+
+.fv-pass-cols {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+}
+.fv-pass-col {
+  flex: 0 0 38px;
+  border-right: 1px solid var(--bg-elev-2);
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s;
+}
+.fv-pass-col:hover { background: var(--bg-elev-2); }
+.fv-pass-col.failed { background: var(--red-dim); }
+.fv-pass-col.warn { background: var(--yellow-dim); }
+.fv-pass-col.skip { opacity: 0.4; }
+.fv-pass-col.crossing {
+  background: rgba(210,153,34,0.12) !important;
+  box-shadow: inset 0 -2px 0 var(--yellow);
+}
+.fv-pass-col.selected-col {
+  background: var(--blue-dim) !important;
+  box-shadow: inset 0 -3px 0 var(--blue);
+}
+
+.fv-pass-col .pass-idx {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.fv-pass-col .pass-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+.fv-pass-col .pass-dot.ok { background: var(--green); }
+.fv-pass-col .pass-dot.fail { background: var(--red); }
+.fv-pass-col .pass-dot.warn { background: var(--yellow); }
+.fv-pass-col .pass-dot.skip { background: var(--text-muted); }
+.fv-pass-col .crossing-mark {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 9px;
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+/* Stage 分组 */
+.fv-stage-bar {
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 200px 1fr;
+}
+.fv-stage-bar-label {
+  border-right: 1px solid var(--border);
+  padding: 4px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.fv-stage-bar-cols {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.fv-stage-segment {
+  border-right: 1px solid var(--border);
+  padding: 4px 8px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fv-stage-segment:last-child { border-right: none; }
+.fv-stage-segment .stage-tag {
+  padding: 1px 5px;
+  background: var(--red-dim);
+  color: var(--red);
+  border-radius: 2px;
+  font-size: 8px;
+}
+
+/* Tensor 流水线 (每个 tensor 一条横向轨道) */
+.fv-tracks {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.fv-track {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  border-bottom: 1px solid var(--border);
+  min-height: 64px;
+}
+.fv-track:hover { background: var(--bg-elev-1); }
+
+.fv-track-label {
+  padding: 14px 14px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  background: var(--bg-elev-1);
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+.fv-track-label .name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 12px;
+}
+.fv-track-label .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.fv-track-label .meta {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+}
+.fv-track-label .lifecycle-span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.fv-track-label .lifecycle-span .arrow {
+  color: var(--text-tertiary);
+}
+
+.fv-track-cells {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+}
+.fv-track-cells::-webkit-scrollbar { display: none; }
+
+/* Tensor flow 线（背景） */
+.fv-track-cells::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--bg-elev-3);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fv-track-cell {
+  flex: 0 0 38px;
+  border-right: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  height: 64px;
+}
+.fv-track-cell.crossing {
+  background: rgba(210,153,34,0.1);
+}
+
+/* Tensor 在 Pass 中的状态点 */
+.fv-cell-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid;
+  background: var(--bg-base);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.fv-track-cell:hover .fv-cell-marker {
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(255,255,255,0.2);
+  z-index: 10;
+}
+.fv-cell-marker.birth { border-color: var(--green); color: var(--green); }
+.fv-cell-marker.birth::before { content: '⊕'; }
+.fv-cell-marker.transform { border-color: var(--blue); color: var(--blue); }
+.fv-cell-marker.transform::before { content: '◐'; }
+.fv-cell-marker.passthrough { border-color: var(--text-secondary); color: var(--text-secondary); }
+.fv-cell-marker.passthrough::before { content: '●'; font-size: 13px; }
+.fv-cell-marker.modified { border-color: var(--yellow); color: var(--yellow); }
+.fv-cell-marker.modified::before { content: '◐'; }
+.fv-cell-marker.read { border-color: var(--purple); color: var(--purple); }
+.fv-cell-marker.read::before { content: '▷'; font-size: 10px; }
+.fv-cell-marker.fail-read { border-color: var(--red); color: var(--red); animation: pulse 1.6s infinite; }
+.fv-cell-marker.fail-read::before { content: '✕'; }
+.fv-cell-marker.death { border-color: var(--text-tertiary); color: var(--text-tertiary); }
+.fv-cell-marker.death::before { content: '⊖'; }
+
+/* Tensor 在 hover 状态时显示气泡 */
+.fv-track-cell .cell-tip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  z-index: 50;
+  min-width: 180px;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.fv-track-cell:hover .cell-tip { opacity: 1; }
+.fv-track-cell .cell-tip strong { color: var(--text-primary); }
+.fv-track-cell .cell-tip .tt-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+.fv-track-cell .cell-tip .tt-arrow {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--border-strong);
+}
+
+/* 当 cell 显示标记,左右两侧延伸出连接线 */
+.fv-track-cell::before, .fv-track-cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+.fv-track-cell.has-marker::before {
+  left: 0; right: 50%;
+}
+.fv-track-cell.has-marker::after {
+  left: 50%; right: 0;
+}
+/* 颜色根据 tensor swatch — 用 CSS 变量 */
+.fv-track[data-color="0"] .fv-track-cell.has-marker::before,
+.fv-track[data-color="0"] .fv-track-cell.has-marker::after { background: var(--yellow); }
+.fv-track[data-color="1"] .fv-track-cell.has-marker::before,
+.fv-track[data-color="1"] .fv-track-cell.has-marker::after { background: var(--blue); }
+.fv-track[data-color="2"] .fv-track-cell.has-marker::before,
+.fv-track[data-color="2"] .fv-track-cell.has-marker::after { background: var(--pink); }
+.fv-track[data-color="3"] .fv-track-cell.has-marker::before,
+.fv-track[data-color="3"] .fv-track-cell.has-marker::after { background: var(--green); }
+
+/* 起点不画左侧线 */
+.fv-track-cell.is-first::before { display: none; }
+.fv-track-cell.is-last::after { display: none; }
+
+/* 底部图例 + crossing info */
+.fv-legend {
+  background: var(--bg-elev-1);
+  border-top: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.fv-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.fv-legend-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid;
+  background: var(--bg-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+}
+.fv-legend-marker.birth { border-color: var(--green); color: var(--green); }
+.fv-legend-marker.transform { border-color: var(--blue); color: var(--blue); }
+.fv-legend-marker.passthrough { border-color: var(--text-secondary); color: var(--text-secondary); }
+.fv-legend-marker.modified { border-color: var(--yellow); color: var(--yellow); }
+.fv-legend-marker.read { border-color: var(--purple); color: var(--purple); }
+.fv-legend-marker.fail-read { border-color: var(--red); color: var(--red); }
+.fv-legend .crossing-info {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(210,153,34,0.12);
+  border: 1px solid rgba(210,153,34,0.3);
+  border-radius: 4px;
+  color: var(--yellow);
+  font-family: 'JetBrains Mono', monospace;
+}
+.fv-legend .crossing-info strong { color: var(--text-primary); }
+
+/* 空状态 (没有 tensor) */
+.fv-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-tertiary);
+}
+.fv-empty h4 { font-size: 16px; font-weight: 600; color: var(--text-secondary); }
+.fv-empty p { font-size: 13px; max-width: 400px; text-align: center; line-height: 1.6; }
+
+.pass-status {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+}
+.pass-status.ok { background: var(--green-dim); color: var(--green); }
+.pass-status.ok::before { content: '✓'; }
+.pass-status.fail { background: var(--red); color: white; }
+.pass-status.fail::before { content: '✕'; }
+.pass-status.skip { background: var(--bg-elev-3); color: var(--text-tertiary); }
+.pass-status.skip::before { content: '–'; }
+.pass-status.warn { background: var(--yellow-dim); color: var(--yellow); }
+.pass-status.warn::before { content: '!'; }
+
+.pass-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pass-item.skip .pass-name { color: var(--text-tertiary); }
+.pass-item.fail .pass-name { color: var(--red); font-weight: 600; }
+
+.pass-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.pass-item .trigger-tag {
+  display: inline-block;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.trigger-tag.mix { background: var(--purple-dim); color: var(--purple); }
+.trigger-tag.unroll { background: var(--orange-dim); color: var(--orange); }
+.trigger-tag.fuse { background: var(--blue-dim); color: var(--blue); }
+
+/* ===== Center: Diagnosis Workspace ===== */
+.center-panel {
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.diag-header {
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(248,81,73,0.08) 0%, transparent 100%);
+}
+.diag-header .crumb {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.diag-header .crumb .sep { color: var(--text-muted); }
+.diag-header .crumb .cur { color: var(--red); }
+
+.diag-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.diag-title h2 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.diag-title .pass-stage {
+  padding: 3px 8px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.diag-error-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.diag-error-line .err-ico {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  background: var(--red);
+  color: white;
+  border-radius: 3px;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.diag-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 24px;
+}
+
+.section {
+  margin-top: 24px;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .marker {
+  width: 3px;
+  height: 14px;
+  background: var(--blue);
+  border-radius: 2px;
+}
+.section-title.danger .marker { background: var(--red); }
+.section-title.warn .marker { background: var(--yellow); }
+.section-title.ok .marker { background: var(--green); }
+
+/* 3-Part Error Card */
+.error-3part {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.err-cell {
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+}
+.err-cell:last-child { border-right: none; }
+.err-cell .ec-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.err-cell .ec-label .num {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  background: var(--bg-elev-3);
+  border-radius: 3px;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+.err-cell .ec-body {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+.err-cell .ec-body code {
+  background: var(--bg-base);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--pink);
+  font-size: 12px;
+}
+.err-cell .ec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--blue);
+  font-size: 12px;
+  margin-top: 6px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.err-cell .ec-link:hover { text-decoration: underline; }
+
+/* Suspect ranking */
+.suspect-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.suspect {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.suspect:hover { background: var(--bg-elev-2); border-color: var(--border-strong); }
+.suspect.top { border-left: 3px solid var(--red); padding-left: 13px; }
+.suspect-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+  line-height: 1;
+}
+.suspect.top .suspect-score { color: var(--red); }
+.suspect-score .pct {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.suspect-body .s-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.suspect-body .s-reason {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+.suspect-body .s-reason code {
+  background: var(--bg-elev-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--purple);
+  font-size: 11px;
+}
+.suspect-action {
+  padding: 4px 10px;
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.suspect.top .suspect-action {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+  font-weight: 600;
+}
+
+/* Ascii flow diagram */
+.flow-diagram {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  position: relative;
+  overflow-x: auto;
+}
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  margin-bottom: 12px;
+  white-space: nowrap;
+}
+.flow-row:last-child { margin-bottom: 0; }
+.flow-node {
+  padding: 6px 10px;
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  position: relative;
+}
+.flow-node.entry { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+.flow-node.exit { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.flow-node.passed { background: var(--green-dim); border-color: rgba(63,185,80,0.3); color: var(--green); }
+.flow-node.current { background: var(--red); border-color: var(--red); color: white; font-weight: 700; box-shadow: 0 0 0 3px rgba(248,81,73,0.2); }
+.flow-node.future { background: transparent; border-style: dashed; color: var(--text-tertiary); }
+.flow-arrow { color: var(--text-tertiary); }
+.flow-branch {
+  margin-left: 24px;
+  padding-left: 12px;
+  border-left: 1px dashed var(--border-strong);
+  color: var(--text-secondary);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: -6px;
+  margin-bottom: 12px;
+}
+.flow-branch .cause {
+  padding: 2px 6px;
+  background: var(--purple-dim);
+  color: var(--purple);
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ===== Right Panel: IR Diff ===== */
+.right-panel {
+  background: var(--bg-elev-1);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tabbed-head {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elev-1);
+  flex-shrink: 0;
+}
+.rp-tab {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rp-tab .ico { font-family: 'JetBrains Mono', monospace; opacity: 0.7; font-weight: 700; }
+.rp-tab.active {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--blue);
+  margin-bottom: -1px;
+  font-weight: 500;
+}
+.rp-tab:hover:not(.active) { background: var(--bg-elev-2); color: var(--text-primary); }
+.rp-tab .count {
+  display: inline-flex;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: var(--bg-elev-3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  height: 14px;
+  align-items: center;
+  margin-left: 2px;
+}
+.rp-tab.active .count { background: var(--red-dim); color: var(--red); }
+
+.rp-toolbar {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-elev-1);
+  flex-shrink: 0;
+}
+.rp-toolbar .toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.rp-toolbar .diff-stats {
+  display: flex;
+  gap: 8px;
+}
+.rp-toolbar .diff-stats .add { color: var(--green); }
+.rp-toolbar .diff-stats .del { color: var(--red); }
+.rp-toolbar .diff-stats .mod { color: var(--yellow); }
+.rp-toolbar select {
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 3px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.diff-view {
+  flex: 1;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.diff-line {
+  display: grid;
+  grid-template-columns: 32px 32px 16px 1fr;
+  padding: 0 12px;
+  white-space: pre;
+  border-left: 3px solid transparent;
+  gap: 8px;
+}
+.diff-line:hover { background: var(--bg-elev-2); }
+.diff-line .ln {
+  color: var(--text-muted);
+  text-align: right;
+  user-select: none;
+  font-size: 11px;
+}
+.diff-line .mk {
+  color: var(--text-tertiary);
+  user-select: none;
+  font-weight: 600;
+}
+.diff-line.add { background: rgba(63,185,80,0.08); border-left-color: var(--green); }
+.diff-line.add .mk { color: var(--green); }
+.diff-line.add .code { color: #7ee787; }
+.diff-line.del { background: rgba(248,81,73,0.08); border-left-color: var(--red); }
+.diff-line.del .mk { color: var(--red); }
+.diff-line.del .code { color: #ffa198; }
+.diff-line.context .code { color: var(--text-secondary); }
+.diff-line.hunk { background: var(--bg-elev-2); border-bottom: 1px solid var(--border); padding: 4px 12px; color: var(--blue); font-weight: 500; }
+.diff-line.fail-here { background: var(--red-strong); border-left-color: var(--red); position: relative; padding: 2px 12px; }
+.diff-line.fail-here::after {
+  content: '◀ 失败点';
+  position: absolute;
+  right: 12px;
+  font-size: 10px;
+  background: var(--red);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.code .kw { color: var(--purple); }
+.code .fn { color: var(--blue); }
+.code .str { color: var(--green); }
+.code .num { color: var(--orange); }
+.code .cmt { color: var(--text-tertiary); font-style: italic; }
+.code .ty { color: var(--yellow); }
+
+/* ===== Bottom: Knobs / Experiment Panel ===== */
+.bottom-panel {
+  height: 200px;
+  background: var(--bg-elev-1);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+}
+.bottom-section {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.bottom-section:last-child { border-right: none; }
+
+.bs-head {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--bg-elev-2);
+}
+.bs-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+}
+.bs-body { padding: 12px 14px; overflow-y: auto; }
+
+/* Knobs section */
+.knobs-section { width: 380px; }
+.knob {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  padding: 6px 0;
+  gap: 12px;
+  border-bottom: 1px dashed var(--border);
+}
+.knob:last-child { border-bottom: none; }
+.knob-info { display: flex; flex-direction: column; gap: 2px; }
+.knob-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.knob-meta {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+.knob-meta .suspect-mark {
+  display: inline-block;
+  padding: 0 5px;
+  background: var(--red);
+  color: white;
+  border-radius: 2px;
+  margin-right: 4px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+.knob-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.knob-value.on { color: var(--green); }
+.knob-value.off { color: var(--text-tertiary); }
+
+/* Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  cursor: pointer;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: 0.2s;
+}
+.slider::before {
+  position: absolute;
+  content: '';
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  top: 2px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: 0.2s;
+}
+input:checked + .slider { background: var(--green); border-color: var(--green); }
+input:checked + .slider::before { transform: translateX(14px); background: white; }
+.switch.suspect input:checked + .slider { background: var(--red); border-color: var(--red); }
+
+/* Experiment section */
+.experiment-section { flex: 1; min-width: 0; }
+.exp-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.exp-controls .recompile-btn {
+  padding: 5px 14px;
+  background: var(--blue);
+  color: #0d1117;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.exp-controls .recompile-btn:hover { background: #79b8ff; }
+.exp-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-left: 6px;
+  font-style: italic;
+}
+
+.run-table {
+  width: 100%;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+.run-table th {
+  text-align: left;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.run-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.run-table tr:hover td { background: var(--bg-elev-2); cursor: pointer; }
+.run-table tr.current td { background: var(--blue-dim); }
+.run-table tr.current td:first-child { border-left: 2px solid var(--blue); padding-left: 6px; }
+
+.run-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.run-result.fail { color: var(--red); }
+.run-result.ok { color: var(--green); }
+.run-result.running { color: var(--yellow); }
+.run-result .d {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.run-result.running .d { animation: pulse 1s infinite; }
+
+.knob-diff {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--bg-elev-3);
+  border-radius: 3px;
+  font-size: 10px;
+  margin-right: 3px;
+}
+.knob-diff.on { background: var(--green-dim); color: var(--green); }
+.knob-diff.off { background: var(--red-dim); color: var(--red); text-decoration: line-through; opacity: 0.7; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-elev-3); border-radius: 5px; border: 2px solid var(--bg-base); }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+}
+.modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+}
+.modal-head h3 { font-size: 14px; font-weight: 600; }
+.modal-close { cursor: pointer; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; font-size: 18px; }
+.modal-body { padding: 20px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+.modal-body p { margin-bottom: 10px; }
+.modal-body code { background: var(--bg-base); padding: 2px 6px; color: var(--pink); border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.modal-foot {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Tooltip helper */
+[data-tooltip] { position: relative; }
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elev-3);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 50;
+  border: 1px solid var(--border-strong);
+  pointer-events: none;
+}
+
+/* Min screen size notice */
+@media (max-width: 1280px) {
+  .workspace { grid-template-columns: 240px 1fr 360px; }
+  .knobs-section { width: 320px; }
+}
+@media (max-width: 1024px) {
+  .min-size-notice {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-base);
+    z-index: 200;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+}
+.min-size-notice { display: none; }
+.min-size-notice h3 { font-size: 16px; margin-bottom: 6px; }
+.min-size-notice p { color: var(--text-secondary); font-size: 13px; max-width: 320px; }
+</style>
+</head>
+<body>
+
+<!-- Small screen notice -->
+<div class="min-size-notice">
+  <h3>🖥️ 推荐桌面端浏览</h3>
+  <p>Pass Tracer 是一个高密度开发者工具，需要 1024px 以上视口才能呈现完整体验。请使用桌面浏览器打开。</p>
+</div>
+
+<!-- ===== Top Bar ===== -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">PT</div>
+    <div class="brand-name">Pass Tracer<span class="secondary">/ PyPTO 编译决策可视化器</span></div>
+  </div>
+
+  <div class="session-info">
+    <span class="kernel-name">glm_attention.py</span>
+    <span class="sep">·</span>
+    <span>session #c4a7e21</span>
+    <span class="sep">·</span>
+    <span>2026-05-12 09:41</span>
+  </div>
+
+  <div class="topbar-spacer"></div>
+
+  <div class="tab-bar">
+    <div class="tab active" data-tooltip="编译失败时的诊断主入口"><span class="ico">⚠</span>失败诊断</div>
+    <div class="tab" data-tooltip="主动尝试不同开关组合"><span class="ico">⚙</span>调参实验</div>
+    <div class="tab" data-tooltip="跨会话历史对比"><span class="ico">⟳</span>历史对比</div>
+  </div>
+
+  <button class="btn"><span class="ico">↗</span>导出会话</button>
+  <button class="btn primary" style="margin-left: 6px;" onclick="showRecompile()"><span class="ico">▶</span>重新编译</button>
+</div>
+
+<!-- ===== Tracking Bar (only visible when tracking) ===== -->
+<div class="tracking-bar" id="trackingBar">
+  <span class="tb-icon">🔍</span>
+  <span class="tb-label">TENSOR TRACKING</span>
+  <div class="fv-tracked-chips" id="trackingBarChips"></div>
+  <span class="tb-stats" id="trackStats">出现于 <strong>0</strong> 个 Pass</span>
+  <span class="tb-spacer"></span>
+  <span class="tb-action" onclick="jumpToFirstHit()">⤓ 首次出现</span>
+  <span class="tb-action" onclick="jumpToLastHit()">⤒ 最后出现</span>
+  <span class="tb-action" onclick="openFlowView()" style="background:var(--bg-elev-3);border-color:var(--yellow);color:var(--yellow)">⇆ 横向 Flow 视图</span>
+  <span class="tb-close" onclick="exitTracking()">ESC 退出 ✕</span>
+</div>
+
+<!-- ===== Main Workspace ===== -->
+<div class="workspace">
+
+  <!-- ===== LEFT: Pass Timeline ===== -->
+  <div class="left-panel">
+    <div class="panel-head">
+      <div class="panel-title">Pass 时间轴</div>
+      <div class="panel-meta" data-tooltip="点击展开后的 tensor chip 可追踪它在整条 Pipeline 中的生命周期">36 passes · 234ms</div>
+    </div>
+
+    <div class="pipeline-summary">
+      <div class="stat success"><div class="num">30</div><div class="label">通过</div></div>
+      <div class="stat fail"><div class="num">1</div><div class="label">失败</div></div>
+      <div class="stat skip"><div class="num">5</div><div class="label">跳过</div></div>
+      <div class="stat total"><div class="num">36</div><div class="label">总计</div></div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <!-- 由 JS 渲染 -->
+    </div>
+  </div>
+
+  <!-- ===== CENTER: Diagnosis ===== -->
+  <div class="center-panel">
+
+    <div class="diag-header">
+      <div class="crumb">
+        <span>Schedule & Codegen</span>
+        <span class="sep">›</span>
+        <span>Stage 5</span>
+        <span class="sep">›</span>
+        <span class="cur">Pass_30_OoOSchedule</span>
+        <span class="sep">·</span>
+        <span class="mono">pass #30 of 36</span>
+      </div>
+
+      <div class="diag-title">
+        <h2>Pass_30_OoOSchedule</h2>
+        <span class="pass-stage">Stage 5 · Schedule</span>
+        <span class="pass-stage">Trigger: <code style="color:var(--purple);background:none;padding:0">enable_mix=true</code></span>
+      </div>
+
+      <div class="diag-error-line">
+        <span class="err-ico">!</span>
+        <span><code>FATAL</code> · OoO postcheck failed: detected cycle in dependency graph (read-after-write on tensor <code>mha_out_proj.0</code> after NBuffer merge)</span>
+      </div>
+    </div>
+
+    <div class="diag-body">
+
+      <!-- 三段式诊断 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title danger"><div class="marker"></div>诊断 · 现象 / 原因 / 下一步</div>
+          <div class="panel-meta mono">REPORT-ERROR-MSG · PYPTO-E-OOO-031</div>
+        </div>
+
+        <div class="error-3part">
+          <div class="err-cell">
+            <div class="ec-label"><span class="num">1</span>现象 · WHAT</div>
+            <div class="ec-body">
+              <strong style="color:var(--red)">Pass_30_OoOSchedule</strong> postcheck 检测到依赖图存在 read-after-write 环，输出张量 <code>mha_out_proj.0</code> 同时被两个子图写入并被下游读取，调度序无法收敛。
+            </div>
+          </div>
+          <div class="err-cell">
+            <div class="ec-label"><span class="num">2</span>可能原因 · WHY</div>
+            <div class="ec-body">
+              上游 <code>Pass_15_NBufferMerge</code> 在合并子图缓冲时将<strong>本不该合并</strong>的两个子图强行 merge（设置 <code>vec_nbuffer_setting=-1:1</code> 导致），共享了同一 NBuffer，引发后续依赖冲突。
+            </div>
+          </div>
+          <div class="err-cell">
+            <div class="ec-label"><span class="num">3</span>建议 · NEXT</div>
+            <div class="ec-body">
+              ① 关闭 <code>auto_nbuffer_merge</code> 重试<br>
+              ② 或为 <code>mha_out_proj</code> 显式标注 <code>sg_set_scope=cube</code><br>
+              <a class="ec-link" onclick="showDocLink()">→ 查看 OoO 调度文档 #PYPTO-E-OOO-031</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 嫌疑人排序 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title warn"><div class="marker"></div>嫌疑开关排序 · Suspect Ranking</div>
+          <div class="panel-meta mono">基于 IR Diff + 历史回归</div>
+        </div>
+
+        <div class="suspect-list">
+          <div class="suspect top" onclick="highlightKnob('nbuffer')">
+            <div class="suspect-score">87<span class="pct">%</span></div>
+            <div class="suspect-body">
+              <div class="s-name">auto_nbuffer_merge</div>
+              <div class="s-reason">该开关在 <code>Pass_15_NBufferMerge</code> 处合并了不该合并的子图，是当前依赖环的<strong style="color:var(--red)">直接成因</strong>。本会话历史中关闭该开关时 OoO 100% 通过。</div>
+            </div>
+            <div class="suspect-action">关闭并重跑 →</div>
+          </div>
+
+          <div class="suspect" onclick="highlightKnob('unroll')">
+            <div class="suspect-score" style="color:var(--yellow)">42<span class="pct">%</span></div>
+            <div class="suspect-body">
+              <div class="s-name">unroll_list = [64, 32]</div>
+              <div class="s-reason"><code>Pass_00_LoopUnroll</code> 在 unroll 档位 ≥64 时会放大 NBuffer 合并的影响。同会话历史里 unroll=[32,16] 时同样开关组合可通过。</div>
+            </div>
+            <div class="suspect-action">尝试降档</div>
+          </div>
+
+          <div class="suspect" onclick="highlightKnob('mix')">
+            <div class="suspect-score" style="color:var(--text-secondary)">15<span class="pct">%</span></div>
+            <div class="suspect-body">
+              <div class="s-name">enable_mix = true</div>
+              <div class="s-reason">Mix 通路本身未引入错误，仅在 <code>Pass_14_GraphPartition</code> 触发了切图分支。关闭可绕过检查但会牺牲性能。</div>
+            </div>
+            <div class="suspect-action">不建议关闭</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 决策流程图 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><div class="marker"></div>Pass 决策路径 · Flight Path</div>
+          <div class="panel-meta mono">当前开关组合触发的实际链路</div>
+        </div>
+
+        <div class="flow-diagram">
+          <div class="flow-row">
+            <div class="flow-node entry">Frontend IR</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P00_LoopUnroll</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P02_ExpandFunction</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P10_AssignMemoryType</div>
+          </div>
+          <div class="flow-branch">
+            <span>↳ 因为 <span class="cause">unroll_list=[64,32]</span> 在 P00 展开了 4× 循环体 ⚠</span>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-node passed">P13_SplitK</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P14_GraphPartition</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P15_NBufferMerge</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P19_L1CopyInReuse</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-node passed">P29_AddAlloc</div>
+          </div>
+          <div class="flow-branch">
+            <span>↳ 因为 <span class="cause">auto_nbuffer_merge=true</span> 在 P15 合并了 sg_0 和 sg_2 ⚠</span>
+          </div>
+
+          <div class="flow-row">
+            <div class="flow-node current">P30_OoOSchedule ✕</div>
+            <span class="flow-arrow">⤬</span>
+            <div class="flow-node future">P31_GlobalMemoryReuse</div>
+            <span class="flow-arrow">⤬</span>
+            <div class="flow-node future">P33_CopyOutResolve</div>
+            <span class="flow-arrow">⤬</span>
+            <div class="flow-node future" style="opacity:0.5">P35_CodegenPreproc</div>
+          </div>
+          <div class="flow-branch">
+            <span>↳ 失败导致后续 5 个 pass (P31–P35) 被跳过</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== RIGHT: IR Diff ===== -->
+  <div class="right-panel">
+
+    <div class="tabbed-head">
+      <div class="rp-tab active"><span class="ico">⇄</span>IR Diff<span class="count">12</span></div>
+      <div class="rp-tab"><span class="ico">▤</span>Tensor Graph</div>
+      <div class="rp-tab"><span class="ico">≡</span>Pass Log</div>
+    </div>
+
+    <div class="rp-toolbar">
+      <div class="toolbar-left">
+        <span>对比：</span>
+        <select>
+          <option>P15_NBufferMerge (前) ↔ P30_OoOSchedule (后)</option>
+          <option>P00_LoopUnroll ↔ P30_OoOSchedule</option>
+          <option>P14_GraphPartition ↔ P30_OoOSchedule</option>
+        </select>
+      </div>
+      <div class="diff-stats">
+        <span class="add">+5</span>
+        <span class="del">−3</span>
+        <span class="mod">~4</span>
+      </div>
+    </div>
+
+    <div class="diff-view">
+      <div class="diff-line hunk"><span style="grid-column:1/-1">@@ tensor_graph.mlir · lines 142–168 @@</span></div>
+
+      <div class="diff-line context"><div class="ln">142</div><div class="ln">142</div><div class="mk"> </div><div class="code"><span class="cmt">// Stage: post-Pass_15_NBufferMerge</span></div></div>
+      <div class="diff-line context"><div class="ln">143</div><div class="ln">143</div><div class="mk"> </div><div class="code"><span class="kw">func</span> <span class="fn">@mha_grad</span>(%q: <span class="ty">tensor&lt;128x256xfp16&gt;</span>,</div></div>
+      <div class="diff-line context"><div class="ln">144</div><div class="ln">144</div><div class="mk"> </div><div class="code">             %k: <span class="ty">tensor&lt;128x256xfp16&gt;</span>) {</div></div>
+
+      <div class="diff-line del"><div class="ln">145</div><div class="ln"></div><div class="mk">−</div><div class="code">  %sg_0 = <span class="fn">subgraph</span> { nbuffer: <span class="str">"buf_0"</span> }</div></div>
+      <div class="diff-line del"><div class="ln">146</div><div class="ln"></div><div class="mk">−</div><div class="code">  %sg_1 = <span class="fn">subgraph</span> { nbuffer: <span class="str">"buf_1"</span> }</div></div>
+      <div class="diff-line del"><div class="ln">147</div><div class="ln"></div><div class="mk">−</div><div class="code">  %sg_2 = <span class="fn">subgraph</span> { nbuffer: <span class="str">"buf_2"</span> }</div></div>
+
+      <div class="diff-line add"><div class="ln"></div><div class="ln">145</div><div class="mk">+</div><div class="code">  <span class="cmt">// NBufferMerge merged sg_0 + sg_2 → shared buffer</span></div></div>
+      <div class="diff-line add"><div class="ln"></div><div class="ln">146</div><div class="mk">+</div><div class="code">  %sg_merged = <span class="fn">subgraph</span> {</div></div>
+      <div class="diff-line add"><div class="ln"></div><div class="ln">147</div><div class="mk">+</div><div class="code">    <span class="kw">nbuffer</span> = <span class="str">"buf_shared"</span>,</div></div>
+      <div class="diff-line add"><div class="ln"></div><div class="ln">148</div><div class="mk">+</div><div class="code">    <span class="kw">merged_from</span> = [<span class="str">"sg_0"</span>, <span class="str">"sg_2"</span>]  <span class="cmt">// ◀ 合并点</span></div></div>
+      <div class="diff-line add"><div class="ln"></div><div class="ln">149</div><div class="mk">+</div><div class="code">  }</div></div>
+
+      <div class="diff-line context"><div class="ln">148</div><div class="ln">150</div><div class="mk"> </div><div class="code"></div></div>
+      <div class="diff-line context"><div class="ln">149</div><div class="ln">151</div><div class="mk"> </div><div class="code">  <span class="cmt">// Output projection writes into shared buffer</span></div></div>
+      <div class="diff-line context"><div class="ln">150</div><div class="ln">152</div><div class="mk"> </div><div class="code">  %out_proj = <span class="fn">store</span> %sg_merged, {</div></div>
+      <div class="diff-line context"><div class="ln">151</div><div class="ln">153</div><div class="mk"> </div><div class="code">    <span class="kw">name</span> = <span class="str">"mha_out_proj"</span>,</div></div>
+      <div class="diff-line context"><div class="ln">152</div><div class="ln">154</div><div class="mk"> </div><div class="code">    <span class="kw">buffer</span> = <span class="str">"buf_shared"</span></div></div>
+      <div class="diff-line context"><div class="ln">153</div><div class="ln">155</div><div class="mk"> </div><div class="code">  }</div></div>
+
+      <div class="diff-line hunk"><span style="grid-column:1/-1">@@ schedule_check on out_proj · Pass_30_OoOSchedule postcheck @@</span></div>
+
+      <div class="diff-line context"><div class="ln">..</div><div class="ln">..</div><div class="mk"> </div><div class="code"><span class="kw">depgraph</span>.<span class="fn">verify</span>(%out_proj) {</div></div>
+      <div class="diff-line context"><div class="ln">..</div><div class="ln">..</div><div class="mk"> </div><div class="code">  <span class="cmt">// 期望: 每个 nbuffer 只被一个 writer 写入</span></div></div>
+
+      <div class="diff-line fail-here"><div class="ln">..</div><div class="ln">..</div><div class="mk"> </div><div class="code">  buffer <span class="str">"buf_shared"</span>: writer={sg_0, sg_2}, reader={dn}</div></div>
+
+      <div class="diff-line context"><div class="ln">..</div><div class="ln">..</div><div class="mk"> </div><div class="code">  <span class="kw">raise</span> <span class="fn">CycleError</span>(<span class="str">"RAW conflict on merged buffer"</span>)</div></div>
+      <div class="diff-line context"><div class="ln">..</div><div class="ln">..</div><div class="mk"> </div><div class="code">}</div></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM: Knobs & Experiments ===== -->
+<div class="bottom-panel">
+
+  <!-- Knobs -->
+  <div class="bottom-section knobs-section">
+    <div class="bs-head">
+      <div class="bs-title">⚙ 当前开关组合</div>
+      <span class="panel-meta mono">6 enabled · 14 default</span>
+    </div>
+    <div class="bs-body">
+      <div class="knob" id="knob-mix">
+        <div class="knob-info">
+          <span class="knob-name">enable_mix</span>
+          <span class="knob-meta">Mix 通路总开关</span>
+        </div>
+        <span class="knob-value on">true</span>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+
+      <div class="knob" id="knob-nbuffer">
+        <div class="knob-info">
+          <span class="knob-name">auto_nbuffer_merge</span>
+          <span class="knob-meta"><span class="suspect-mark">嫌疑 #1</span>P15 子图缓冲合并</span>
+        </div>
+        <span class="knob-value on">true</span>
+        <label class="switch suspect"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+
+      <div class="knob" id="knob-unroll">
+        <div class="knob-info">
+          <span class="knob-name">unroll_list</span>
+          <span class="knob-meta"><span class="suspect-mark">嫌疑 #2</span>P00 循环展开档位</span>
+        </div>
+        <span class="knob-value on">[64, 32]</span>
+        <span style="font-size:11px;color:var(--blue);cursor:pointer">编辑</span>
+      </div>
+
+      <div class="knob">
+        <div class="knob-info">
+          <span class="knob-name">stitch_cfg_cache</span>
+          <span class="knob-meta">Stitch 缓存大小</span>
+        </div>
+        <span class="knob-value on">128</span>
+        <span style="font-size:11px;color:var(--blue);cursor:pointer">编辑</span>
+      </div>
+
+      <div class="knob">
+        <div class="knob-info">
+          <span class="knob-name">enable_vf_fusion</span>
+          <span class="knob-meta">VF 融合优化</span>
+        </div>
+        <span class="knob-value on">true</span>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+
+      <div class="knob">
+        <div class="knob-info">
+          <span class="knob-name">l1_copyin_reuse</span>
+          <span class="knob-meta">P19 L1 复用策略</span>
+        </div>
+        <span class="knob-value on">auto</span>
+        <span style="font-size:11px;color:var(--blue);cursor:pointer">编辑</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Experiment / Run History -->
+  <div class="bottom-section experiment-section">
+    <div class="bs-head">
+      <div class="bs-title">⟳ 实验对比 · 本会话历史</div>
+      <span class="panel-meta mono">5 runs · 1 fail · 4 ok</span>
+    </div>
+    <div class="bs-body">
+      <div class="exp-controls">
+        <button class="recompile-btn" onclick="showRecompile()">▶ 关闭嫌疑开关并重跑</button>
+        <span class="exp-hint">建议先关闭 <code style="color:var(--red);font-family:'JetBrains Mono',monospace">enable_axis_fusion</code> 进行 A/B 对比</span>
+      </div>
+
+      <table class="run-table">
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th style="width:80px">结果</th>
+            <th>开关 Δ vs base</th>
+            <th style="width:80px">耗时</th>
+            <th style="width:60px">失败 Pass</th>
+            <th style="width:80px">时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="current">
+            <td>#5</td>
+            <td><span class="run-result fail"><span class="d"></span>FAIL</span></td>
+            <td>
+              <span class="knob-diff on">mix</span>
+              <span class="knob-diff on">nbuffer_merge</span>
+              <span class="knob-diff on">unroll=64</span>
+              <span style="color:var(--text-tertiary)">— 当前</span>
+            </td>
+            <td>234ms</td>
+            <td style="color:var(--red)">P30_OoOSchedule</td>
+            <td>09:41</td>
+          </tr>
+          <tr>
+            <td>#4</td>
+            <td><span class="run-result fail"><span class="d"></span>FAIL</span></td>
+            <td>
+              <span class="knob-diff on">mix</span>
+              <span class="knob-diff on">nbuffer_merge</span>
+              <span class="knob-diff on">unroll=32</span>
+            </td>
+            <td>241ms</td>
+            <td style="color:var(--red)">P30_OoOSchedule</td>
+            <td>09:33</td>
+          </tr>
+          <tr>
+            <td>#3</td>
+            <td><span class="run-result ok"><span class="d"></span>OK</span></td>
+            <td>
+              <span class="knob-diff on">mix</span>
+              <span class="knob-diff off">nbuffer_merge</span>
+              <span class="knob-diff on">unroll=64</span>
+            </td>
+            <td>298ms</td>
+            <td style="color:var(--text-tertiary)">—</td>
+            <td>09:18</td>
+          </tr>
+          <tr>
+            <td>#2</td>
+            <td><span class="run-result ok"><span class="d"></span>OK</span></td>
+            <td>
+              <span class="knob-diff off">mix</span>
+              <span class="knob-diff off">nbuffer_merge</span>
+              <span class="knob-diff on">unroll=64</span>
+            </td>
+            <td>412ms</td>
+            <td style="color:var(--text-tertiary)">—</td>
+            <td>09:05</td>
+          </tr>
+          <tr>
+            <td>#1</td>
+            <td><span class="run-result ok"><span class="d"></span>OK</span></td>
+            <td><span style="color:var(--text-tertiary)">baseline · 默认配置</span></td>
+            <td>456ms</td>
+            <td style="color:var(--text-tertiary)">—</td>
+            <td>08:54</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Flow View (Tensor × Pass Matrix) ===== -->
+<div class="flow-view-overlay" id="flowView">
+  <div class="fv-header">
+    <div class="fv-title">
+      <div class="fv-title-icon">⇆</div>
+      Tensor Flow · 横向追踪视图
+    </div>
+    <div class="fv-subtitle" id="fvSubtitle">追踪 0 个 tensor</div>
+
+    <div class="fv-tracked-chips" id="fvTrackedChips"></div>
+
+    <div class="fv-spacer"></div>
+
+    <div class="fv-add-tensor" id="fvAddTensor">
+      <button class="fv-add-tensor-btn" onclick="toggleAddDropdown()">+ 添加 tensor</button>
+      <div class="fv-add-tensor-dropdown">
+        <div class="fv-dropdown-search">
+          <input type="text" placeholder="搜索 tensor 名称…" id="fvDropdownSearch" oninput="filterAddDropdown()">
+        </div>
+        <div id="fvDropdownList"></div>
+      </div>
+    </div>
+
+    <div class="fv-close" onclick="closeFlowView()">回到时间轴 ✕</div>
+  </div>
+
+  <div class="fv-body">
+
+    <!-- Stage 分组 bar -->
+    <div class="fv-stage-bar">
+      <div class="fv-stage-bar-label">STAGES</div>
+      <div class="fv-stage-bar-cols" id="fvStageBar"></div>
+    </div>
+
+    <!-- Pass 列头 -->
+    <div class="fv-pass-row">
+      <div class="fv-pass-row-label">
+        <div class="label">PASSES</div>
+        <div class="stat"><strong>36</strong> total · <span class="fail">1 fail</span> · 5 skipped</div>
+      </div>
+      <div class="fv-pass-cols" id="fvPassCols"></div>
+    </div>
+
+    <!-- Tensor 轨道 -->
+    <div class="fv-tracks" id="fvTracks"></div>
+
+  </div>
+
+  <div class="fv-legend">
+    <div class="fv-legend-item">
+      <span class="fv-legend-marker birth"></span>
+      <span>⊕ Birth · 新建</span>
+    </div>
+    <div class="fv-legend-item">
+      <span class="fv-legend-marker passthrough"></span>
+      <span>● Pass-through · 透传</span>
+    </div>
+    <div class="fv-legend-item">
+      <span class="fv-legend-marker modified"></span>
+      <span>◐ Modified · 被修改</span>
+    </div>
+    <div class="fv-legend-item">
+      <span class="fv-legend-marker read"></span>
+      <span>▷ Read-only · 被读取</span>
+    </div>
+    <div class="fv-legend-item">
+      <span class="fv-legend-marker fail-read"></span>
+      <span>✕ Fail-here · 失败点</span>
+    </div>
+    <div class="crossing-info" id="fvCrossingInfo">
+      <span>⚡</span>
+      <span>交汇 · <strong id="fvCrossingCount">0</strong> 个 Pass 同时涉及多个追踪 tensor</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Recompile Modal ===== -->
+<div class="modal-overlay" id="modal-recompile">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>▶ 重新编译 · 应用嫌疑修复</h3>
+      <span class="modal-close" onclick="hideModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <p>将以下变更应用到下一次编译：</p>
+      <p style="background:var(--bg-base);padding:10px;border-radius:4px;border:1px solid var(--border);margin:12px 0">
+        <code>auto_nbuffer_merge</code>: <span style="color:var(--red)">true</span> → <span style="color:var(--green)">false</span>
+      </p>
+      <p style="color:var(--text-secondary)">基于本会话历史，关闭 <code>auto_nbuffer_merge</code> 时 P30_OoOSchedule 通过率为 <strong style="color:var(--green)">100% (1/1)</strong>，但编译耗时预计增加 <strong>27%</strong>（298ms vs 234ms）。</p>
+      <p style="color:var(--text-tertiary);font-size:12px;font-style:italic;margin-top:14px">提示：若需在生产环境保持高性能并修复此错误，可考虑为 <code>mha_out_proj</code> 显式标注 scope（见诊断 #3）。</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="hideModal()">取消</button>
+      <button class="btn primary" onclick="hideModal()"><span class="ico">▶</span>确认并重跑</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Doc Link Modal ===== -->
+<div class="modal-overlay" id="modal-doc">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📖 PYPTO-E-OOO-031 · OoO 调度循环依赖</h3>
+      <span class="modal-close" onclick="hideModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-primary)"><strong>错误描述</strong></p>
+      <p>OoOSchedule 在执行后置检查时发现张量依赖图中存在循环（cycle），通常由跨执行域（cube ↔ vector）的合并优化引入。</p>
+
+      <p style="color:var(--text-primary);margin-top:14px"><strong>常见诱因</strong></p>
+      <p>① <code>Pass_15_NBufferMerge</code> 子图缓冲共享导致 RAW 冲突<br>② <code>Pass_00_LoopUnroll</code> 高档位放大依赖路径<br>③ 手动 <code>sg_set_scope</code> 标注冲突</p>
+
+      <p style="color:var(--text-primary);margin-top:14px"><strong>推荐处理</strong></p>
+      <p>对受影响张量（如 <code>mha_out_proj.0</code>）显式标注 scope，避免依赖编译器推导。详见<span style="color:var(--blue);cursor:pointer">《PyPTO 域作用域手册 §4.2》</span>。</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" onclick="hideModal()">收到</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Pass Schema Data —— 36 个真实 Pass + 真实 PyPTO IR 概念
+// ============================================================
+//  内存类型: GM / UB / L1 / L0A / L0B / L0C
+//  算子前缀: pypto.* (matmul / softmax / reshape / ...)
+//  关键属性: validshape · tile_shape · sg_set_scope
+// ============================================================
+
+const PASSES = [
+  // ===== Stage 0: Loop & Reshape =====
+  { stage: 0, num: '00', name: 'LoopUnroll', status: 'ok', time: 21,
+    tags: ['unroll'],
+    schema: {
+      inputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'loop.body', s: '[iter:128]', d: 'graph'},
+      ],
+      action: '根据 <code>unroll_list=[64,32]</code> 展开外层循环为 4× 块,内部循环展开 2×',
+      meta: { 'unroll_factor': '4×2', 'expanded_ops': '+312', 'tile_shape': '[64,128]' },
+      outputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'loop.unrolled', s: '[4×32]', d: 'graph', state: 'new'},
+      ],
+    }},
+  { stage: 0, num: '00', name: 'RemoveRedundantReshape', status: 'ok', time: 3, schema: 'simple',
+    summary: '消除恒等 <code>pypto.reshape</code> · 移除 8 处 no-op'},
+  { stage: 0, num: '01', name: 'InferMemoryConflict', status: 'ok', time: 5, schema: 'simple',
+    summary: '推导张量间 GM 内存冲突 · 0 conflict found'},
+  { stage: 0, num: '02', name: 'ExpandFunction', status: 'ok', time: 15,
+    schema: {
+      inputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'k_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'loop.unrolled', s: '[4×32]', d: 'graph'},
+      ],
+      action: '将 <code>pypto.fused_qkv</code> 等高阶 function 展开为底层 op 序列',
+      meta: { 'expanded_funcs': '12', 'new_ops': '+186', 'total_ops': '498' },
+      outputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'k_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'v_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul', state: 'new'},
+        {n: 'attn_score', s: '[32,128,128]', d: 'GM:fp32', op: 'pypto.bmm', state: 'new'},
+      ],
+    }},
+
+  // ===== Stage 1: View & Tensor Split =====
+  { stage: 1, num: '03', name: 'DuplicateView', status: 'ok', time: 2, schema: 'simple',
+    summary: '<code>pypto.view</code> 节点去重复用 · 24 → 18 nodes'},
+  { stage: 1, num: '04', name: 'MergeViewAssemble', status: 'ok', time: 4, schema: 'simple',
+    summary: '合并相邻 <code>pypto.view</code> + <code>pypto.assemble</code> 组合 · −6 ops'},
+  { stage: 1, num: '05', name: 'SplitReshape', status: 'ok', time: 3, schema: 'simple',
+    summary: '将非对齐 <code>pypto.reshape</code> 拆分为对齐 reshape + padding'},
+  { stage: 1, num: '06', name: 'SplitRawTensor', status: 'ok', time: 5, schema: 'simple',
+    summary: '拆分超大 logictensor · attn_score 切分为 2 块'},
+  { stage: 1, num: '07', name: 'SplitLargeFanoutTensor', status: 'ok', time: 7,
+    schema: {
+      inputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+      ],
+      action: '高扇出张量复制 · 检测到 <code>q_proj.0</code> 被 8 个下游消费,触发复制',
+      meta: { 'fanout': '8 → 1+7', 'copy_overhead': '+0.3KB' },
+      outputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16', op: 'pypto.matmul'},
+        {n: 'q_proj.0.dup', s: '[128,4096]', d: 'GM:fp16', state: 'new'},
+      ],
+    }},
+  { stage: 1, num: '08', name: 'DuplicateGatherIn', status: 'ok', time: 2, schema: 'simple',
+    summary: '<code>pypto.gather</code> 输入复制 · 3 处独立化'},
+  { stage: 1, num: '09', name: 'DuplicateView', status: 'ok', time: 2, schema: 'simple',
+    summary: '二轮 view 去重 · 此阶段 1 处复用'},
+
+  // ===== Stage 2: Memory & Graph Layout =====
+  { stage: 2, num: '10', name: 'AssignMemoryType', status: 'ok', time: 8,
+    schema: {
+      inputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16'},
+        {n: 'attn_score', s: '[32,128,128]', d: 'GM:fp32'},
+        {n: 'mha_out_proj.0', s: '[128,4096]', d: 'unassigned', state: 'changed'},
+      ],
+      action: '为每个 logictensor 分配 <code>MemoryType</code>: GM / UB / L1 / L0A-C',
+      meta: { 'GM': 12, 'UB': 84, 'L1': 26, 'L0A': 4, 'L0B': 4, 'L0C': 8 },
+      outputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16'},
+        {n: 'attn_score.l0c', s: '[32,128,128]', d: 'L0C:fp32', state: 'changed'},
+        {n: 'mha_out_proj.0', s: '[128,4096]', d: 'GM:fp16', state: 'changed'},
+      ],
+    }},
+  { stage: 2, num: '11', name: 'InferDiscontinuousInput', status: 'ok', time: 4, schema: 'simple',
+    summary: '识别非连续 stride 输入 · 标记 3 处需要 DDR 转换'},
+  { stage: 2, num: '12', name: 'RemoveRedundantOp', status: 'ok', time: 3, schema: 'simple',
+    summary: '消除冗余 op · −14 ops · 主要为重复的 <code>pypto.cast</code>'},
+  { stage: 2, num: '13', name: 'SplitK', status: 'ok', time: 6, schema: 'simple',
+    summary: 'K 轴切分 · <code>pypto.matmul</code> K=4096 切为 4 子任务'},
+  { stage: 2, num: '14', name: 'GraphPartition', status: 'ok', time: 14,
+    tags: ['mix'],
+    schema: {
+      inputs: [
+        {n: 'q_proj.0', s: '[128,4096]', d: 'GM:fp16'},
+        {n: 'attn_score.l0c', s: '[32,128,128]', d: 'L0C:fp32'},
+        {n: 'mha_out_proj.0', s: '[128,4096]', d: 'GM:fp16'},
+      ],
+      action: '根据 <code>enable_mix=true</code> 按 cube/vector 域切分 subgraph',
+      meta: { 'total_subgraphs': 4, 'cube_sg': 2, 'vec_sg': 2 },
+      outputs: [
+        {n: 'sg_0', s: '[ops:142]', d: 'cube:scope', op: 'subgraph', state: 'new'},
+        {n: 'sg_1', s: '[ops:98]', d: 'vec:scope', op: 'subgraph', state: 'new'},
+        {n: 'sg_2', s: '[ops:156]', d: 'cube:scope', op: 'subgraph', state: 'new'},
+        {n: 'sg_3', s: '[ops:88]', d: 'vec:scope', op: 'subgraph', state: 'new'},
+      ],
+    }},
+
+  // ===== Stage 3: Buffer & Reuse (SUSPECT) =====
+  { stage: 3, num: '15', name: 'NBufferMerge', status: 'warn', time: 11,
+    tags: ['fuse', 'suspect'],
+    schema: {
+      inputs: [
+        {n: 'sg_0', s: '[ops:142]', d: 'cube:scope', op: 'subgraph'},
+        {n: 'sg_1', s: '[ops:98]', d: 'vec:scope', op: 'subgraph'},
+        {n: 'sg_2', s: '[ops:156]', d: 'cube:scope', op: 'subgraph'},
+        {n: 'sg_3', s: '[ops:88]', d: 'vec:scope', op: 'subgraph'},
+        {n: 'mha_out_proj.0', s: '[128,4096]', d: 'GM:fp16'},
+      ],
+      action: '<span class="action-tag">vec_nbuffer_setting=-1:1</span> 合并使用相同 NBuffer 的子图',
+      warn: 'sg_0 和 sg_2 共享 NBuffer 写入 mha_out_proj.0,但 RAW 依赖未解除——这是 P30 失败的根因',
+      meta: { 'merged_pairs': '1', 'buffer_reuse': '+18%', 'nbuffer_setting': '-1:1', 'shared_buffer': 'buf_shared' },
+      outputs: [
+        {n: 'sg_merged', s: '[ops:298]', d: 'cube:scope', op: 'subgraph', state: 'new'},
+        {n: 'sg_1', s: '[ops:98]', d: 'vec:scope', op: 'subgraph'},
+        {n: 'sg_3', s: '[ops:88]', d: 'vec:scope', op: 'subgraph'},
+        {n: 'mha_out_proj.0', s: '[128,4096]', d: 'GM:buf_shared', state: 'changed'},
+      ],
+    }},
+  { stage: 3, num: '16', name: 'IntraSubgraphAdapter', status: 'ok', time: 5, schema: 'simple',
+    summary: '子图内 op 适配 · 6 处 <code>pypto.cast</code>/<code>pypto.transpose</code> 插入'},
+  { stage: 3, num: '17', name: 'GenerateMoveOp', status: 'ok', time: 7, schema: 'simple',
+    summary: '生成 GM→UB→L1 搬运 op · +22 move ops'},
+  { stage: 3, num: '18', name: 'CommonOperationEliminate', status: 'ok', time: 3, schema: 'simple',
+    summary: '公共子表达式消除 · −7 ops'},
+  { stage: 3, num: '19', name: 'L1CopyInReuseMerge', status: 'warn', time: 9,
+    tags: ['fuse'],
+    schema: {
+      inputs: [
+        {n: 'sg_merged', s: '[ops:298]', d: 'cube:scope', op: 'subgraph'},
+        {n: 'k_proj.0', s: '[128,4096]', d: 'GM:fp16'},
+      ],
+      action: '<span class="action-tag">l1_copyin_reuse=auto</span> 复用 L1 已搬入数据,避免重复 GM→L1',
+      warn: '与 P15 NBufferMerge 的合并方案存在弱耦合——若 P15 合并配置变化,此 Pass 行为亦变',
+      meta: { 'reuse_count': '8', 'l1_saved': '12KB', 'reuse_targets': 'k_proj,v_proj' },
+      outputs: [
+        {n: 'sg_merged', s: '[ops:298]', d: 'cube:scope', state: 'changed'},
+        {n: 'l1_reuse_table', s: '[8 entries]', d: 'meta', state: 'new'},
+      ],
+    }},
+  { stage: 3, num: '20', name: 'CommonOperationEliminate', status: 'ok', time: 2, schema: 'simple',
+    summary: '二轮 CSE · 此轮 −2 ops'},
+
+  // ===== Stage 4: Refinement =====
+  { stage: 4, num: '21', name: 'PadLocalBuffer', status: 'ok', time: 4, schema: 'simple',
+    summary: 'UB/L1 本地缓冲对齐 padding · 16B 边界'},
+  { stage: 4, num: '22', name: 'RemoveUnalignedReshape', status: 'ok', time: 3, schema: 'simple',
+    summary: '消除非对齐 reshape · 1 处替换为 view+copy'},
+  { stage: 4, num: '23', name: 'InplaceProcess', status: 'ok', time: 5, schema: 'simple',
+    summary: 'Inplace 操作识别 · 4 处启用 in-place 写'},
+  { stage: 4, num: '24', name: 'PreGraphProcess', status: 'ok', time: 12, schema: 'simple',
+    summary: '图前置处理 · 拓扑排序 + IR 合法化'},
+  { stage: 4, num: '25', name: 'InferDynShape', status: 'ok', time: 6, schema: 'simple',
+    summary: '动态 shape 推导 · 2 处动态轴 + 推导 <code>validshape</code> 传递'},
+  { stage: 4, num: '26', name: 'SubgraphToFunction', status: 'ok', time: 8, schema: 'simple',
+    summary: '子图转换为可调用 function · 3 functions 生成'},
+  { stage: 4, num: '27', name: 'InferParamIndex', status: 'ok', time: 2, schema: 'simple',
+    summary: '推导 kernel 参数索引位置'},
+  { stage: 4, num: '28', name: 'SrcDstBufferMerge', status: 'ok', time: 7, schema: 'simple',
+    summary: '源/目的 buffer 合并 · 2 处复用'},
+  { stage: 4, num: '29', name: 'AddAlloc', status: 'ok', time: 4, schema: 'simple',
+    summary: '插入 Alloc 节点 · +14 alloc ops (workspace=8KB)'},
+
+  // ===== Stage 5: Schedule & Codegen (FAIL) =====
+  { stage: 5, num: '30', name: 'OoOSchedule', status: 'fail', time: null,
+    tags: ['mix'], selected: true,
+    schema: {
+      inputs: [
+        {n: 'sg_merged', s: '[ops:298]', d: 'cube:scope', op: 'subgraph'},
+        {n: 'sg_1', s: '[ops:98]', d: 'vec:scope', op: 'subgraph'},
+        {n: 'sg_3', s: '[ops:88]', d: 'vec:scope', op: 'subgraph'},
+        {n: 'mha_out_proj.0', s: '[128,4096]', d: 'GM:buf_shared'},
+      ],
+      action: '执行乱序调度 + postcheck 依赖图验证',
+      error: 'CycleError: RAW conflict — <code>buf_shared</code> 同时被 sg_0 和 sg_2 写入,且被下游 sg_1 读取',
+      meta: { 'scheduled_ops': '0 / 484', 'postcheck': 'FAILED', 'cycle_at': 'mha_out_proj.0' },
+      outputs: 'fail',
+    }},
+  { stage: 5, num: '31', name: 'GlobalMemoryReuse', status: 'skip', time: null, schema: 'simple',
+    summary: '上游失败 · 跳过'},
+  { stage: 5, num: '32', name: 'RemoveAlloc', status: 'skip', time: null, schema: 'simple',
+    summary: '上游失败 · 跳过'},
+  { stage: 5, num: '33', name: 'CopyOutResolve', status: 'skip', time: null, schema: 'simple',
+    summary: '上游失败 · 跳过'},
+  { stage: 5, num: '34', name: 'InsertSync', status: 'skip', time: null, schema: 'simple',
+    summary: '上游失败 · 跳过'},
+  { stage: 5, num: '35', name: 'CodegenPreproc', status: 'skip', time: null, schema: 'simple',
+    summary: '上游失败 · 跳过'},
+];
+
+const STAGES = [
+  { idx: 0, label: 'Loop & Reshape · stage 0' },
+  { idx: 1, label: 'View & Tensor Split · stage 1' },
+  { idx: 2, label: 'Memory & Graph Layout · stage 2' },
+  { idx: 3, label: 'Buffer & Reuse · stage 3', tag: { cls: 'fuse', text: 'SUSPECT-AREA' } },
+  { idx: 4, label: 'Refinement · stage 4' },
+  { idx: 5, label: 'Schedule & Codegen · stage 5' },
+];
+
+// ============================================================
+//  Render Timeline
+// ============================================================
+function tensorChip(t) {
+  const state = t.state || '';
+  const tKey = t.n;  // 用 name 作为追踪 key
+  // op 提示放在 title 里
+  const title = `${t.n}\n shape: ${t.s}\n type: ${t.d}${t.op ? '\n op: ' + t.op : ''}`;
+  return `<span class="tensor clickable ${state}" data-tensor="${tKey}" onclick="event.stopPropagation();startTracking('${tKey}')" title="${title}">
+    <span class="t-name">${t.n}</span>
+    <span class="t-shape">${t.s}</span>
+    <span class="t-dtype">${t.d}</span>
+  </span>`;
+}
+
+function tagBadge(tag) {
+  if (tag === 'mix') return '<span class="trigger-tag mix">MIX</span>';
+  if (tag === 'unroll') return '<span class="trigger-tag unroll">UNROLL</span>';
+  if (tag === 'fuse') return '<span class="trigger-tag fuse">FUSE</span>';
+  if (tag === 'suspect') return '<span class="trigger-tag" style="background:var(--red-strong);color:white">#1</span>';
+  return '';
+}
+
+function renderSchema(p, passIdx) {
+  if (p.schema === 'simple') {
+    return `<div class="pass-schema">
+      <div class="schema-row action">
+        <span class="sr-label">DOES</span>
+        <div class="sr-body">
+          <div class="schema-action">${p.summary || '—'}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const s = p.schema;
+  if (!s) return '';
+
+  const inputsHtml = s.inputs ? `
+    <div class="schema-row in">
+      <span class="sr-label">IN</span>
+      <div class="sr-body"><div class="tensor-list">${s.inputs.map(tensorChip).join('')}</div></div>
+    </div>` : '';
+
+  const actionHtml = s.action ? `
+    <div class="schema-row action">
+      <span class="sr-label">DOES</span>
+      <div class="sr-body">
+        <div class="schema-action">${s.action}</div>
+        ${s.error ? `<div class="schema-error-msg"><strong>✕ ERROR:</strong> ${s.error}</div>` : ''}
+        ${s.warn ? `<div class="schema-error-msg" style="background:var(--yellow-dim);border-left-color:var(--yellow);color:var(--yellow)"><strong>⚠ NOTE:</strong> ${s.warn}</div>` : ''}
+      </div>
+    </div>` : '';
+
+  const metaHtml = s.meta ? `
+    <div class="schema-row meta">
+      <span class="sr-label">META</span>
+      <div class="sr-body">
+        <div class="schema-meta-row">
+          ${Object.entries(s.meta).map(([k,v]) => `<span class="m-item"><span class="m-key">${k}:</span><span class="m-val">${v}</span></span>`).join('')}
+        </div>
+      </div>
+    </div>` : '';
+
+  let outputsHtml = '';
+  if (s.outputs === 'fail') {
+    outputsHtml = `
+      <div class="schema-row fail-out">
+        <span class="sr-label">OUT</span>
+        <div class="sr-body">
+          <div style="color:var(--red);font-size:11px;font-style:italic;padding:2px 0">✕ FAILED — no output produced</div>
+        </div>
+      </div>`;
+  } else if (s.outputs) {
+    outputsHtml = `
+      <div class="schema-row out">
+        <span class="sr-label">OUT</span>
+        <div class="sr-body"><div class="tensor-list">${s.outputs.map(tensorChip).join('')}</div></div>
+      </div>`;
+  }
+
+  // 详情跳转按钮
+  const jumpHtml = (s.outputs && s.outputs !== 'fail') || s.error ? `
+    <div class="schema-row" style="grid-template-columns:52px 1fr">
+      <span class="sr-label"></span>
+      <div class="sr-body">
+        <span class="schema-jump" onclick="event.stopPropagation();selectPass('${p.num}_${p.name}')">
+          在右侧查看 IR Diff <span class="arrow">→</span>
+        </span>
+      </div>
+    </div>` : '';
+
+  // 与前一个 schema Pass 的差异
+  const diffHtml = renderDiffRow(p, passIdx);
+
+  return `<div class="pass-schema">
+    ${inputsHtml}
+    ${actionHtml}
+    ${metaHtml}
+    ${outputsHtml}
+    ${jumpHtml}
+    ${diffHtml}
+  </div>`;
+}
+
+// 计算两个 schema 之间的 tensor 差异
+function computeSchemaDiff(prevSchema, currSchema) {
+  if (!prevSchema || !currSchema || currSchema === 'simple' || prevSchema === 'simple') return null;
+  if (currSchema.outputs === 'fail') return { failed: true };
+  const prevOuts = (prevSchema.outputs && prevSchema.outputs !== 'fail') ? prevSchema.outputs : [];
+  const currOuts = (currSchema.outputs && currSchema.outputs !== 'fail') ? currSchema.outputs : [];
+  const prevNames = new Set(prevOuts.map(t => t.n));
+  const currNames = new Set(currOuts.map(t => t.n));
+  const added = currOuts.filter(t => !prevNames.has(t.n));
+  const removed = prevOuts.filter(t => !currNames.has(t.n));
+  const modified = currOuts.filter(t => prevNames.has(t.n) && t.state === 'changed');
+  return { added, removed, modified };
+}
+
+function findPrevSchemaPass(currIdx) {
+  for (let i = currIdx - 1; i >= 0; i--) {
+    if (PASSES[i].schema && PASSES[i].schema !== 'simple') return PASSES[i];
+  }
+  return null;
+}
+
+function renderDiffRow(p, passIdx) {
+  if (!p.schema || p.schema === 'simple') return '';
+  const prev = findPrevSchemaPass(passIdx);
+  if (!prev) return '';
+  const diff = computeSchemaDiff(prev.schema, p.schema);
+  if (!diff) return '';
+  let chips = [];
+  if (diff.failed) {
+    chips.push(`<span class="diff-chip empty">未产出 — 失败终止</span>`);
+  } else {
+    diff.added.forEach(t => chips.push(`<span class="diff-chip add">${t.n}</span>`));
+    diff.removed.forEach(t => chips.push(`<span class="diff-chip del">${t.n}</span>`));
+    diff.modified.forEach(t => chips.push(`<span class="diff-chip mod">${t.n}</span>`));
+    if (chips.length === 0) chips.push(`<span class="diff-chip empty">仅元数据变化 · tensor 集合不变</span>`);
+  }
+  return `<div class="schema-diff">
+    <span class="sr-label">Δ vs P${prev.num}</span>
+    <div class="diff-summary">${chips.join('')}</div>
+  </div>`;
+}
+
+function renderPassNode(p, idx) {
+  const cls = ['pass-node'];
+  if (p.status === 'fail') cls.push('fail');
+  if (p.status === 'warn') cls.push('warn');
+  if (p.selected) { cls.push('open', 'selected'); }
+  if (!p.schema || (p.schema === 'simple' && !p.summary)) cls.push('no-schema');
+
+  const statusCls = p.status;
+  const passId = `${p.num}_${p.name}`;
+  const tagsHtml = (p.tags || []).map(tagBadge).join('');
+  const timeStr = p.time !== null ? `${p.time}ms` : '─';
+  const passItemCls = p.selected ? `pass-item selected ${p.status === 'fail' ? 'fail' : ''}` : `pass-item ${p.status === 'skip' ? 'skip' : ''} ${p.status === 'fail' ? 'fail' : ''}`;
+
+  return `
+    <div class="${cls.join(' ')}" data-pass-id="${passId}" data-pass-idx="${idx}">
+      <div class="lifecycle-marker"></div>
+      <div class="${passItemCls}" onclick="selectPass('${passId}')">
+        <span class="pass-caret" onclick="event.stopPropagation();toggleNode('${passId}')">▶</span>
+        <div class="pass-status ${statusCls}"></div>
+        <div class="pass-name">Pass_${p.num}_${p.name}${tagsHtml}</div>
+        <div class="pass-time">${timeStr}</div>
+      </div>
+      ${renderSchema(p, idx)}
+    </div>`;
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  let html = '';
+  STAGES.forEach(stage => {
+    const passesInStage = PASSES.map((p, i) => ({p, i})).filter(x => x.p.stage === stage.idx);
+    if (passesInStage.length === 0) return;
+    html += `<div class="timeline-group">
+      <div class="timeline-group-head">${stage.label}${stage.tag ? ` <span class="trigger-tag ${stage.tag.cls}" style="margin-left:6px">${stage.tag.text}</span>` : ''}</div>
+      ${passesInStage.map(x => renderPassNode(x.p, x.i)).join('')}
+    </div>`;
+  });
+  tl.innerHTML = html;
+}
+
+// ============================================================
+//  Tensor Tracking (multi-tensor)
+// ============================================================
+let trackedTensors = [];  // [{name, color}]
+const TRACK_COLORS = ['var(--yellow)', 'var(--blue)', 'var(--pink)', 'var(--green)'];
+
+function findTensorOccurrences(tensorName) {
+  // 返回 [{idx, role}] · role ∈ 'birth' | 'read' | 'modified' | 'passthrough' | 'death' | 'fail-read'
+  const hits = [];
+  PASSES.forEach((p, idx) => {
+    if (!p.schema || p.schema === 'simple') return;
+    const s = p.schema;
+    const inputs = s.inputs || [];
+    const outputs = (s.outputs && s.outputs !== 'fail') ? s.outputs : [];
+    const inMatch = inputs.find(t => t.n === tensorName);
+    const outMatch = outputs.find(t => t.n === tensorName);
+
+    if (!inMatch && !outMatch) {
+      // 不出现 — 但如果是失败 Pass 且 tensor 在 inputs 里,标记为 fail-read
+      if (s.outputs === 'fail' && inputs.find(t => t.n === tensorName)) {
+        hits.push({ idx, role: 'fail-read', inTensor: inputs.find(t => t.n === tensorName) });
+      }
+      return;
+    }
+
+    let role = 'passthrough';
+    if (s.outputs === 'fail' && inMatch) {
+      role = 'fail-read';
+    } else if (!inMatch && outMatch && outMatch.state === 'new') {
+      role = 'birth';
+    } else if (inMatch && outMatch && outMatch.state === 'changed') {
+      role = 'modified';
+    } else if (inMatch && !outMatch) {
+      role = 'death';
+    } else if (!inMatch && outMatch) {
+      role = 'birth';
+    } else if (inMatch && outMatch) {
+      role = 'passthrough';
+    } else if (inMatch && !outMatch) {
+      role = 'read';
+    }
+
+    hits.push({ idx, role, inTensor: inMatch, outTensor: outMatch });
+  });
+  return hits;
+}
+
+function nextColor() {
+  for (let i = 0; i < TRACK_COLORS.length; i++) {
+    if (!trackedTensors.find(t => t.colorIdx === i)) return i;
+  }
+  return 0;
+}
+
+function startTracking(tensorName) {
+  // 如果已经在追踪 — 不重复添加;如果是从 chip 点击新 tensor — 添加到 list
+  if (trackedTensors.find(t => t.name === tensorName)) {
+    return; // 已在追踪
+  }
+  trackedTensors.push({ name: tensorName, colorIdx: nextColor() });
+  refreshTracking();
+}
+
+function removeTracked(tensorName) {
+  trackedTensors = trackedTensors.filter(t => t.name !== tensorName);
+  if (trackedTensors.length === 0) {
+    exitTracking();
+  } else {
+    refreshTracking();
+    if (document.getElementById('flowView').classList.contains('show')) {
+      renderFlowView();
+    }
+  }
+}
+
+function refreshTracking() {
+  if (trackedTensors.length === 0) {
+    exitTracking();
+    return;
+  }
+  document.body.classList.add('tracking');
+
+  // 所有 hits 合并 (用于 stats)
+  const allHitIdx = new Set();
+  trackedTensors.forEach(t => {
+    findTensorOccurrences(t.name).forEach(h => allHitIdx.add(h.idx));
+  });
+
+  // 渲染顶栏 chips (时间轴上的 tracking bar)
+  const chipsEl = document.getElementById('trackingBarChips');
+  chipsEl.innerHTML = trackedTensors.map(t => `
+    <span class="fv-tracked-chip" style="background:${rgbaColor(t.colorIdx, 0.18)};border-color:${rgbaColor(t.colorIdx, 0.4)};color:${TRACK_COLORS[t.colorIdx]}">
+      <span class="swatch" style="background:${TRACK_COLORS[t.colorIdx]}"></span>
+      ${t.name}
+      <span class="chip-remove" onclick="removeTracked('${t.name}')">✕</span>
+    </span>
+  `).join('');
+
+  document.getElementById('trackStats').innerHTML =
+    `共追踪 <strong>${trackedTensors.length}</strong> 个 tensor · 涉及 <strong>${allHitIdx.size}</strong> 个 Pass`;
+
+  // 时间轴视图的 highlight 仍然按所有追踪 tensor 联合处理
+  // 高亮所有 chip
+  document.querySelectorAll('.tensor').forEach(el => el.classList.remove('track-hit'));
+  trackedTensors.forEach(t => {
+    document.querySelectorAll(`.tensor[data-tensor="${t.name}"]`).forEach(el => el.classList.add('track-hit'));
+  });
+
+  // Pass 节点暗淡/显式 + lifecycle marker
+  document.querySelectorAll('.pass-node').forEach(node => {
+    node.classList.remove('track-relevant');
+    const marker = node.querySelector('.lifecycle-marker');
+    if (marker) marker.className = 'lifecycle-marker';
+  });
+  allHitIdx.forEach(idx => {
+    const node = document.querySelector(`.pass-node[data-pass-idx="${idx}"]`);
+    if (!node) return;
+    node.classList.add('track-relevant');
+    const marker = node.querySelector('.lifecycle-marker');
+    if (marker) marker.classList.add('transform');
+  });
+
+  // 自动展开所有相关 Pass
+  allHitIdx.forEach(idx => {
+    const node = document.querySelector(`.pass-node[data-pass-idx="${idx}"]`);
+    if (node && !node.classList.contains('no-schema')) node.classList.add('open');
+  });
+
+  // 若 Flow View 已打开,同步刷新
+  if (document.getElementById('flowView').classList.contains('show')) {
+    renderFlowView();
+  }
+}
+
+function rgbaColor(idx, alpha) {
+  const colors = [
+    `rgba(210,153,34,${alpha})`,  // yellow
+    `rgba(88,166,255,${alpha})`,  // blue
+    `rgba(247,120,186,${alpha})`, // pink
+    `rgba(63,185,80,${alpha})`,   // green
+  ];
+  return colors[idx % colors.length];
+}
+
+function exitTracking() {
+  trackedTensors = [];
+  document.body.classList.remove('tracking');
+  document.querySelectorAll('.tensor').forEach(el => el.classList.remove('track-hit'));
+  document.querySelectorAll('.pass-node').forEach(node => {
+    node.classList.remove('track-relevant');
+    const marker = node.querySelector('.lifecycle-marker');
+    if (marker) marker.className = 'lifecycle-marker';
+  });
+  closeFlowView();
+}
+
+function jumpToFirstHit() {
+  const all = new Set();
+  trackedTensors.forEach(t => findTensorOccurrences(t.name).forEach(h => all.add(h.idx)));
+  const min = Math.min(...all);
+  if (isFinite(min)) {
+    const node = document.querySelector(`.pass-node[data-pass-idx="${min}"]`);
+    if (node) node.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
+}
+
+function jumpToLastHit() {
+  const all = new Set();
+  trackedTensors.forEach(t => findTensorOccurrences(t.name).forEach(h => all.add(h.idx)));
+  const max = Math.max(...all);
+  if (isFinite(max)) {
+    const node = document.querySelector(`.pass-node[data-pass-idx="${max}"]`);
+    if (node) node.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
+}
+
+// ============================================================
+//  Flow View · Tensor × Pass Matrix
+// ============================================================
+function openFlowView() {
+  if (trackedTensors.length === 0) {
+    // 自动加默认的失败 tensor
+    startTracking('mha_out_proj.0');
+  }
+  document.getElementById('flowView').classList.add('show');
+  renderFlowView();
+}
+
+function closeFlowView() {
+  document.getElementById('flowView').classList.remove('show');
+  document.getElementById('fvAddTensor').classList.remove('open');
+}
+
+function renderFlowView() {
+  // Stage bar
+  renderStageBar();
+  // Pass cols
+  renderPassCols();
+  // Tracks
+  renderTracks();
+  // Tracked chips in header
+  renderFvHeaderChips();
+  // Crossing info
+  renderCrossings();
+}
+
+function renderFvHeaderChips() {
+  document.getElementById('fvSubtitle').textContent = `追踪 ${trackedTensors.length} 个 tensor · 36 个 Pass`;
+  const chips = document.getElementById('fvTrackedChips');
+  chips.innerHTML = trackedTensors.map(t => `
+    <span class="fv-tracked-chip" style="background:${rgbaColor(t.colorIdx, 0.18)};border-color:${rgbaColor(t.colorIdx, 0.4)};color:${TRACK_COLORS[t.colorIdx]}">
+      <span class="swatch" style="background:${TRACK_COLORS[t.colorIdx]}"></span>
+      ${t.name}
+      <span class="chip-remove" onclick="removeTracked('${t.name}')">✕</span>
+    </span>
+  `).join('');
+}
+
+function renderStageBar() {
+  const bar = document.getElementById('fvStageBar');
+  let html = '';
+  STAGES.forEach(stage => {
+    const cnt = PASSES.filter(p => p.stage === stage.idx).length;
+    if (cnt === 0) return;
+    const width = cnt * 38;
+    const tagHtml = stage.tag ? `<span class="stage-tag">${stage.tag.text}</span>` : '';
+    html += `<div class="fv-stage-segment" style="flex:0 0 ${width}px">stage ${stage.idx} · ${stage.label.split('·')[0].trim()}${tagHtml}</div>`;
+  });
+  bar.innerHTML = html;
+}
+
+function renderPassCols() {
+  const cols = document.getElementById('fvPassCols');
+  const crossings = computeCrossings();
+  let html = '';
+  PASSES.forEach((p, idx) => {
+    const colCls = ['fv-pass-col'];
+    if (p.status === 'fail') colCls.push('failed');
+    else if (p.status === 'warn') colCls.push('warn');
+    else if (p.status === 'skip') colCls.push('skip');
+    if (crossings.has(idx)) colCls.push('crossing');
+    const crossMark = crossings.has(idx) ? '<span class="crossing-mark">⚡</span>' : '';
+    html += `<div class="${colCls.join(' ')}" title="Pass_${p.num}_${p.name}">
+      <span class="pass-idx">${p.num}</span>
+      <span class="pass-dot ${p.status}"></span>
+      ${crossMark}
+    </div>`;
+  });
+  cols.innerHTML = html;
+}
+
+function computeCrossings() {
+  // 找出 2+ 个 tensor 都出现的 Pass 索引集合
+  if (trackedTensors.length < 2) return new Set();
+  const hitMap = new Map(); // idx → count
+  trackedTensors.forEach(t => {
+    const hits = findTensorOccurrences(t.name);
+    const idxSet = new Set(hits.map(h => h.idx));
+    idxSet.forEach(idx => hitMap.set(idx, (hitMap.get(idx) || 0) + 1));
+  });
+  const crossings = new Set();
+  hitMap.forEach((cnt, idx) => {
+    if (cnt >= 2) crossings.add(idx);
+  });
+  return crossings;
+}
+
+function renderCrossings() {
+  const crossings = computeCrossings();
+  const info = document.getElementById('fvCrossingInfo');
+  document.getElementById('fvCrossingCount').textContent = crossings.size;
+  if (trackedTensors.length < 2) {
+    info.style.display = 'none';
+  } else {
+    info.style.display = 'inline-flex';
+  }
+}
+
+function renderTracks() {
+  const tracksEl = document.getElementById('fvTracks');
+  if (trackedTensors.length === 0) {
+    tracksEl.innerHTML = `<div class="fv-empty">
+      <h4>还没有追踪任何 tensor</h4>
+      <p>点击右上角"+ 添加 tensor"开始追踪。Flow View 可同时观察多个 tensor 在整条 Pipeline 中的生命周期与交汇点。</p>
+    </div>`;
+    return;
+  }
+
+  const crossings = computeCrossings();
+  let html = '';
+
+  trackedTensors.forEach((t, trackIdx) => {
+    const hits = findTensorOccurrences(t.name);
+    const hitMap = new Map(hits.map(h => [h.idx, h]));
+    const minIdx = Math.min(...hits.map(h => h.idx));
+    const maxIdx = Math.max(...hits.map(h => h.idx));
+
+    // 第一次出现 = birth (除非已经在前面出现过 -> read)
+    if (hits.length > 0) {
+      const firstHit = hits[0];
+      if (firstHit.role !== 'fail-read') firstHit.role = 'birth';
+    }
+
+    // 取一个示例 tensor 的元数据用于显示
+    const sample = hits.find(h => h.outTensor) || hits[0];
+    const tensorMeta = sample ? (sample.outTensor || sample.inTensor) : null;
+    const shape = tensorMeta ? tensorMeta.s : '?';
+    const dtype = tensorMeta ? tensorMeta.d : '?';
+
+    html += `<div class="fv-track" data-color="${t.colorIdx}">
+      <div class="fv-track-label">
+        <div class="name">
+          <span class="swatch" style="background:${TRACK_COLORS[t.colorIdx]}"></span>
+          ${t.name}
+        </div>
+        <div class="meta">${shape} · ${dtype}</div>
+        <div class="lifecycle-span">
+          <span>P${PASSES[minIdx]?.num || '?'}</span>
+          <span class="arrow">→</span>
+          <span>P${PASSES[maxIdx]?.num || '?'}</span>
+          <span style="color:var(--text-tertiary);margin-left:4px">· ${hits.length} hits</span>
+        </div>
+      </div>
+      <div class="fv-track-cells">
+        ${PASSES.map((p, idx) => renderTrackCell(t, idx, hitMap, minIdx, maxIdx, crossings)).join('')}
+      </div>
+    </div>`;
+  });
+
+  tracksEl.innerHTML = html;
+
+  // 同步水平滚动:让所有 fv-track-cells / fv-pass-cols / fv-stage-bar-cols 一起滚
+  setupSyncScroll();
+}
+
+function renderTrackCell(tensor, passIdx, hitMap, minIdx, maxIdx, crossings) {
+  const hit = hitMap.get(passIdx);
+  const cls = ['fv-track-cell'];
+  if (crossings.has(passIdx)) cls.push('crossing');
+
+  if (!hit) {
+    return `<div class="${cls.join(' ')}"></div>`;
+  }
+
+  cls.push('has-marker');
+  if (passIdx === minIdx) cls.push('is-first');
+  if (passIdx === maxIdx) cls.push('is-last');
+
+  const p = PASSES[passIdx];
+
+  // tooltip 内容
+  const inDesc = hit.inTensor ? `${hit.inTensor.s} · ${hit.inTensor.d}` : '—';
+  const outDesc = hit.outTensor ? `${hit.outTensor.s} · ${hit.outTensor.d}${hit.outTensor.state ? ' · ' + hit.outTensor.state : ''}` : '—';
+
+  let roleLabel = hit.role;
+  if (hit.role === 'fail-read') roleLabel = 'Fail-read · 失败时被读';
+  else if (hit.role === 'birth') roleLabel = 'Birth · 在此被创建';
+  else if (hit.role === 'modified') roleLabel = 'Modified · 在此被修改';
+  else if (hit.role === 'read') roleLabel = 'Read · 在此被读取';
+  else if (hit.role === 'passthrough') roleLabel = 'Pass-through · 透传';
+  else if (hit.role === 'death') roleLabel = 'Death · 最后出现';
+
+  const tooltip = `<div class="cell-tip">
+    <strong>Pass_${p.num}_${p.name}</strong>
+    <div style="color:${TRACK_COLORS[tensor.colorIdx]};margin-top:2px;font-size:10px">▸ ${roleLabel}</div>
+    <div class="tt-label">In</div><div>${inDesc}</div>
+    <div class="tt-label">Out</div><div>${outDesc}</div>
+    <div class="tt-arrow"></div>
+  </div>`;
+
+  // marker 颜色 — 让 marker 的 border 颜色采用 tensor 的轨道色,而内部 symbol 表示 role
+  const markerStyle = `border-color:${TRACK_COLORS[tensor.colorIdx]};color:${TRACK_COLORS[tensor.colorIdx]}`;
+
+  return `<div class="${cls.join(' ')}" onclick="returnToTimeline(${passIdx})">
+    <div class="fv-cell-marker ${hit.role}" style="${markerStyle}"></div>
+    ${tooltip}
+  </div>`;
+}
+
+function returnToTimeline(passIdx) {
+  closeFlowView();
+  const passId = PASSES[passIdx].num + '_' + PASSES[passIdx].name;
+  setTimeout(() => selectPass(passId), 250);
+}
+
+// 同步三层水平滚动:stage-bar / pass-cols / 所有 track-cells
+function setupSyncScroll() {
+  const passCols = document.getElementById('fvPassCols');
+  const stageBar = document.getElementById('fvStageBar');
+  const trackCells = document.querySelectorAll('.fv-track-cells');
+
+  let scrolling = false;
+  function sync(source) {
+    if (scrolling) return;
+    scrolling = true;
+    const left = source.scrollLeft;
+    if (source !== passCols) passCols.scrollLeft = left;
+    if (source !== stageBar) stageBar.scrollLeft = left;
+    trackCells.forEach(t => { if (t !== source) t.scrollLeft = left; });
+    requestAnimationFrame(() => { scrolling = false; });
+  }
+  passCols.addEventListener('scroll', () => sync(passCols));
+  stageBar.addEventListener('scroll', () => sync(stageBar));
+  trackCells.forEach(t => t.addEventListener('scroll', () => sync(t)));
+}
+
+// "+ 添加 tensor" dropdown
+function toggleAddDropdown() {
+  const dd = document.getElementById('fvAddTensor');
+  if (dd.classList.contains('open')) {
+    dd.classList.remove('open');
+    return;
+  }
+  dd.classList.add('open');
+  renderAddDropdown();
+  setTimeout(() => document.getElementById('fvDropdownSearch').focus(), 50);
+}
+
+function renderAddDropdown(filter = '') {
+  // 收集所有 schema 里出现过的 tensor 名 + 出现次数
+  const tensorMap = new Map();
+  PASSES.forEach((p, idx) => {
+    if (!p.schema || p.schema === 'simple') return;
+    const all = [...(p.schema.inputs || []), ...((p.schema.outputs && p.schema.outputs !== 'fail') ? p.schema.outputs : [])];
+    all.forEach(t => {
+      if (!t.n.includes('graph')) {
+        const cur = tensorMap.get(t.n) || { name: t.n, count: 0 };
+        cur.count++;
+        tensorMap.set(t.n, cur);
+      }
+    });
+  });
+  let list = Array.from(tensorMap.values()).sort((a, b) => b.count - a.count);
+  if (filter) {
+    const f = filter.toLowerCase();
+    list = list.filter(t => t.name.toLowerCase().includes(f));
+  }
+  const dd = document.getElementById('fvDropdownList');
+  if (list.length === 0) {
+    dd.innerHTML = `<div class="fv-dropdown-empty">没有匹配的 tensor</div>`;
+    return;
+  }
+  dd.innerHTML = list.map(t => {
+    const tracked = trackedTensors.find(tt => tt.name === t.name);
+    if (tracked) {
+      return `<div class="fv-dropdown-item tracked">${t.name}</div>`;
+    }
+    return `<div class="fv-dropdown-item" onclick="addFromDropdown('${t.name}')">
+      <span>${t.name}</span>
+      <span class="occur-count">${t.count} hits</span>
+    </div>`;
+  }).join('');
+}
+
+function filterAddDropdown() {
+  renderAddDropdown(document.getElementById('fvDropdownSearch').value);
+}
+
+function addFromDropdown(name) {
+  startTracking(name);
+  document.getElementById('fvAddTensor').classList.remove('open');
+  document.getElementById('fvDropdownSearch').value = '';
+}
+
+// 点击 dropdown 外部关闭
+document.addEventListener('click', e => {
+  const dd = document.getElementById('fvAddTensor');
+  if (dd && dd.classList.contains('open') && !dd.contains(e.target)) {
+    dd.classList.remove('open');
+  }
+});
+
+// ============================================================
+//  Interactions
+// ============================================================
+function toggleNode(passId) {
+  const node = document.querySelector(`[data-pass-id="${passId}"]`);
+  if (!node || node.classList.contains('no-schema')) return;
+  node.classList.toggle('open');
+}
+
+function selectPass(passId) {
+  document.querySelectorAll('.pass-node').forEach(n => {
+    n.querySelector('.pass-item').classList.remove('selected');
+  });
+  const node = document.querySelector(`[data-pass-id="${passId}"]`);
+  if (!node) return;
+  node.querySelector('.pass-item').classList.add('selected');
+  // 选中即自动展开（有 schema 的话）
+  if (!node.classList.contains('no-schema')) node.classList.add('open');
+}
+
+// ============================================================
+//  Initial render
+// ============================================================
+renderTimeline();
+
+// ============================================================
+//  Other interactions (preserved)
+// ============================================================
+function showRecompile() { document.getElementById('modal-recompile').classList.add('show'); }
+function showDocLink() { document.getElementById('modal-doc').classList.add('show'); }
+function hideModal() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+}
+function highlightKnob(name) {
+  const el = document.getElementById('knob-' + name);
+  if (!el) return;
+  el.style.transition = 'background 0.3s';
+  el.style.background = 'var(--red-dim)';
+  el.scrollIntoView({behavior: 'smooth', block: 'center'});
+  setTimeout(() => el.style.background = '', 1500);
+}
+
+document.querySelectorAll('.tab-bar .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+document.querySelectorAll('.rp-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('flowView').classList.contains('show')) {
+      closeFlowView();
+    } else if (trackedTensors.length > 0) {
+      exitTracking();
+    } else {
+      hideModal();
+    }
+  }
+});
+</script>
+
+</body>
+</html>
