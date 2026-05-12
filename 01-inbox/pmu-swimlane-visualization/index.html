@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PMU Swimlane Insight Prototype</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>PMU Swimlane Insight</h1>
+            <p>泳道图增强层 · sample-driven prototype</p>
+          </div>
+        </div>
+
+        <div class="context-controls" aria-label="采集上下文">
+          <label class="field">
+            <span>芯片 / 架构</span>
+            <select id="chipSelect">
+              <option value="dav3510">A5 / dav_3510</option>
+              <option value="dav2201">dav_2201</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>PMU Group</span>
+            <select id="groupSelect"></select>
+          </label>
+          <button class="icon-button" id="refreshButton" type="button" title="刷新当前上下文" aria-label="刷新当前上下文">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v6h-6"/></svg>
+          </button>
+        </div>
+
+        <div class="top-actions">
+          <button class="ghost-button" id="compareButton" type="button">Compare runs</button>
+          <button class="ghost-button" id="expertButton" type="button">Expert explanation</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="left-panel" aria-label="全局洞察和标记规则">
+          <section class="panel-section capture-card">
+            <div class="section-heading">
+              <h2>采集上下文</h2>
+              <span id="validCounterBadge" class="badge"></span>
+            </div>
+            <p id="captureSummary" class="muted"></p>
+            <div class="meta-grid" id="captureMeta"></div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <h2>Immediate attention</h2>
+              <button class="text-button" id="clearMarkersButton" type="button">清除标记</button>
+            </div>
+            <div class="issue-list" id="issueList"></div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <h2>PMU marker 规则</h2>
+            </div>
+            <div class="rule-list" id="ruleList"></div>
+            <p class="hint">marker 绑定 task，表示该 task 的 PMU 统计值得关注，不表示精确瞬时事件。</p>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <h2>A5 Mix</h2>
+              <label class="switch">
+                <input id="mixToggle" type="checkbox" checked>
+                <span></span>
+              </label>
+            </div>
+            <p class="muted">打开后展示泳道内部的 compute / memory / wait / sync set 分段。数据不足时显示 unknown。</p>
+          </section>
+        </aside>
+
+        <section class="center-panel">
+          <div class="timeline-toolbar">
+            <div>
+              <h2>泳道图 + PMU 洞察层</h2>
+              <p id="timelineSubtitle"></p>
+            </div>
+            <div class="view-tools">
+              <button class="seg-button active" data-view="issues" type="button">Top issues</button>
+              <button class="seg-button" data-view="markers" type="button">Markers</button>
+              <button class="seg-button" data-view="paths" type="button">Jump paths</button>
+            </div>
+          </div>
+
+          <div class="legend-row" id="legendRow"></div>
+          <div class="timeline" id="timeline" aria-label="PMU 增强泳道图"></div>
+
+          <div class="bottom-dock">
+            <section class="dock-card">
+              <div class="section-heading">
+                <h2>一跳定位链路</h2>
+                <span id="jumpStatus" class="badge neutral">ready</span>
+              </div>
+              <div class="jump-chain" id="jumpChain"></div>
+            </section>
+
+            <section class="dock-card">
+              <div class="section-heading">
+                <h2>硬件路径</h2>
+                <span id="hardwareStatus" class="badge neutral">inferred</span>
+              </div>
+              <div class="hardware-map" id="hardwareMap"></div>
+            </section>
+          </div>
+
+          <section class="artifact-viewer hidden" id="artifactViewer" aria-label="定位内容查看器">
+            <div class="artifact-head">
+              <div>
+                <span class="kicker" id="artifactMeta"></span>
+                <h2 id="artifactTitle"></h2>
+              </div>
+              <button class="icon-button" id="closeArtifactButton" type="button" title="关闭内容" aria-label="关闭内容">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+            <div class="artifact-body" id="artifactBody"></div>
+          </section>
+        </section>
+
+        <aside class="right-panel" aria-label="任务详情">
+          <section class="detail-empty" id="emptyState">
+            <span class="empty-icon" aria-hidden="true"></span>
+            <h2>选择一个 task 或 marker</h2>
+            <p>右侧会展示 task identity、PMU counter、触发证据、一跳定位和未来能力入口。</p>
+          </section>
+
+          <section class="detail-panel hidden" id="detailPanel">
+            <div class="detail-head">
+              <div>
+                <span id="detailKicker" class="kicker"></span>
+                <h2 id="detailTitle"></h2>
+              </div>
+              <button class="icon-button" id="pinButton" type="button" title="Pin marker" aria-label="Pin marker">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="m5 17 14 0"/><path d="m7 4 10 0"/><path d="m9 4 1 9"/><path d="m15 4-1 9"/><path d="m8 13 8 0"/></svg>
+              </button>
+            </div>
+
+            <div class="detail-tabs" role="tablist">
+              <button class="tab active" data-tab="summary" type="button">Summary</button>
+              <button class="tab" data-tab="counters" type="button">Counters</button>
+              <button class="tab" data-tab="jump" type="button">Jump</button>
+              <button class="tab" data-tab="future" type="button">Future</button>
+            </div>
+
+            <div class="tab-panel" data-panel="summary">
+              <div class="detail-grid" id="taskIdentity"></div>
+              <div class="evidence-card" id="evidenceCard"></div>
+            </div>
+
+            <div class="tab-panel hidden" data-panel="counters">
+              <div class="counter-list" id="counterList"></div>
+            </div>
+
+            <div class="tab-panel hidden" data-panel="jump">
+              <div class="jump-targets" id="jumpTargets"></div>
+            </div>
+
+            <div class="tab-panel hidden" data-panel="future">
+              <div class="future-list" id="futureList"></div>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

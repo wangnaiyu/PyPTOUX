@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HashOrder Coloring Design</title>
+<style>
+:root {
+  --bg: #15171b;
+  --surface: #1c2026;
+  --surface-2: #242932;
+  --surface-3: #2b313b;
+  --line: #373f4c;
+  --line-soft: #2f3641;
+  --text: #eef2f7;
+  --muted: #a7b0bd;
+  --dim: #747f8d;
+  --accent: #4fa3b8;
+  --amber: #c99038;
+  --green: #6ba66f;
+  --blue: #5b8fd9;
+  --violet: #9a7ad1;
+  --rose: #c26c7a;
+  --teal: #58b5a6;
+  --grid: rgba(255,255,255,0.045);
+  --shadow: 0 18px 45px rgba(0,0,0,0.34);
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0;
+}
+
+body { height: 100vh; overflow: hidden; }
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+.app {
+  height: 100vh;
+  min-width: 1120px;
+  display: grid;
+  grid-template-rows: 42px minmax(0, 1fr);
+  background: var(--bg);
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: 196px minmax(460px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  background: #1a1e24;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #24444c;
+  color: #b7edf5;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.brand-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tool-group {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #20252d;
+}
+
+.seg {
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.seg.active {
+  background: #334250;
+  color: #f4f8fb;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #20252d;
+  color: #c8d1dc;
+  font-size: 14px;
+}
+
+.search {
+  width: 260px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #20252d;
+  color: var(--dim);
+  font-size: 12px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ghost-btn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #20252d;
+  color: #dbe3ed;
+  font-size: 12px;
+}
+
+.primary-btn {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  background: #4f8ea0;
+  color: #f8fbfd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 58px minmax(680px, 1fr) 390px;
+}
+
+.activity {
+  background: #1a1e24;
+  border-right: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 14px;
+  gap: 12px;
+}
+
+.activity button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: transparent;
+  color: #909aa7;
+}
+
+.activity button.active {
+  background: #2c3540;
+  color: #eef4fa;
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 42px 74px minmax(0, 1fr) 138px;
+  background: var(--bg);
+}
+
+.tabs {
+  display: flex;
+  align-items: end;
+  background: #1a1e24;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.tab {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  border-right: 1px solid var(--line-soft);
+  background: #20252d;
+  color: #e7edf5;
+  font-size: 13px;
+}
+
+.tab.muted {
+  background: #1b2027;
+  color: var(--muted);
+}
+
+.context-strip {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  background: #191d23;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.metric {
+  min-width: 112px;
+  height: 48px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 0 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #20252d;
+}
+
+.metric strong {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.metric span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.metric.hot strong { color: #f2c37b; }
+.metric.good strong { color: #97d59c; }
+
+.hint-box {
+  width: 360px;
+  min-height: 48px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 0 12px;
+  border-left: 3px solid var(--accent);
+  background: #20252d;
+  color: #dbe4ec;
+  font-size: 12px;
+}
+
+.hint-box span {
+  color: var(--muted);
+}
+
+.timeline-wrap {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 34px minmax(0, 1fr);
+}
+
+.time-axis {
+  display: grid;
+  grid-template-columns: 108px repeat(10, 1fr);
+  align-items: center;
+  padding-right: 16px;
+  border-bottom: 1px solid var(--line-soft);
+  background: #171b20;
+  color: var(--dim);
+  font-size: 11px;
+}
+
+.time-axis div {
+  padding-left: 8px;
+}
+
+.lane-stage {
+  min-height: 0;
+  overflow: auto;
+  background:
+    linear-gradient(90deg, transparent 107px, var(--line-soft) 107px, var(--line-soft) 108px, transparent 108px),
+    repeating-linear-gradient(90deg, transparent 0, transparent 9.85%, var(--grid) 9.9%, var(--grid) 10%),
+    #15191f;
+}
+
+.lane {
+  position: relative;
+  height: 43px;
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  border-bottom: 1px solid rgba(255,255,255,0.035);
+}
+
+.lane.group-gap {
+  margin-top: 10px;
+}
+
+.lane-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px 0 14px;
+  background: #171b20;
+  color: #c6d0dc;
+  font-size: 12px;
+  border-right: 1px solid var(--line-soft);
+}
+
+.lane-label small {
+  color: var(--dim);
+}
+
+.track {
+  position: relative;
+  min-width: 900px;
+}
+
+.task {
+  position: absolute;
+  top: 11px;
+  height: 20px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+  opacity: 0.93;
+  transition: opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.task::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  color: rgba(255,255,255,0.9);
+  font-size: 10px;
+  white-space: nowrap;
+  max-width: calc(100% - 12px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task.selected {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px #f4f8fb, 0 0 0 5px rgba(79,163,184,0.28);
+  opacity: 1;
+  z-index: 5;
+}
+
+.task.dimmed {
+  opacity: 0.17;
+}
+
+.task.none {
+  background: #4b535e;
+  opacity: 0.5;
+}
+
+.task.func8-0 { background: var(--teal); }
+.task.func8-1 { background: var(--blue); }
+.task.func12-0 { background: var(--violet); }
+.task.func12-2 { background: var(--amber); }
+.task.func21-0 { background: var(--green); }
+.task.func21-3 { background: var(--rose); }
+
+.task.wait {
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.22) 0 4px, transparent 4px 8px);
+}
+
+.selection-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 29%;
+  width: 16%;
+  border-left: 1px dashed rgba(255,255,255,0.28);
+  border-right: 1px dashed rgba(255,255,255,0.28);
+  background: rgba(79,163,184,0.055);
+  pointer-events: none;
+}
+
+.bottom-panel {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line-soft);
+  background: #191d23;
+}
+
+.mini-panel {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #20252d;
+}
+
+.mini-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #eef3f8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mini-title span {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.bar-compare {
+  display: grid;
+  gap: 7px;
+}
+
+.bar-line {
+  display: grid;
+  grid-template-columns: 70px 1fr 38px;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.bar-bg {
+  height: 8px;
+  border-radius: 999px;
+  background: #303743;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.config-code {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: #15191f;
+  color: #d7eef2;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.right-panel {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-left: 1px solid var(--line-soft);
+  background: var(--surface);
+}
+
+.panel-head {
+  padding: 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.panel-kicker {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.panel-head h1 {
+  margin: 6px 0 6px;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.panel-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.panel-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px 16px;
+}
+
+.section {
+  margin-bottom: 14px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #eef3f8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.section-title span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.legend-list {
+  display: grid;
+  gap: 8px;
+}
+
+.legend-item {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 54px;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #20252d;
+}
+
+.legend-item.active {
+  border-color: #8fc6d2;
+  background: #24313a;
+}
+
+.swatch {
+  width: 12px;
+  height: 32px;
+  border-radius: 3px;
+}
+
+.swatch.teal { background: var(--teal); }
+.swatch.blue { background: var(--blue); }
+.swatch.violet { background: var(--violet); }
+.swatch.amber { background: var(--amber); }
+
+.legend-main {
+  min-width: 0;
+}
+
+.legend-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f3f7fb;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tag {
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #334250;
+  color: #cce4ea;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.legend-sub {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend-score {
+  text-align: right;
+}
+
+.legend-score strong {
+  display: block;
+  color: #f2c37b;
+  font-size: 14px;
+}
+
+.legend-score span {
+  color: var(--dim);
+  font-size: 10px;
+}
+
+.detail-card {
+  padding: 12px;
+  border: 1px solid #475361;
+  border-radius: 8px;
+  background: #222933;
+  box-shadow: var(--shadow);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.detail-metric {
+  min-height: 54px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 7px;
+  background: #1a1f26;
+}
+
+.detail-metric strong {
+  color: #f5f8fb;
+  font-size: 16px;
+}
+
+.detail-metric span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.recommend {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rec-row {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 38px;
+}
+
+.rec-badge {
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #31424d;
+  color: #c9eef5;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.rec-text {
+  color: #d9e1ea;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rec-text span {
+  color: var(--muted);
+}
+
+.pain-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pain {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #20252d;
+  color: #dbe3eb;
+  font-size: 12px;
+}
+
+.panel-foot {
+  padding: 12px 16px;
+  border-top: 1px solid var(--line-soft);
+  background: #1a1e24;
+}
+
+.foot-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.copy-btn {
+  height: 34px;
+  border-radius: 7px;
+  background: #4f8ea0;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.secondary-btn {
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #20252d;
+  color: #d8e1eb;
+  font-size: 12px;
+}
+
+@media (max-width: 1200px) {
+  .workspace { grid-template-columns: 52px minmax(640px, 1fr) 360px; }
+  .search { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app" data-selected="func8-0">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div class="brand-title">PyPTO Toolkit</div>
+    </div>
+    <div class="toolbar">
+      <div class="tool-group" aria-label="Color mode">
+        <button class="seg">子图</button>
+        <button class="seg">语义</button>
+        <button class="seg active">HashOrder</button>
+      </div>
+      <div class="tool-group" aria-label="Pass type">
+        <button class="seg active" data-pass="l1">L1 Reuse</button>
+        <button class="seg" data-pass="cube">Cube NBuffer</button>
+        <button class="seg" data-pass="vec">Vector NBuffer</button>
+      </div>
+      <button class="icon-btn" title="缩小">−</button>
+      <button class="icon-btn" title="放大">＋</button>
+      <button class="icon-btn" title="定位选中">⌖</button>
+      <div class="search">⌕ 搜索 task / func8_0 / MatMul</div>
+    </div>
+    <div class="top-actions">
+      <button class="ghost-btn">前后对比</button>
+      <button class="primary-btn">生成配置</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <nav class="activity" aria-label="Navigation">
+      <button title="文件">▣</button>
+      <button class="active" title="泳道图">▤</button>
+      <button title="计算图">◎</button>
+      <button title="报告">▥</button>
+      <button title="设置">⚙</button>
+    </nav>
+
+    <main class="main">
+      <div class="tabs">
+        <div class="tab">merged_swimlane.json</div>
+        <div class="tab muted">program.json</div>
+        <div class="tab muted">performance_report</div>
+      </div>
+
+      <section class="context-strip">
+        <div class="metric-row">
+          <div class="metric">
+            <strong>func8_0</strong>
+            <span>完整键着色</span>
+          </div>
+          <div class="metric hot">
+            <strong>24</strong>
+            <span>同构子图</span>
+          </div>
+          <div class="metric good">
+            <strong>8</strong>
+            <span>建议任务数</span>
+          </div>
+          <div class="metric">
+            <strong>N=3</strong>
+            <span>推荐粒度</span>
+          </div>
+        </div>
+        <div class="hint-box">
+          同色仅表示归属，不表示好坏
+          <span>选中组已按完整 key 高亮，其他任务自动降噪。</span>
+        </div>
+      </section>
+
+      <section class="timeline-wrap">
+        <div class="time-axis">
+          <div>Core</div>
+          <div>0μs</div>
+          <div>20</div>
+          <div>40</div>
+          <div>60</div>
+          <div>80</div>
+          <div>100</div>
+          <div>120</div>
+          <div>140</div>
+          <div>160</div>
+          <div>180</div>
+        </div>
+        <div class="lane-stage">
+          <div class="lane">
+            <div class="lane-label">AIC_0 <small>Cube</small></div>
+            <div class="track">
+              <div class="selection-band"></div>
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:8%;width:17%"></button>
+              <button class="task func12-0" data-group="func12-0" data-label="func12_0" style="left:32%;width:14%"></button>
+              <button class="task func8-1" data-group="func8-1" data-label="func8_1" style="left:58%;width:18%"></button>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-label">AIV_0 <small>Vec</small></div>
+            <div class="track">
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:11%;width:18%"></button>
+              <button class="task func12-2" data-group="func12-2" data-label="func12_2" style="left:36%;width:12%"></button>
+              <button class="task none" data-group="none" data-label="no hint" style="left:51%;width:10%"></button>
+              <button class="task func8-1" data-group="func8-1" data-label="func8_1" style="left:66%;width:15%"></button>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-label">AIV_1 <small>Vec</small></div>
+            <div class="track">
+              <button class="task func21-0" data-group="func21-0" data-label="func21_0" style="left:3%;width:13%"></button>
+              <button class="task func8-0 wait selected" data-group="func8-0" data-label="func8_0 wait" style="left:23%;width:20%"></button>
+              <button class="task func12-0" data-group="func12-0" data-label="func12_0" style="left:55%;width:13%"></button>
+            </div>
+          </div>
+          <div class="lane group-gap">
+            <div class="lane-label">AIC_1 <small>Cube</small></div>
+            <div class="track">
+              <button class="task func12-0" data-group="func12-0" data-label="func12_0" style="left:9%;width:16%"></button>
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:31%;width:19%"></button>
+              <button class="task func21-3" data-group="func21-3" data-label="func21_3" style="left:62%;width:16%"></button>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-label">AIV_2 <small>Vec</small></div>
+            <div class="track">
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:14%;width:16%"></button>
+              <button class="task none" data-group="none" data-label="no hint" style="left:38%;width:7%"></button>
+              <button class="task func12-2" data-group="func12-2" data-label="func12_2" style="left:50%;width:15%"></button>
+              <button class="task func8-1" data-group="func8-1" data-label="func8_1" style="left:73%;width:14%"></button>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-label">AIV_3 <small>Vec</small></div>
+            <div class="track">
+              <button class="task func21-0" data-group="func21-0" data-label="func21_0" style="left:8%;width:12%"></button>
+              <button class="task func8-0 wait selected" data-group="func8-0" data-label="func8_0 wait" style="left:28%;width:18%"></button>
+              <button class="task func12-0" data-group="func12-0" data-label="func12_0" style="left:57%;width:17%"></button>
+            </div>
+          </div>
+          <div class="lane group-gap">
+            <div class="lane-label">AIC_2 <small>Cube</small></div>
+            <div class="track">
+              <button class="task func8-1" data-group="func8-1" data-label="func8_1" style="left:5%;width:15%"></button>
+              <button class="task func12-2" data-group="func12-2" data-label="func12_2" style="left:31%;width:18%"></button>
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:62%;width:14%"></button>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-label">AIV_4 <small>Vec</small></div>
+            <div class="track">
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:18%;width:17%"></button>
+              <button class="task func21-0" data-group="func21-0" data-label="func21_0" style="left:43%;width:14%"></button>
+              <button class="task func21-3" data-group="func21-3" data-label="func21_3" style="left:70%;width:12%"></button>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-label">AIV_5 <small>Vec</small></div>
+            <div class="track">
+              <button class="task none" data-group="none" data-label="no hint" style="left:7%;width:11%"></button>
+              <button class="task func8-0 selected" data-group="func8-0" data-label="func8_0" style="left:24%;width:20%"></button>
+              <button class="task func12-0" data-group="func12-0" data-label="func12_0" style="left:55%;width:16%"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom-panel">
+        <div class="mini-panel">
+          <div class="mini-title">合并预估 <span>subGraphCount / N</span></div>
+          <div class="bar-compare">
+            <div class="bar-line"><span>N=1</span><div class="bar-bg"><div class="bar-fill" style="width:100%"></div></div><span>24</span></div>
+            <div class="bar-line"><span>N=2</span><div class="bar-bg"><div class="bar-fill" style="width:50%"></div></div><span>12</span></div>
+            <div class="bar-line"><span>N=3</span><div class="bar-bg"><div class="bar-fill" style="width:34%"></div></div><span>8</span></div>
+          </div>
+        </div>
+        <div class="mini-panel">
+          <div class="mini-title">命中配置 <span>函数粒度优先</span></div>
+          <pre class="config-code">cube_l1_reuse_setting={
+  "DEFAULT": 4,
+  "func8_0": 3
+}</pre>
+        </div>
+        <div class="mini-panel">
+          <div class="mini-title">覆盖提示 <span>semantic label</span></div>
+          <div class="rec-text">语义标签可覆盖合并粒度；当前选中组无标签覆盖，配置结果清晰可追溯。</div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="right-panel">
+      <div class="panel-head">
+        <div class="panel-kicker">HashOrder Coloring</div>
+        <h1>同构组一眼定位</h1>
+        <p>按完整键着色，避免不同 function 的局部编号混淆，并把观察结果直接转成调参线索。</p>
+      </div>
+
+      <div class="panel-scroll">
+        <section class="section">
+          <div class="section-title">图例 <span>按耗时排序</span></div>
+          <div class="legend-list">
+            <button class="legend-item active" data-select="func8-0">
+              <span class="swatch teal"></span>
+              <span class="legend-main">
+                <span class="legend-key">func8_0 <span class="tag">L1</span></span>
+                <span class="legend-sub">24 subgraphs · 8 lanes · MatMul</span>
+              </span>
+              <span class="legend-score"><strong>186μs</strong><span>total</span></span>
+            </button>
+            <button class="legend-item" data-select="func8-1">
+              <span class="swatch blue"></span>
+              <span class="legend-main">
+                <span class="legend-key">func8_1 <span class="tag">L1</span></span>
+                <span class="legend-sub">18 subgraphs · 5 lanes · Dequant</span>
+              </span>
+              <span class="legend-score"><strong>124μs</strong><span>total</span></span>
+            </button>
+            <button class="legend-item" data-select="func12-0">
+              <span class="swatch violet"></span>
+              <span class="legend-main">
+                <span class="legend-key">func12_0 <span class="tag">L1</span></span>
+                <span class="legend-sub">12 subgraphs · 4 lanes · RoPE</span>
+              </span>
+              <span class="legend-score"><strong>86μs</strong><span>total</span></span>
+            </button>
+            <button class="legend-item" data-select="func12-2">
+              <span class="swatch amber"></span>
+              <span class="legend-main">
+                <span class="legend-key">func12_2 <span class="tag">L1</span></span>
+                <span class="legend-sub">8 subgraphs · 3 lanes · CopyIn</span>
+              </span>
+              <span class="legend-score"><strong>51μs</strong><span>total</span></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">选中组 <span>func8_0</span></div>
+          <div class="detail-card">
+            <div class="detail-grid">
+              <div class="detail-metric"><strong>24</strong><span>同构子图</span></div>
+              <div class="detail-metric"><strong>8</strong><span>目标核心</span></div>
+              <div class="detail-metric"><strong>N=3</strong><span>推荐粒度</span></div>
+              <div class="detail-metric"><strong>≈8</strong><span>合并后任务</span></div>
+            </div>
+            <div class="recommend">
+              <div class="rec-row">
+                <div class="rec-badge">1</div>
+                <div class="rec-text">完整键命中 <span>只影响 func8_0</span></div>
+              </div>
+              <div class="rec-row">
+                <div class="rec-badge">2</div>
+                <div class="rec-text">任务数贴核 <span>24 / 3 ≈ 8</span></div>
+              </div>
+              <div class="rec-row">
+                <div class="rec-badge">3</div>
+                <div class="rec-text">保留 DEFAULT <span>其他组继续自动兜底</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">设计点 <span>解决痛点</span></div>
+          <div class="pain-list">
+            <div class="pain">完整键着色</div>
+            <div class="pain">函数范围隔离</div>
+            <div class="pain">同组一键高亮</div>
+            <div class="pain">其他任务降噪</div>
+            <div class="pain">子图数量外显</div>
+            <div class="pain">合并后数预估</div>
+            <div class="pain">核心匹配提示</div>
+            <div class="pain">配置命中预览</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="panel-foot">
+        <div class="foot-actions">
+          <button class="copy-btn">复制配置</button>
+          <button class="secondary-btn">跳转计算图</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const app = document.querySelector('.app');
+const tasks = Array.from(document.querySelectorAll('.task'));
+const legendItems = Array.from(document.querySelectorAll('.legend-item'));
+
+function selectGroup(group) {
+  app.dataset.selected = group;
+  tasks.forEach(task => {
+    const selected = task.dataset.group === group;
+    task.classList.toggle('selected', selected);
+    task.classList.toggle('dimmed', !selected && task.dataset.group !== 'none');
+  });
+  legendItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.select === group);
+  });
+}
+
+legendItems.forEach(item => {
+  item.addEventListener('click', () => selectGroup(item.dataset.select));
+});
+
+tasks.forEach(task => {
+  task.addEventListener('click', () => {
+    if (task.dataset.group !== 'none') selectGroup(task.dataset.group);
+  });
+});
+
+document.querySelectorAll('[data-pass]').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('[data-pass]').forEach(b => b.classList.remove('active'));
+    button.classList.add('active');
+  });
+});
+
+selectGroup('func8-0');
+</script>
+</body>
+</html>
