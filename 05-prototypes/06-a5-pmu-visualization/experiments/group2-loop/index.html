@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>A5 PMU · Group 2 Pipeline Balance · Diagnosis Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/layout.css">
+<link rel="stylesheet" href="styles/swimlane.css">
+<link rel="stylesheet" href="styles/panel.css">
+<link rel="stylesheet" href="styles/modal.css">
+</head>
+<body>
+
+<!-- ===================== Top Bar ===================== -->
+<header class="topbar" id="topbar">
+  <div class="brand">
+    <div class="brand-logo">A5</div>
+    <div class="brand-name">PMU Diagnostic Workbench<span class="secondary">v0.1 · L3 demo</span></div>
+  </div>
+
+  <div class="session-info">
+    <span class="kernel-name">run_dav3510_matmul_2026_05_10</span>
+    <span class="sep">·</span>
+    <span class="mono">trace #c4a7e21</span>
+  </div>
+
+  <div class="ctrl-group" id="chip-group">
+    <label class="ctrl-label">Chip</label>
+    <select class="ctrl-select mono" id="chip-select">
+      <option value="dav_3510" selected>A5 / dav_3510</option>
+      <option value="dav_2201" disabled>dav_2201 (coming soon)</option>
+    </select>
+  </div>
+
+  <div class="ctrl-group" id="group-group">
+    <label class="ctrl-label">PMU Group</label>
+    <div class="group-tabs" id="group-tabs"><!-- populated by topbar.js --></div>
+  </div>
+
+  <div class="ctrl-group">
+    <label class="ctrl-label">Mix Mode</label>
+    <button class="mix-toggle" id="mix-toggle" data-on="false">
+      <span class="mix-knob"></span>
+      <span class="mix-label">OFF</span>
+    </button>
+  </div>
+
+  <div class="topbar-spacer"></div>
+
+  <div class="health-pill" id="health-pill">
+    <span class="hp-item"><span class="hp-k">sampled</span><span class="hp-v ok mono">group 2</span></span>
+    <span class="hp-sep">·</span>
+    <span class="hp-item"><span class="hp-k">tasks</span><span class="hp-v mono" id="hp-task-count">—</span></span>
+    <span class="hp-sep">·</span>
+    <span class="hp-item"><span class="hp-k">wraps</span><span class="hp-v mono">24</span></span>
+  </div>
+</header>
+
+<!-- ===================== Workspace ===================== -->
+<main class="workspace">
+
+  <!-- LEFT: Immediate Attention -->
+  <aside class="left-panel" id="summary-panel">
+    <!-- populated by summary.js -->
+  </aside>
+
+  <!-- CENTER: Swimlane -->
+  <section class="center-panel">
+    <div class="sl-toolbar">
+      <div class="sl-title" id="sl-title">Pipeline Balance · 默认顺序</div>
+      <div class="sl-legend" id="sl-legend"><!-- populated by swimlane.js --></div>
+      <div class="sl-tools">
+        <button class="sl-tool" id="sl-zoom-out" title="缩小">−</button>
+        <span class="sl-zoom-val mono" id="sl-zoom-val">1.0×</span>
+        <button class="sl-tool" id="sl-zoom-in" title="放大">+</button>
+        <button class="sl-tool" id="sl-fit" title="重置">⤢</button>
+      </div>
+    </div>
+    <div class="swimlane-host" id="swimlane-host">
+      <!-- populated by swimlane.js -->
+    </div>
+  </section>
+
+  <!-- RIGHT: Detail Panel -->
+  <aside class="right-panel" id="detail-panel">
+    <!-- populated by detail-panel.js -->
+  </aside>
+
+</main>
+
+<!-- ===================== Modal mount ===================== -->
+<div class="modal-root" id="modal-root"></div>
+<div class="toast-root" id="toast-root"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

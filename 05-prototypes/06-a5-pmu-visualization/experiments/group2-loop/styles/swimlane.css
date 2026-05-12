@@ -1,0 +1,225 @@
+/* ===================================================================
+ * Swimlane area · 78 lanes scrollable
+ * =================================================================== */
+
+.sl-toolbar {
+  flex: 0 0 36px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 14px;
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.sl-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.sl-legend {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sl-legend .lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sl-legend .lg-sw {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  background: var(--text-muted);
+  flex: 0 0 auto;
+}
+.sl-tools { display: flex; align-items: center; gap: 2px; }
+.sl-tool {
+  width: 24px; height: 24px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.sl-tool:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-strong); }
+.sl-zoom-val { width: 36px; text-align: center; color: var(--text-secondary); font-size: 11px; }
+
+.swimlane-host {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: var(--bg-base);
+}
+
+.sl-svg { display: block; }
+
+/* lane label column (fixed left via separate <g>) */
+.sl-lane-label {
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  user-select: none;
+  dominant-baseline: central;
+}
+.sl-lane-label.is-section { fill: var(--text-primary); font-weight: 600; }
+.sl-lane-label.is-aic { fill: var(--purple); }
+.sl-lane-label.is-aiv { fill: var(--pink); }
+.sl-lane-label.is-mte { fill: var(--orange); }
+.sl-lane-label.is-cpu { fill: var(--blue); }
+
+/* lane row background */
+.sl-lane-bg { fill: transparent; }
+.sl-lane-bg.is-wrap-odd { fill: var(--lane-tint-wrap-odd); }
+.sl-lane-bg.is-wrap-even { fill: var(--lane-tint-wrap-even); }
+.sl-lane-bg.is-wrap-critical { fill: var(--lane-tint-wrap-critical); }
+.sl-lane-bg.is-cpu-section { fill: var(--lane-tint-cpu); }
+.sl-lane-bg.is-mte-section { fill: var(--lane-tint-mte); }
+
+/* divider line between sections */
+.sl-section-divider { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 3; }
+
+/* wrap-block label tab (mix mode) */
+.sl-wrap-tab {
+  fill: var(--bg-elev-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.sl-wrap-tab.is-critical { fill: var(--yellow-dim); stroke: var(--yellow-strong); }
+.sl-wrap-tab-text {
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+.sl-wrap-tab-text.is-critical { fill: var(--yellow); }
+
+/* task bar */
+.sl-task {
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.sl-task:hover { filter: brightness(1.35); }
+.sl-task.is-selected { stroke: var(--text-primary); stroke-width: 1.5; }
+.sl-task.is-critical { stroke: var(--yellow); stroke-width: 1; }
+.sl-task.is-suspect-wait { stroke: var(--red); stroke-width: 1; }
+.sl-task.is-suspect-overlap { stroke: var(--purple); stroke-width: 1; }
+
+/* task internal composition segments (mix mode) */
+.sl-seg { pointer-events: none; }
+.sl-seg-uncovered {
+  fill: var(--c-uncovered);
+  fill-opacity: 0.35;
+}
+.sl-seg-overlap {
+  fill: var(--c-overlap);
+  fill-opacity: 0.30;
+}
+
+/* task name label */
+.sl-task-name {
+  fill: #0d1117;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  pointer-events: none;
+  dominant-baseline: central;
+  letter-spacing: -0.2px;
+}
+.sl-task-name.is-dark-bg { fill: var(--text-primary); }
+
+/* time-axis grid */
+.sl-axis-tick { stroke: var(--border); stroke-width: 0.5; }
+.sl-axis-label {
+  fill: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-anchor: middle;
+}
+
+/* badge (gap / overlap / accounted) — small icon at task right edge */
+.sl-badge {
+  pointer-events: none;
+}
+.sl-badge-r { fill: var(--bg-elev-1); stroke-width: 0.75; }
+.sl-badge-r.wait { stroke: var(--red); fill: var(--red-dim); }
+.sl-badge-r.overlap { stroke: var(--purple); fill: var(--purple-dim); }
+.sl-badge-r.accounted { stroke: var(--green); fill: var(--green-dim); }
+.sl-badge-t {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+.sl-badge-t.wait { fill: var(--red); }
+.sl-badge-t.overlap { fill: var(--purple); }
+.sl-badge-t.accounted { fill: var(--green); }
+
+/* marker (top of swimlane area) */
+.sl-marker {
+  cursor: pointer;
+}
+.sl-marker-shape {
+  fill: var(--yellow);
+  stroke: var(--bg-base);
+  stroke-width: 1.5;
+}
+.sl-marker.is-wait .sl-marker-shape { fill: var(--red); }
+.sl-marker.is-overlap .sl-marker-shape { fill: var(--purple); }
+.sl-marker.is-hw .sl-marker-shape { fill: var(--cyan); }
+.sl-marker.is-critical .sl-marker-shape { fill: var(--yellow); }
+
+/* tooltip */
+.sl-tooltip {
+  position: absolute;
+  display: none;
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: 11px;
+  z-index: 12;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.55);
+  min-width: 220px;
+  max-width: 340px;
+}
+.sl-tooltip.visible { display: block; animation: fade-in 0.1s ease; }
+.tt-op {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.tt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  line-height: 1.5;
+}
+.tt-k { color: var(--text-tertiary); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.tt-v { color: var(--text-primary); font-family: var(--font-mono); }
+.tt-mini-bar {
+  margin-top: 4px;
+  display: flex;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+.tt-mini-bar > span { display: block; height: 100%; }

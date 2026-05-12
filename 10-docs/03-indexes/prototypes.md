@@ -4,8 +4,10 @@
 
 - `05-prototypes/01-block-level-coding`
 - `05-prototypes/02-swimlane-profiler`
-- `05-prototypes/04-operator-doc-assistant`
 - `05-prototypes/03-ascend-hardware-architecture`
+- `05-prototypes/04-operator-doc-assistant`
+- `05-prototypes/05-pypto-studio`
+- `05-prototypes/06-a5-pmu-visualization`
 
 ## Shared
 
