@@ -1,0 +1,154 @@
+/* ===================================================================
+ * Layout · topbar + 3-pane workspace
+ * =================================================================== */
+
+/* ---------- Top bar ---------- */
+.topbar {
+  height: var(--topbar-h);
+  flex: 0 0 var(--topbar-h);
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.topbar > * { flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 10px; padding-right: 12px; border-right: 1px solid var(--border); }
+.brand-logo {
+  width: 26px; height: 26px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #0d1117;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -0.5px;
+}
+.brand-name { font-weight: 600; font-size: 13px; letter-spacing: 0; }
+.brand-name .secondary { color: var(--text-tertiary); font-weight: 400; margin-left: 6px; font-size: 11px; }
+
+.session-info {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.session-info .kernel-name { color: var(--text-primary); font-family: var(--font-mono); }
+.session-info .sep { color: var(--text-muted); }
+.session-info .mono { color: var(--text-secondary); }
+
+.ctrl-group {
+  display: flex; align-items: center; gap: 6px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  height: 30px;
+}
+.ctrl-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+.ctrl-select {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+}
+
+.group-tabs { display: flex; gap: 2px; }
+.group-tab {
+  padding: 4px 9px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+}
+.group-tab:hover:not([data-disabled="true"]) { background: var(--bg-hover); color: var(--text-primary); }
+.group-tab.active {
+  background: var(--blue-dim);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.group-tab[data-sampled="true"]:not(.active)::after {
+  content: '●';
+  position: absolute;
+  top: -2px; right: -3px;
+  font-size: 8px;
+  color: var(--green);
+}
+.group-tab[data-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mix-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 4px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all 0.18s ease;
+}
+.mix-toggle .mix-knob {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  transition: all 0.18s ease;
+}
+.mix-toggle[data-on="true"] {
+  background: var(--yellow-dim);
+  border-color: var(--yellow-strong);
+  color: var(--yellow);
+}
+.mix-toggle[data-on="true"] .mix-knob { background: var(--yellow); }
+
+.topbar-spacer { flex: 1; }
+
+.health-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-size: 11px;
+}
+.hp-item { display: inline-flex; gap: 6px; align-items: center; }
+.hp-k { color: var(--text-tertiary); text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; }
+.hp-v { color: var(--text-primary); }
+.hp-v.ok { color: var(--green); }
+.hp-sep { color: var(--text-muted); }
+
+/* ---------- Workspace ---------- */
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--left-w) 1fr var(--right-w);
+  min-height: 0;
+}
+.left-panel,
+.right-panel,
+.center-panel {
+  min-height: 0;
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+}
+.left-panel { border-right: 1px solid var(--border); overflow-y: auto; }
+.right-panel { border-left: 1px solid var(--border); overflow-y: auto; }
+.center-panel { overflow: hidden; }

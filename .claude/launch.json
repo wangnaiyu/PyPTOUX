@@ -6,6 +6,12 @@
       "runtimeExecutable": "bash",
       "runtimeArgs": ["-c", "cd 05-prototypes/05-pypto-studio/experiments/v1 && exec python3 -m http.server 8766 --bind 127.0.0.1"],
       "port": 8766
+    },
+    {
+      "name": "a5-pmu-group2-loop",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /tmp && exec python3 -m http.server 8770 --bind 127.0.0.1 --directory /tmp/pyptoux-preview/06-a5-pmu-group2-loop"],
+      "port": 8770
     }
   ]
 }

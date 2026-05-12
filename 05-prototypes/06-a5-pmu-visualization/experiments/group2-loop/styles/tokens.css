@@ -1,0 +1,148 @@
+/* ===================================================================
+ * A5 PMU Group 2 · Design Tokens
+ * 参考 05-prototypes/05-pypto-studio 深色专业工具风格
+ * =================================================================== */
+
+:root {
+  /* surfaces */
+  --bg-base: #0d1117;
+  --bg-elev-1: #161b22;
+  --bg-elev-2: #1c2128;
+  --bg-elev-3: #21262d;
+  --bg-elev-4: #2a3038;
+  --bg-hover: #2a3038;
+  --border: #30363d;
+  --border-strong: #484f58;
+
+  /* text */
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --text-muted: #484f58;
+
+  /* status */
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.15);
+  --green-strong: rgba(63,185,80,0.30);
+  --yellow: #d29922;
+  --yellow-dim: rgba(210,153,34,0.15);
+  --yellow-strong: rgba(210,153,34,0.32);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.15);
+  --red-strong: rgba(248,81,73,0.28);
+  --blue: #58a6ff;
+  --blue-dim: rgba(88,166,255,0.15);
+  --blue-strong: rgba(88,166,255,0.30);
+  --purple: #bc8cff;
+  --purple-dim: rgba(188,140,255,0.15);
+  --purple-strong: rgba(188,140,255,0.30);
+  --orange: #db6d28;
+  --orange-dim: rgba(219,109,40,0.15);
+  --pink: #f778ba;
+  --pink-dim: rgba(247,120,186,0.13);
+  --cyan: #39d0d8;
+  --cyan-dim: rgba(57,208,216,0.15);
+  --indigo: #7c8cff;
+  --teal: #2dc7a2;
+  --amber: #e3a93a;
+  --coral: #ff8a65;
+  --magenta: #d971e0;
+
+  /* identity coloring (default mode · 宏观) — by opType */
+  --id-matmul: #58a6ff;
+  --id-vec-softmax: #3fb950;
+  --id-vec-layernorm: #bc8cff;
+  --id-vec-elementwise: #f778ba;
+  --id-vec-reduce: #39d0d8;
+  --id-mte-load: #e3a93a;
+  --id-mte-store: #db6d28;
+  --id-cpu-ctrl: #79c0ff;
+  --id-cpu-sched: #6e7681;
+
+  /* group-2 composition coloring (mix mode · 微观) — by counter family */
+  --c-compute: #7c8cff;   /* cube + vec busy */
+  --c-scalar: #6e7681;
+  --c-mte1: #2dc7a2;
+  --c-mte2: #e3a93a;
+  --c-mte3: #ff8a65;
+  --c-fixpipe: #d971e0;
+  --c-uncovered: #f85149; /* wait suspect (striped) */
+  --c-overlap: #bc8cff;   /* overlap suspect (striped) */
+
+  /* lane group tints */
+  --lane-tint-cpu: rgba(88,166,255,0.06);
+  --lane-tint-aic: rgba(188,140,255,0.05);
+  --lane-tint-aiv: rgba(247,120,186,0.04);
+  --lane-tint-mte: rgba(219,109,40,0.06);
+  --lane-tint-wrap-odd: rgba(63,185,80,0.03);
+  --lane-tint-wrap-even: rgba(188,140,255,0.04);
+  --lane-tint-wrap-critical: rgba(227,169,58,0.10);
+
+  /* sizes */
+  --topbar-h: 50px;
+  --lane-h: 14px;
+  --lane-label-w: 110px;
+  --left-w: 280px;
+  --right-w: 400px;
+
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-ui: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+code, .mono { font-family: var(--font-mono); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-elev-3); border-radius: 4px; border: 2px solid var(--bg-base); }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-elev-4); }
+
+.ok { color: var(--green); }
+.warn-fg { color: var(--yellow); }
+.bad { color: var(--red); }
+.muted { color: var(--text-tertiary); }
+
+.btn {
+  padding: 5px 11px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.btn .ico { font-family: var(--font-mono); font-weight: 700; opacity: 0.9; }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #0d1117; font-weight: 600; }
+.btn.primary:hover { background: #79b8ff; }
+.btn.ghost { background: transparent; }
+.btn.ghost:hover { background: var(--bg-elev-2); }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 var(--yellow-strong); }
+  70% { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
