@@ -1,0 +1,78 @@
+/* ===================================================================
+ * PyPTO Studio · Swimlane styles
+ * =================================================================== */
+
+.swimlane-host {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: var(--bg-base);
+}
+
+.sl-svg {
+  display: block;
+  min-width: 100%;
+}
+
+.sl-op { cursor: pointer; transition: filter 0.1s; }
+.sl-op:hover { filter: brightness(1.4); }
+
+.sl-caret { user-select: none; transition: color 0.1s; }
+.sl-caret:hover { fill: var(--text-primary); }
+
+.sl-lane-label { user-select: none; }
+.sl-overlay { pointer-events: none; }
+.sl-balloon { pointer-events: none; animation: slide-up 0.25s ease; }
+
+/* ----- Swimlane toolbar (right panel head) ----- */
+.sl-toolbar {
+  display: flex;
+  gap: 2px;
+}
+.sl-tool {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+}
+.sl-tool:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-strong); }
+.sl-tool .ico { font-size: 13px; font-weight: 700; }
+
+/* ----- Tooltip ----- */
+.sl-tooltip {
+  position: absolute;
+  display: none;
+  background: var(--bg-elev-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 11px;
+  z-index: 12;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  min-width: 180px;
+}
+.tt-op {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 11.5px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.tt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  line-height: 1.5;
+}
+.tt-k { color: var(--text-tertiary); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.tt-v { color: var(--text-primary); }

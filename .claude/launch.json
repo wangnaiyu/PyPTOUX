@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pypto-studio-v1",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd 05-prototypes/05-pypto-studio/experiments/v1 && exec python3 -m http.server 8766 --bind 127.0.0.1"],
+      "port": 8766
+    }
+  ]
+}
