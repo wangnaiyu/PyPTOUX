@@ -100,6 +100,7 @@
 | `05-prototypes/*/snapshots/` | Claude | 原型截图与验证图 |
 | `05-prototypes/*/app/src/` | Claude | 前端工程源码 |
 | `05-prototypes/*/app/package.json`、`tsconfig*.json`、`vite.config.*`、构建脚本 | Codex | 脚手架、构建配置、集成配置 |
+| `06-tools/01-prototype-kit/` | Codex + Claude | 原型工具包，双方都可以创建和修改；新增 toolkit 时必须补 `notes/spec.md` |
 | `07-designsystem/02-components/ui/` | Claude | 可复用 UI 实现 |
 | `07-designsystem/01-foundations/`、`02-components/specs/`、`03-guidance/` | Codex | tokens 规范、组件规范、原则约束 |
 | `10-docs/` | Codex | 索引、模板、全局规范 |
@@ -142,6 +143,13 @@
 - Codex 主导：新增 skill、章节结构、流程定义、矩阵规则、模板 / schema、删除内容。
 - Claude 可做：错别字、标点、链接修复、不改语义的措辞润色、补例子。
 - 冲突避免：遵守未提交工作树锁；结构性大改动建议先在 PR 或对话登记。
+
+#### `06-tools/01-prototype-kit/`：Codex 与 Claude 对等共写
+
+- Codex 与 Claude 都可以在 `previewer/`、`converters/`、`launchers/`、`shared/` 下创建或修改 prototype toolkit。
+- 一方创建新的 toolkit 后，必须在该 toolkit 目录下创建 `notes/spec.md`，说明用途、输入输出、命令入口、文件结构、接口约定、数据等级限制、已知边界和待 review 项。
+- 另一方基于 `notes/spec.md` 做事实 / 结构 review、使用反馈或前端体验反馈，避免直接从实现代码反推契约。
+- 冲突避免：遵守未提交工作树锁；同一个 toolkit 的结构性改动应先更新 `notes/spec.md`，再修改实现。
 
 #### `09-references/`：对等共写
 
