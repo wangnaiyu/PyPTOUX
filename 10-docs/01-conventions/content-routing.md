@@ -95,6 +95,10 @@ UX 设计：
 - `prompts/<demo-name>.md`
 - `notes/<demo-name>.md`
 
+工具：
+
+- `06-tools/01-prototype-kit/<area>/<toolkit-name>/notes/spec.md`：新增 prototype toolkit 时必须创建，记录 spec、接口约定、输入输出、命令入口、边界和待 review 项
+
 这些文件内部的说明文字、标题和注释，默认优先使用中文。
 
 ## 5. Vibe Coding Defaults

@@ -1,10 +1,11 @@
 {
   "version": "0.0.1",
+  "_doc": "Claude Code preview registry. Logic is intentionally inlined here (not delegated to 06-tools/01-prototype-kit/launchers/*.command) because the macOS helper sandbox cannot read scripts in ~/Documents. End users who want to double-click should use the .command files in 06-tools/01-prototype-kit/launchers/ — those serve from the real source path directly. Both paths reach the same prototype but via different serving directories. See 06-tools/01-prototype-kit/launchers/notes/spec.md §6.",
   "configurations": [
     {
       "name": "pypto-studio-v1",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd 05-prototypes/05-pypto-studio/experiments/v1 && exec python3 -m http.server 8766 --bind 127.0.0.1"],
+      "runtimeArgs": ["-c", "cd /tmp && exec python3 -m http.server 8766 --bind 127.0.0.1 --directory /tmp/pyptoux-preview/pypto-studio-v1"],
       "port": 8766
     },
     {
