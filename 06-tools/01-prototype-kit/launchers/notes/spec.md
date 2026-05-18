@@ -63,7 +63,7 @@ echo "全部预览已关闭。3 秒后自动关闭窗口..."
 sleep 3
 ```
 
-仅 kill 端口注册表中已知端口；不会误伤其他本地 http server。
+按注册端口 kill：会终止 listening 在 `8766` / `8770` 上的进程，**不论是否真是本工具启动的 `python3 -m http.server`**。如果你在同样端口跑了别的服务（比如开发框架的 dev server 撞了端口），这条命令会一并 kill 掉。规避方法：把那些服务换端口，或等 backlog 里的"PID 文件登记 + 校验"项落地后再用。
 
 ## 5. 端口注册表（必须维护）
 
@@ -87,7 +87,7 @@ sleep 3
 | 启动方式 | 路径 | 服务目录 |
 |---|---|---|
 | 用户双击 `preview-xxx.command` | 走本目录的 `.command`（Finder→Terminal 不受沙箱限制） | **源代码目录**（`05-prototypes/<topic>/experiments/<name>/`） |
-| Claude Code `preview_start name=xxx` | 走 `.claude/launch.json` 内联 shell（沙箱内可执行） | **`/tmp/pyptoux-preview/<name>/` 镜像副本** |
+| Claude Code `preview_start name=xxx` | 走 `.claude/launch.json` 内联 shell（沙箱内可执行） | **`/tmp/pyptoux-preview/<dir>/` 镜像副本**，`<dir>` 由 launch 配置指定、不一定等于 launcher name（例如当前 `name=a5-pmu-group2-loop` 对应 `dir=06-a5-pmu-group2-loop`） |
 
 **已知 trade-off**：
 - 用户路径：实时反映源码改动，浏览器刷新即可
