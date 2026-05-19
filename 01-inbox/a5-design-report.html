@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PyPTO 新一代工具体验设计 · A5 视角</title>
+<style>
+  :root {
+    --bg: #14171c;
+    --bg-soft: #181c22;
+    --surface: #1d2128;
+    --surface-2: #262b34;
+    --surface-3: #2f3540;
+    --hairline: rgba(232, 226, 213, 0.08);
+    --hairline-strong: rgba(232, 226, 213, 0.18);
+    --text: #e8e2d5;
+    --text-soft: #b9b2a3;
+    --text-muted: #7a766c;
+    --brass: #c9a86a;
+    --brass-dim: #8d7849;
+    --brass-soft: rgba(201, 168, 106, 0.12);
+    --verified: #6ba66b;
+    --inferred: #c9a86a;
+    --claim: #b8636c;
+    --aic: #6fa8c9;
+    --aiv: #c98870;
+    --mte: #b0a36a;
+    --cube: #6fa8c9;
+    --vector: #c98870;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, .mono {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.85em;
+    color: var(--brass);
+  }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 240px 1fr; max-width: 1440px; margin: 0 auto; }
+  .side-nav {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; padding: 48px 28px 32px;
+    border-right: 1px solid var(--hairline);
+    overflow-y: auto;
+  }
+  .side-nav .brand {
+    font-size: 12px; letter-spacing: 0.18em; color: var(--brass);
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .side-nav ol {
+    list-style: none; padding: 0; margin: 0;
+    counter-reset: navnum;
+    font-size: 13px;
+  }
+  .side-nav li { counter-increment: navnum; margin: 6px 0; }
+  .side-nav a {
+    color: var(--text-soft); text-decoration: none; display: block;
+    padding: 4px 0; transition: color .15s;
+  }
+  .side-nav a::before {
+    content: counter(navnum, decimal-leading-zero);
+    color: var(--text-muted); margin-right: 10px; font-family: "SF Mono", monospace; font-size: 11px;
+  }
+  .side-nav a:hover { color: var(--brass); }
+
+  main { padding: 0 64px 96px; min-width: 0; }
+  section { padding: 80px 0 32px; border-bottom: 1px solid var(--hairline); }
+  section:last-child { border-bottom: none; }
+
+  /* Typography */
+  .eyebrow {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--brass); margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 44px; line-height: 1.15; font-weight: 600;
+    margin: 0 0 16px; letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 28px; line-height: 1.25; font-weight: 600;
+    margin: 0 0 12px; letter-spacing: -0.005em;
+  }
+  h3 {
+    font-size: 18px; line-height: 1.35; font-weight: 600;
+    margin: 28px 0 12px; color: var(--text);
+  }
+  h4 {
+    font-size: 14px; font-weight: 600; margin: 16px 0 8px;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .lead { font-size: 17px; color: var(--text-soft); line-height: 1.65; max-width: 780px; }
+  p { color: var(--text-soft); }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* Cover */
+  #cover {
+    border-bottom: none; padding: 96px 0 48px;
+  }
+  #cover h1 {
+    font-size: 56px; line-height: 1.1; max-width: 880px;
+  }
+  #cover .title-accent { color: var(--brass); }
+  #cover .subtitle {
+    margin-top: 24px; font-size: 18px; color: var(--text-soft); max-width: 720px;
+  }
+  .meta-bar {
+    display: flex; gap: 40px; margin-top: 56px;
+    padding-top: 24px; border-top: 1px solid var(--hairline);
+    font-size: 12px; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase;
+  }
+  .meta-bar div span { display: block; color: var(--text); font-size: 14px;
+    font-family: "SF Mono", monospace; letter-spacing: 0.02em; margin-top: 4px;
+    text-transform: none;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 6px; padding: 20px 22px;
+  }
+  .card-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  /* Hook */
+  .hook-quote {
+    border-left: 2px solid var(--brass);
+    padding: 8px 0 8px 24px; margin: 24px 0;
+    font-size: 19px; line-height: 1.55; color: var(--text);
+    font-style: italic; max-width: 780px;
+  }
+  .hook-meta {
+    display: inline-block; padding: 4px 10px; background: var(--brass-soft);
+    color: var(--brass); font-family: "SF Mono", monospace; font-size: 12px;
+    border-radius: 3px;
+  }
+
+  /* Hardware diagram */
+  .fig {
+    margin: 28px 0 16px;
+    background: var(--surface);
+    border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 28px 28px 20px;
+  }
+  .fig-caption {
+    font-size: 12px; color: var(--text-muted); margin-top: 12px;
+    font-family: "SF Mono", monospace; letter-spacing: 0.04em;
+  }
+  .fig-caption b { color: var(--brass); font-weight: 500; }
+
+  /* Generation compare */
+  .gen-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .gen-col {
+    border: 1px solid var(--hairline-strong); border-radius: 4px;
+    padding: 16px; background: var(--bg-soft); position: relative;
+  }
+  .gen-col.a5 { border-color: var(--brass-dim); background: rgba(201,168,106,0.04); }
+  .gen-col .gen-title {
+    font-size: 13px; letter-spacing: 0.1em; color: var(--text-muted);
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .gen-col .gen-name {
+    font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 16px;
+  }
+  .gen-col.a5 .gen-name { color: var(--brass); }
+  .offcore {
+    border: 1px dashed var(--hairline-strong); border-radius: 4px;
+    padding: 10px 8px 8px; margin-bottom: 10px; background: rgba(0,0,0,0.15);
+  }
+  .offcore-label {
+    font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .aicore-box {
+    border: 1px solid var(--brass-dim); border-radius: 4px;
+    padding: 10px 8px 8px;
+  }
+  .aicore-label {
+    font-size: 10px; color: var(--brass); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .unit-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+  .unit {
+    display: inline-block; padding: 3px 7px; font-size: 11px;
+    font-family: "SF Mono", monospace; border: 1px solid var(--hairline-strong);
+    border-radius: 2px; color: var(--text-soft); background: var(--surface-2);
+  }
+  .unit.cube { color: var(--cube); border-color: rgba(111,168,201,0.4); }
+  .unit.vec  { color: var(--vector); border-color: rgba(201,136,112,0.4); }
+  .unit.mem  { color: var(--mte); border-color: rgba(176,163,106,0.4); }
+  .unit.new  { color: var(--brass); border-color: var(--brass); background: var(--brass-soft); font-weight: 600; }
+
+  /* Cube vs Vector ratio */
+  .ratio-block {
+    display: grid; grid-template-columns: 80px 1fr; gap: 16px; align-items: center;
+    margin: 8px 0;
+  }
+  .ratio-label {
+    font-size: 13px; font-family: "SF Mono", monospace; color: var(--text-soft);
+  }
+  .ratio-bar { height: 16px; display: flex; gap: 2px; }
+  .ratio-cell {
+    flex: 1; background: var(--surface-3);
+  }
+  .ratio-cell.cube { background: var(--cube); }
+  .ratio-cell.vec  { background: var(--vector); }
+
+  /* Data path mini grid */
+  .path-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  .path-mini {
+    border: 1px solid var(--hairline); border-radius: 4px;
+    padding: 12px 14px; background: var(--bg-soft);
+  }
+  .path-mini h5 {
+    font-size: 13px; margin: 0 0 8px; color: var(--brass);
+    font-family: "SF Mono", monospace; font-weight: 500;
+  }
+  .path-mini p {
+    font-size: 12.5px; margin: 0; line-height: 1.5; color: var(--text-soft);
+  }
+  .path-trace {
+    margin-top: 8px; font-family: "SF Mono", monospace; font-size: 11px;
+    color: var(--text-muted);
+  }
+  .path-trace .arrow { color: var(--brass-dim); margin: 0 4px; }
+
+  /* Mix decision */
+  .mix-decision {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px;
+  }
+  .mix-card {
+    border: 1px solid var(--hairline-strong); border-radius: 4px;
+    padding: 14px; background: var(--bg-soft);
+  }
+  .mix-card .check {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    color: var(--text); margin-bottom: 6px;
+  }
+  .mix-card .check b { color: var(--brass); }
+  .mix-card .result {
+    font-size: 12px; color: var(--text-muted); margin-top: 8px;
+  }
+  .mix-card.pass { border-left: 3px solid var(--verified); }
+  .mix-card.fail { border-left: 3px solid var(--claim); }
+
+  /* Credibility legend */
+  .cred-legend {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .cred-row { display: flex; align-items: center; gap: 14px; }
+  .cred-row .line {
+    width: 64px; height: 0; border-top-width: 2px; border-top-style: solid;
+  }
+  .cred-row .line.v { border-color: var(--verified); }
+  .cred-row .line.i { border-color: var(--inferred); border-top-style: dashed; }
+  .cred-row .line.c { border-color: var(--claim); border-top-style: dotted; border-top-width: 3px; }
+  .cred-row .label { font-size: 13px; color: var(--text); }
+  .cred-row .label small {
+    display: block; color: var(--text-muted); font-size: 11px;
+    font-family: "SF Mono", monospace; margin-top: 2px;
+  }
+
+  /* User roles */
+  .roles-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0;
+  }
+  .role-card {
+    border: 1px solid var(--hairline); border-radius: 6px;
+    background: var(--surface); padding: 20px 22px;
+    position: relative;
+  }
+  .role-card::before {
+    content: ''; position: absolute; left: 0; top: 16px; bottom: 16px;
+    width: 3px; background: var(--brass);
+  }
+  .role-card .role-tag {
+    font-size: 11px; letter-spacing: 0.1em; color: var(--brass);
+    font-family: "SF Mono", monospace; margin-bottom: 6px;
+  }
+  .role-card h4 {
+    font-size: 17px; margin: 0 0 6px;
+  }
+  .role-card .role-layer {
+    font-size: 12px; color: var(--text-muted); margin-bottom: 12px;
+    font-family: "SF Mono", monospace;
+  }
+  .role-card .role-mission {
+    font-size: 13.5px; color: var(--text-soft); line-height: 1.55;
+  }
+  .role-card.implicit { background: var(--bg-soft); border-style: dashed; }
+  .role-card.implicit::before { background: var(--brass-dim); }
+
+  /* Journey swimlane */
+  .journey-stages {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: 0; border: 1px solid var(--hairline-strong);
+    border-radius: 4px; overflow: hidden;
+  }
+  .stage-head {
+    padding: 12px 10px; background: var(--surface-2);
+    border-right: 1px solid var(--hairline);
+    text-align: center;
+  }
+  .stage-head:last-child { border-right: none; }
+  .stage-head .num {
+    font-family: "SF Mono", monospace; font-size: 10px; color: var(--brass);
+    letter-spacing: 0.1em;
+  }
+  .stage-head .name { font-size: 13.5px; font-weight: 600; color: var(--text); margin-top: 4px; }
+  .swimlane-row {
+    display: grid; grid-template-columns: 100px repeat(6, 1fr);
+    border-top: 1px solid var(--hairline);
+    min-height: 56px;
+  }
+  .swimlane-label {
+    background: var(--surface-2); padding: 12px 10px;
+    border-right: 1px solid var(--hairline-strong);
+    font-size: 12px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center;
+  }
+  .swimlane-cell {
+    padding: 8px 8px; border-right: 1px solid var(--hairline);
+    font-size: 11.5px; color: var(--text-soft); line-height: 1.45;
+    background: var(--bg-soft); position: relative;
+  }
+  .swimlane-cell:last-child { border-right: none; }
+  .task-chip {
+    display: block; padding: 4px 6px; border-radius: 2px;
+    background: rgba(201,168,106,0.08); border-left: 2px solid var(--brass-dim);
+    font-size: 11px; margin: 2px 0;
+  }
+  .task-chip.primary { background: var(--brass-soft); border-left-color: var(--brass); color: var(--text); }
+  .task-chip.muted { background: transparent; border-left-color: var(--hairline-strong); color: var(--text-muted); }
+  .handoff {
+    position: absolute; right: -8px; top: 50%; z-index: 2;
+    color: var(--brass); font-size: 14px; transform: translateY(-50%);
+    background: var(--bg); padding: 0 2px;
+  }
+
+  .journey-legend {
+    margin-top: 12px; font-size: 12px; color: var(--text-muted);
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  .journey-legend span::before {
+    content: '■'; margin-right: 6px;
+  }
+  .journey-legend .lg-primary::before { color: var(--brass); }
+  .journey-legend .lg-secondary::before { color: var(--brass-dim); }
+  .journey-legend .lg-handoff::before { content: '→'; color: var(--brass); }
+
+  /* Matrix table */
+  .matrix-table {
+    width: 100%; border-collapse: collapse;
+    margin-top: 16px; font-size: 13px;
+  }
+  .matrix-table th, .matrix-table td {
+    text-align: left; vertical-align: top; padding: 14px 14px;
+    border: 1px solid var(--hairline-strong);
+  }
+  .matrix-table thead th {
+    background: var(--surface-2); color: var(--text);
+    font-weight: 600; font-size: 12px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .matrix-table tbody th {
+    background: var(--surface); color: var(--brass);
+    font-weight: 600; font-size: 13px;
+    width: 11%; white-space: nowrap;
+  }
+  .matrix-table tbody th small {
+    display: block; font-family: "SF Mono", monospace;
+    font-size: 10px; color: var(--text-muted);
+    letter-spacing: 0.08em; margin-top: 4px; font-weight: 400;
+  }
+  .matrix-table td { background: var(--bg-soft); color: var(--text-soft); }
+  .matrix-table td p { margin: 0 0 6px; }
+  .matrix-table td p:last-child { margin-bottom: 0; }
+  .matrix-table .role-pre {
+    font-family: "SF Mono", monospace; font-size: 11px;
+    color: var(--brass-dim); margin-right: 6px;
+  }
+  .matrix-table .src {
+    display: inline-block; font-family: "SF Mono", monospace; font-size: 11px;
+    color: var(--text-muted); margin-left: 4px;
+  }
+  .star {
+    display: inline-block; padding: 1px 6px; border-radius: 2px;
+    background: var(--brass); color: var(--bg); font-size: 10px;
+    font-family: "SF Mono", monospace; letter-spacing: 0.06em;
+    margin-right: 4px; vertical-align: 1px;
+  }
+
+  /* Unified journey table (swimlane + matrix in one) */
+  .journey-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    margin-top: 18px; table-layout: fixed; font-size: 12px;
+  }
+  .journey-table th, .journey-table td {
+    border: 1px solid var(--hairline-strong);
+    padding: 10px 10px; vertical-align: top;
+  }
+  .journey-table thead th {
+    background: var(--surface-2); color: var(--text);
+    text-align: center; font-size: 12px; font-weight: 600;
+    padding: 12px 8px;
+  }
+  .journey-table thead th .stage-num {
+    display: block; color: var(--brass);
+    font-family: "SF Mono", monospace; font-size: 10px;
+    letter-spacing: 0.1em; margin-bottom: 4px; font-weight: 400;
+  }
+  .journey-table thead .corner {
+    background: var(--bg-soft); color: var(--text-muted);
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; width: 11%; font-weight: 500;
+  }
+  .journey-table .role-label,
+  .journey-table .matrix-label {
+    background: var(--surface); font-weight: 600;
+    text-align: left; vertical-align: middle;
+    white-space: nowrap; width: 11%;
+  }
+  .journey-table .role-label { color: var(--text); font-size: 12.5px; }
+  .journey-table .matrix-label { color: var(--brass); font-size: 12px; }
+  .journey-table .matrix-label small {
+    display: block; font-family: "SF Mono", monospace;
+    font-size: 9px; color: var(--text-muted);
+    margin-top: 3px; letter-spacing: 0.08em; font-weight: 400;
+  }
+  .journey-table .lane-cell {
+    background: var(--bg-soft); color: var(--text-soft);
+    position: relative; overflow: visible;
+  }
+  .journey-table .matrix-cell {
+    background: var(--bg-soft); color: var(--text-soft);
+    overflow: visible;
+  }
+  .journey-table .matrix-cell p {
+    margin: 0 0 5px; font-size: 11.5px; line-height: 1.5;
+  }
+  .journey-table .matrix-cell p:last-child { margin-bottom: 0; }
+  .journey-table .divider td {
+    height: 6px; padding: 0; background: var(--bg);
+    border-left-color: transparent; border-right-color: transparent;
+  }
+  .journey-table .divider td.divider-label {
+    background: var(--bg);
+  }
+  .journey-table .src {
+    display: inline-block; font-family: "SF Mono", monospace;
+    font-size: 10px; color: var(--text-muted); margin-left: 4px;
+  }
+  .journey-table .role-pre {
+    font-family: "SF Mono", monospace; font-size: 10px;
+    color: var(--brass-dim); margin-right: 4px;
+  }
+
+  /* Handoff arrow on swimlane */
+  .handoff-svg {
+    position: absolute; bottom: -19px; right: 14px;
+    width: 14px; height: 26px;
+    pointer-events: none; z-index: 5;
+  }
+  .handoff-tag {
+    position: absolute; bottom: -16px; right: 32px;
+    font-family: "SF Mono", monospace; font-size: 9px;
+    color: var(--brass); background: var(--bg);
+    padding: 2px 8px; border: 1px solid var(--brass-dim);
+    border-radius: 10px; white-space: nowrap;
+    z-index: 6; letter-spacing: 0.04em;
+  }
+
+  /* Design solution tool cell */
+  .tool-cell {
+    background: rgba(201,168,106,0.07) !important;
+    border-color: var(--brass-dim) !important;
+    padding: 16px 16px !important;
+    vertical-align: top;
+  }
+  .tool-cell .tool-name {
+    font-size: 14px; color: var(--brass);
+    font-weight: 600; margin-bottom: 8px;
+    letter-spacing: 0.01em;
+  }
+  .tool-cell .tool-desc {
+    font-size: 11.5px; color: var(--text-soft);
+    line-height: 1.5; margin: 0;
+  }
+  .tool-cell.primary-tool {
+    background: rgba(201,168,106,0.13) !important;
+  }
+  .tool-cell.primary-tool .tool-name { color: var(--brass); }
+  .tool-cell .stage-span {
+    display: inline-block; font-size: 10px;
+    font-family: "SF Mono", monospace; color: var(--text-muted);
+    letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+
+  /* Principles */
+  .principles {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin: 24px 0;
+  }
+  .principle {
+    border: 1px solid var(--hairline-strong); border-radius: 6px;
+    padding: 20px; background: var(--surface);
+  }
+  .principle .pnum {
+    font-family: "SF Mono", monospace; font-size: 32px; line-height: 1;
+    color: var(--brass); margin-bottom: 12px; font-weight: 300;
+  }
+  .principle h4 { margin: 0 0 8px; font-size: 16px; }
+  .principle p { font-size: 13px; margin: 0; line-height: 1.55; }
+  .principle .vs {
+    display: block; font-size: 11px; color: var(--text-muted);
+    font-family: "SF Mono", monospace; margin-top: 8px;
+  }
+
+  /* Solution overview */
+  .toolset {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  .tool {
+    border: 1px solid var(--hairline); border-radius: 4px;
+    padding: 14px; background: var(--bg-soft);
+  }
+  .tool .stage-tag {
+    font-size: 10px; font-family: "SF Mono", monospace;
+    color: var(--brass); letter-spacing: 0.1em; margin-bottom: 4px;
+  }
+  .tool h5 {
+    font-size: 14px; margin: 0 0 6px; color: var(--text);
+  }
+  .tool p { font-size: 12px; margin: 0; line-height: 1.5; }
+
+  /* Scenario slides */
+  .scenario {
+    display: grid; gap: 14px;
+    grid-template-columns: 1fr;
+  }
+  .slide {
+    border: 1px solid var(--hairline-strong); border-radius: 6px;
+    background: var(--surface); padding: 22px 24px;
+    display: grid; grid-template-columns: 64px 1fr 220px; gap: 20px;
+    align-items: start;
+  }
+  .slide .snum {
+    font-family: "SF Mono", monospace; font-size: 14px;
+    color: var(--text-muted); border-right: 1px solid var(--hairline);
+    padding-right: 14px;
+  }
+  .slide .snum b {
+    display: block; font-size: 28px; color: var(--brass); font-weight: 400;
+    margin-bottom: 4px;
+  }
+  .slide .sbody h4 { margin: 0 0 6px; font-size: 17px; }
+  .slide .sbody .saction {
+    font-size: 13px; color: var(--text-muted); margin-bottom: 12px;
+    font-family: "SF Mono", monospace;
+  }
+  .slide .sbody p { font-size: 13.5px; margin: 6px 0; line-height: 1.55; }
+  .slide .sbody .label {
+    display: inline-block; font-size: 11px; color: var(--brass);
+    font-family: "SF Mono", monospace; letter-spacing: 0.06em;
+    margin-right: 6px; min-width: 64px;
+  }
+  .slide .smeta {
+    font-size: 11.5px; line-height: 1.55;
+    background: var(--bg-soft); border-left: 2px solid var(--brass-dim);
+    padding: 10px 12px; border-radius: 2px;
+  }
+  .slide .smeta div { margin-bottom: 6px; }
+  .slide .smeta div:last-child { margin-bottom: 0; }
+  .slide .smeta .mlabel {
+    display: block; font-size: 10px; color: var(--text-muted);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px;
+  }
+  .hl-badge {
+    display: inline-block; padding: 2px 7px; background: var(--brass);
+    color: var(--bg); border-radius: 2px; font-size: 10px;
+    font-family: "SF Mono", monospace; font-weight: 600;
+    letter-spacing: 0.05em; margin-right: 4px;
+  }
+  .hl-badge.hidden { background: var(--brass-dim); color: var(--bg); opacity: 0.7; }
+
+  /* Highlights */
+  .highlights {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin: 24px 0;
+  }
+  .highlight {
+    border: 1px solid var(--brass-dim); border-radius: 6px;
+    padding: 22px; background: linear-gradient(180deg, rgba(201,168,106,0.06), transparent);
+    position: relative;
+  }
+  .highlight .badge {
+    display: inline-block; font-family: "SF Mono", monospace;
+    font-size: 11px; color: var(--brass); letter-spacing: 0.12em;
+    margin-bottom: 12px;
+  }
+  .highlight h4 { margin: 0 0 10px; font-size: 17px; }
+  .highlight p { font-size: 13px; margin: 0 0 10px; line-height: 1.55; }
+  .highlight .solves {
+    font-size: 11.5px; color: var(--text-muted); padding-top: 10px;
+    border-top: 1px solid var(--hairline); margin-top: 12px;
+    line-height: 1.5;
+  }
+  .highlight .solves b { color: var(--brass); font-weight: 500; }
+
+  /* Next */
+  .next-list {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+    margin-top: 20px;
+  }
+  .next-item {
+    border-left: 2px solid var(--brass-dim); padding: 10px 16px;
+    background: var(--bg-soft);
+  }
+  .next-item h5 { margin: 0 0 4px; font-size: 14px; color: var(--text); }
+  .next-item p { margin: 0; font-size: 12.5px; line-height: 1.5; }
+
+  /* Footer */
+  footer {
+    margin-top: 48px; padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    font-size: 12px; color: var(--text-muted);
+    font-family: "SF Mono", monospace; letter-spacing: 0.04em;
+  }
+  footer a { color: var(--brass); text-decoration: none; }
+
+  /* Star marker */
+  .feat-star { color: var(--brass); margin-right: 4px; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    .side-nav { position: relative; height: auto; border-right: none;
+      border-bottom: 1px solid var(--hairline); }
+    main { padding: 0 32px 64px; }
+    .gen-compare, .path-grid, .mix-decision, .cred-legend,
+    .principles, .highlights, .toolset, .roles-grid, .next-list { grid-template-columns: 1fr; }
+    .slide { grid-template-columns: 48px 1fr; }
+    .slide .smeta { grid-column: 2; }
+    .swimlane-row { grid-template-columns: 90px repeat(6, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ============ SIDE NAV ============ -->
+  <aside class="side-nav">
+    <div class="brand">PyPTOUX · A5 设计汇报</div>
+    <ol>
+      <li><a href="#cover">封面</a></li>
+      <li><a href="#hook">引子：一份慢 2.3× 的 trace</a></li>
+      <li><a href="#a5-arch">A5 架构特点</a></li>
+      <li><a href="#users">用户角色</a></li>
+      <li><a href="#journey">用户旅程</a></li>
+      <li><a href="#principles">设计原则</a></li>
+      <li><a href="#solutions">设计方案</a></li>
+      <li><a href="#highlights">高光设计点</a></li>
+      <li><a href="#next">后续</a></li>
+    </ol>
+  </aside>
+
+  <main>
+
+  <!-- ============ COVER ============ -->
+  <section id="cover">
+    <div class="eyebrow">Design Report · 2026</div>
+    <h1>让专家的诊断，<br /><span class="title-accent">长成工具的形状</span></h1>
+    <p style="font-size: 14px; color: var(--text-muted); margin: 16px 0 0; letter-spacing: 0.04em;">面向 A5 的算子开发与调优体验设计</p>
+    <p class="subtitle">
+      A5 / Ascend 950 在 Cube-Vector 算力配比、Mix 子图、显式同步、低精度数据表达等维度发生了
+      代际级变化。本报告从 A5 架构特点出发，梳理算子开发全流程在新硬件下的用户痛点与产品机会，
+      并给出以"调优工程师主场景"为切入的设计方案与三个高光设计点。
+    </p>
+    <div class="meta-bar">
+      <div>主线 ｜ Core Track<span>A5 PMU 可视化 · 跨视图定位 · Contribute Back</span></div>
+      <div>覆盖角色 ｜ Roles<span>算子开发者 · 调优工程师 · 新手开发 · Tech Lead</span></div>
+      <div>数据可信度 ｜ Credibility<span>verified · inferred · article-claim</span></div>
+    </div>
+  </section>
+
+  <!-- ============ HOOK ============ -->
+  <section id="hook">
+    <div class="eyebrow">01 · 引子</div>
+    <h2>一份慢 2.3× 的 trace</h2>
+    <p class="lead">
+      调优工程师拿到一份 A5 上的运行 trace，会话 <span class="mono">glm_attention.py · #c4a7e21</span>。
+      编译成功，但 wall-clock 比预期慢 2.3 倍。
+    </p>
+    <div class="hook-quote">
+      他要回答的不是「哪里慢」，而是<strong>「为什么慢」</strong>—— 是 tile 失配？dtype 选错？
+      还是 Mix 子图边界拆裂带来的 Sync Wait？
+    </div>
+    <p>
+      回答这个问题，他过去需要打开 <span class="hook-meta">swimlane</span> ·
+      <span class="hook-meta">Block Graph viewer</span> ·
+      <span class="hook-meta">编译日志</span> ·
+      <span class="hook-meta">代码 IDE</span>
+      —— 在四个工具间手工 grep，靠经验把碎片拼回去。这份报告，就是从这一刻开始的。
+    </p>
+  </section>
+
+  <!-- ============ A5 ARCH ============ -->
+  <section id="a5-arch">
+    <div class="eyebrow">02 · 业务研究</div>
+    <h2>A5 架构特点：每一个新东西都打破了一个旧动作</h2>
+    <p class="lead">
+      不孤立讲架构，而是把硬件变化与算子开发动作绑在一起。下面五张图按"代际差异 → 算力配比 →
+      数据流路径 → Mix 合并判定 → 可信度图例"递进。
+    </p>
+
+    <!-- Fig 1: Generation compare -->
+    <div class="fig">
+      <h3 style="margin-top:0;">图 1 · 三代 AI Core 结构对比</h3>
+      <div class="gen-compare">
+
+        <!-- 910 coupled -->
+        <div class="gen-col">
+          <div class="gen-title">代际 1 · 耦合模式</div>
+          <div class="gen-name">910</div>
+          <div class="offcore">
+            <div class="offcore-label">Off-Core 系统侧</div>
+            <div class="unit-row">
+              <span class="unit mem">GM</span>
+              <span class="unit mem">L2</span>
+              <span class="unit mem">HBM</span>
+              <span class="unit">SDMA</span>
+            </div>
+          </div>
+          <div class="aicore-box">
+            <div class="aicore-label">AI Core (耦合)</div>
+            <div class="unit-row">
+              <span class="unit">Scalar</span>
+              <span class="unit cube">Cube</span>
+              <span class="unit vec">Vector</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit mem">L0A</span><span class="unit mem">L0B</span>
+              <span class="unit mem">L0C</span><span class="unit mem">UB</span>
+              <span class="unit mem">BT</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit">MTE1/2/3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- A2/A3 separated -->
+        <div class="gen-col">
+          <div class="gen-title">代际 2 · 分离模式</div>
+          <div class="gen-name">A2 / A3</div>
+          <div class="offcore">
+            <div class="offcore-label">Off-Core 系统侧</div>
+            <div class="unit-row">
+              <span class="unit mem">GM</span>
+              <span class="unit mem">L2</span>
+              <span class="unit mem">HBM</span>
+              <span class="unit">SDMA</span>
+            </div>
+          </div>
+          <div class="aicore-box" style="margin-bottom:6px;">
+            <div class="aicore-label">AIC (Cube 独立)</div>
+            <div class="unit-row">
+              <span class="unit">Scalar</span>
+              <span class="unit cube">Cube</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit mem">L0A</span><span class="unit mem">L0B</span>
+              <span class="unit mem">L0C</span><span class="unit mem">BT</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit">MTE1/2</span><span class="unit">FixPipe</span>
+            </div>
+          </div>
+          <div class="aicore-box">
+            <div class="aicore-label">AIV (Vector 独立)</div>
+            <div class="unit-row">
+              <span class="unit">Scalar</span>
+              <span class="unit vec">Vector</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit mem">UB</span><span class="unit">MTE3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- A5 / 950 -->
+        <div class="gen-col a5">
+          <div class="gen-title">代际 3 · 演进模式</div>
+          <div class="gen-name">A5 / 950</div>
+          <div class="offcore" style="border-color: var(--brass-dim);">
+            <div class="offcore-label">Off-Core · 双 DIE UMA</div>
+            <div class="unit-row">
+              <span class="unit mem">GM</span>
+              <span class="unit new">128B Sector L2</span>
+              <span class="unit mem">HBM</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit new">NDDMA</span>
+              <span class="unit new">UnifiedBus</span>
+              <span class="unit new">URMA / CCU</span>
+            </div>
+          </div>
+          <div class="aicore-box" style="border-color: var(--brass);">
+            <div class="aicore-label" style="color: var(--brass);">AIC × 24 (Cube 主导)</div>
+            <div class="unit-row">
+              <span class="unit">Scalar</span><span class="unit cube">Cube</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit mem">L0A</span><span class="unit mem">L0B</span>
+              <span class="unit mem">L0C</span><span class="unit mem">BT</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit">MTE1/2</span><span class="unit">FixPipe</span>
+              <span class="unit new">BufferID</span>
+            </div>
+          </div>
+          <div class="aicore-box" style="border-color: var(--brass); margin-top:6px;">
+            <div class="aicore-label" style="color: var(--brass);">AIV × 48 (Vector × 2）</div>
+            <div class="unit-row">
+              <span class="unit">Scalar</span><span class="unit vec">Vector</span>
+              <span class="unit new">SIMT</span>
+            </div>
+            <div class="unit-row">
+              <span class="unit mem">UB</span>
+              <span class="unit">MTE3</span>
+              <span class="unit new">CV_SYNC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fig-caption">
+        <b>注：</b>GM / L2 / HBM 始终位于 AI Core 区域之外（off-core）。950 栏新增结构（NDDMA / UnifiedBus /
+        URMA / CCU / BufferID / CV_SYNC / 128B Sector L2 / SIMT）用强调色标出；DIE-level / AICPU 不在本图细化。
+      </div>
+    </div>
+
+    <!-- Fig 2: Cube vs Vector ratio -->
+    <div class="fig">
+      <h3 style="margin-top:0;">图 2 · Cube : Vector 算力配比 8 : 1</h3>
+      <p>过去 Vector 只承担后处理；A5 在 Cube 主导的同时把 Vector 算力翻倍（每 AIC 配 2 AIV）。
+        Vector 不再是"边角料"，它成了和 Cube 配对的二号舱位。</p>
+      <div class="ratio-block">
+        <div class="ratio-label">A2 / A3</div>
+        <div class="ratio-bar">
+          <div class="ratio-cell cube"></div><div class="ratio-cell cube"></div>
+          <div class="ratio-cell cube"></div><div class="ratio-cell cube"></div>
+          <div class="ratio-cell vec"></div>
+        </div>
+      </div>
+      <div class="ratio-block">
+        <div class="ratio-label">A5 / 950</div>
+        <div class="ratio-bar">
+          <div class="ratio-cell cube"></div><div class="ratio-cell cube"></div>
+          <div class="ratio-cell cube"></div><div class="ratio-cell cube"></div>
+          <div class="ratio-cell cube"></div><div class="ratio-cell cube"></div>
+          <div class="ratio-cell cube"></div><div class="ratio-cell cube"></div>
+          <div class="ratio-cell vec"></div>
+        </div>
+      </div>
+      <div class="fig-caption">
+        <b>→ 算子开发者在【架构选型】阶段必须重新判定 Vector 任务边界。</b>
+        SIMT 能力让复杂逻辑、小包搬运、条件分支、离散访存都可以下沉到 Vector。
+      </div>
+    </div>
+
+    <!-- Fig 3: Data path mini grid -->
+    <div class="fig">
+      <h3 style="margin-top:0;">图 3 · 数据流核心路径六图</h3>
+      <p>每条路径独立成图，配一句话解释"它在算子开发里何时出现"。GM / L2 一律位于 AI Core 框外。</p>
+      <div class="path-grid">
+        <div class="path-mini">
+          <h5>Vector path</h5>
+          <p>纯 Vector 类算子的典型路径。</p>
+          <div class="path-trace">GM <span class="arrow">→</span> L2 <span class="arrow">→</span> UB <span class="arrow">→</span> Vector <span class="arrow">→</span> UB <span class="arrow">→</span> GM</div>
+        </div>
+        <div class="path-mini">
+          <h5>Cube path</h5>
+          <p>MatMul 主干，L0C 留作累加。</p>
+          <div class="path-trace">GM <span class="arrow">→</span> L2 <span class="arrow">→</span> L0A/B <span class="arrow">→</span> Cube <span class="arrow">→</span> L0C <span class="arrow">→</span> FixPipe</div>
+        </div>
+        <div class="path-mini">
+          <h5>L0C 累加</h5>
+          <p>多次 K 切分写回 L0C，累加完成再 fix。</p>
+          <div class="path-trace">L0A/B <span class="arrow">→</span> Cube <span class="arrow">+=</span> L0C <span class="arrow">→</span> FixPipe</div>
+        </div>
+        <div class="path-mini">
+          <h5>AIC ↔ AIV 协作</h5>
+          <p>Mix 模式 / DAV_3510。Cube 写到 UB，AIV 接力做 dequant / RoPE。</p>
+          <div class="path-trace">Cube <span class="arrow">→</span> UB <span class="arrow">→</span> Vector <span class="arrow">↶ CV_SYNC</span></div>
+        </div>
+        <div class="path-mini">
+          <h5>NDDMA · 系统直达</h5>
+          <p>A5 新增。非连续 / 非对齐数据搬运不再走 AI Core。</p>
+          <div class="path-trace">GM <span class="arrow">⇢ NDDMA ⇢</span> L2 / L0 / UB</div>
+        </div>
+        <div class="path-mini">
+          <h5>CCU / URMA</h5>
+          <p>跨 DIE / 跨节点的统一访问；公开材料尚未在 trace 完全 verified。</p>
+          <div class="path-trace">DIE-A GM <span class="arrow">⇢ UnifiedBus ⇢</span> DIE-B GM</div>
+        </div>
+      </div>
+      <div class="fig-caption">
+        <b>注：</b>所有 GM / L2 入口位于 AI Core 区域之外；图中虚线箭头 <span class="mono">⇢</span> 表示 article-claim 路径，尚未在 trace 中 verified。
+      </div>
+    </div>
+
+    <!-- Fig 4: Mix decision -->
+    <div class="fig">
+      <h3 style="margin-top:0;">图 4 · Mix 子图合并判定</h3>
+      <p>A5 的 Mix（DAV_3510）允许 Cube 与 Vector 同 scope，但要同时满足三条约束。
+        任何一条不满足，编译器走 MixSubgraphSplit 拆图——这是 A5 上一个非常容易踩的新失败源。</p>
+      <div class="mix-decision">
+        <div class="mix-card pass">
+          <div class="check">① <b>allowParallelMerge = false</b></div>
+          <div>无并行合并请求</div>
+          <div class="result">→ 通过</div>
+        </div>
+        <div class="mix-card pass">
+          <div class="check">② <b>allowCrossScopeMerge = false</b></div>
+          <div>不跨 scope 合并</div>
+          <div class="result">→ 通过</div>
+        </div>
+        <div class="mix-card fail">
+          <div class="check">③ <b>TileShape 对齐</b></div>
+          <div>Cube / Vector 在 K-loop 上预对齐</div>
+          <div class="result">→ 否则触发 <span class="mono">MixSubgraphSplit</span></div>
+        </div>
+      </div>
+      <div class="fig-caption">
+        <b>→ 编码阶段就要思考的事</b>：写 Vector 后处理时，必须知道它将被合并还是拆出。
+      </div>
+    </div>
+
+    <!-- Fig 5: Credibility legend -->
+    <div class="fig">
+      <h3 style="margin-top:0;">图 5 · 可信度图例（贯穿全报告）</h3>
+      <p>A5 的部分能力来源于公开材料（如 BufferID / URMA / CCU），尚未在 PyPTO trace 中实证。
+        全报告及方案 UI 使用以下三档区分，避免「公料 = 事实」的误判。</p>
+      <div class="cred-legend">
+        <div class="cred-row">
+          <div class="line v"></div>
+          <div class="label">verified
+            <small>trace 实证 · 实线 · 默认渲染</small>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="line i"></div>
+          <div class="label">inferred
+            <small>推断 · 虚线 · 需在 UI 标注</small>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="line c"></div>
+          <div class="label">article-claim
+            <small>公开材料 · 点线 · 默认折叠</small>
+          </div>
+        </div>
+      </div>
+      <div class="fig-caption">
+        <b>来源：</b><span class="mono">04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md §3</span>。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ USERS ============ -->
+  <section id="users">
+    <div class="eyebrow">03 · 用户研究</div>
+    <h2>用户画像</h2>
+    <p class="lead">
+      四个目标用户 + 一个被方案"激活"的隐含角色。
+    </p>
+
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-tag">ROLE · 01</div>
+        <h4>算子开发者</h4>
+        <div class="role-layer">Tensor 层 / Tile 层 · 新算子作者 · 已有算子改造者</div>
+        <p class="role-mission">
+          决定 Mix 归属、TileShape、dtype / layout。<br />
+          关心：写出来的算子在 A5 上能跑通且合理快。
+        </p>
+      </div>
+      <div class="role-card">
+        <div class="role-tag">ROLE · 02</div>
+        <h4>调优工程师</h4>
+        <div class="role-layer">Tile 层 / Block 层 · 接管 trace · 找瓶颈</div>
+        <p class="role-mission">
+          跨视图定位（swimlane / PMU / hwpath），在多个旋钮间预测冲突，沉淀 Playbook。<br />
+          关心：把"经验"变成"工具"。
+        </p>
+      </div>
+      <div class="role-card">
+        <div class="role-tag">ROLE · 03</div>
+        <h4>新手开发</h4>
+        <div class="role-layer">学习路径上 · 产品 / 教学 / 新人</div>
+        <p class="role-mission">
+          看硬件结构、跑 demo、理解代际差异。<br />
+          关心：能否快速从 demo 走到实战。
+        </p>
+      </div>
+      <div class="role-card">
+        <div class="role-tag">ROLE · 04</div>
+        <h4>Tech Lead</h4>
+        <div class="role-layer">团队层 · 跨代迁移 · 资产沉淀</div>
+        <p class="role-mission">
+          审 Playbook、评估跨代改造工作量、决定上线。<br />
+          关心：团队的知识能不能不再依赖单兵英雄。
+        </p>
+      </div>
+      <div class="role-card implicit" style="grid-column: span 2;">
+        <div class="role-tag">ROLE · 05 · 隐含 / 被激活</div>
+        <h4>专家经验</h4>
+        <div class="role-layer">Contribute Back 闭环之下，沉淀的专家经验成为新的"用户"</div>
+        <p class="role-mission">
+          通过 Playbook 沉淀和跨代配置抽象，团队层成为产品的服务对象。这是新一代工具区别于"看板工具"的根本差异。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ JOURNEY ============ -->
+  <section id="journey">
+    <div class="eyebrow">04 · 用户旅程</div>
+    <h2>端到端用户旅程</h2>
+
+    <table class="journey-table">
+      <colgroup>
+        <col style="width:11%;" />
+        <col style="width:14.83%;" /><col style="width:14.83%;" /><col style="width:14.83%;" />
+        <col style="width:14.83%;" /><col style="width:14.83%;" /><col style="width:14.83%;" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="corner">阶段</th>
+          <th><span class="stage-num">STAGE 01</span>需求理解</th>
+          <th><span class="stage-num">STAGE 02</span>架构选型</th>
+          <th><span class="stage-num">STAGE 03</span>编码实现</th>
+          <th><span class="stage-num">STAGE 04</span>编译诊断</th>
+          <th><span class="stage-num">STAGE 05</span>运行调优</th>
+          <th><span class="stage-num">STAGE 06</span>沉淀复用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Swimlane rows: 算子开发者 / 调优工程师 / Tech Lead / 新手开发 -->
+        <tr>
+          <th class="role-label">算子开发者</th>
+          <td class="lane-cell"><div class="task-chip primary">读 A5 能力清单</div></td>
+          <td class="lane-cell"><div class="task-chip primary">选 Mix / dtype / 平台</div></td>
+          <td class="lane-cell"><div class="task-chip primary">写 Cube + Vector + TileShape</div></td>
+          <td class="lane-cell">
+            <div class="task-chip primary">读 Split 报错</div>
+            <span class="handoff-tag">交 trace ↓</span>
+            <svg class="handoff-svg" viewBox="0 0 14 26" xmlns="http://www.w3.org/2000/svg">
+              <line x1="7" y1="0" x2="7" y2="19" stroke="#c9a86a" stroke-width="1.6"/>
+              <polygon points="7,26 2,17 12,17" fill="#c9a86a"/>
+            </svg>
+          </td>
+          <td class="lane-cell"><div class="task-chip muted">回炉调 tile / schedule</div></td>
+          <td class="lane-cell"><div class="task-chip muted">同步三平台配置</div></td>
+        </tr>
+        <tr>
+          <th class="role-label">调优工程师</th>
+          <td class="lane-cell"><div class="task-chip muted">—</div></td>
+          <td class="lane-cell"><div class="task-chip muted">—</div></td>
+          <td class="lane-cell"><div class="task-chip muted">偶尔回 kernel</div></td>
+          <td class="lane-cell"><div class="task-chip primary">接管 trace · 看 Pass 决策</div></td>
+          <td class="lane-cell"><div class="task-chip primary">跨视图定位 · 试旋钮</div></td>
+          <td class="lane-cell">
+            <div class="task-chip primary">起草 Playbook</div>
+            <span class="handoff-tag">交 Playbook ↓</span>
+            <svg class="handoff-svg" viewBox="0 0 14 26" xmlns="http://www.w3.org/2000/svg">
+              <line x1="7" y1="0" x2="7" y2="19" stroke="#c9a86a" stroke-width="1.6"/>
+              <polygon points="7,26 2,17 12,17" fill="#c9a86a"/>
+            </svg>
+          </td>
+        </tr>
+        <tr>
+          <th class="role-label">Tech Lead</th>
+          <td class="lane-cell"><div class="task-chip muted">评估 950 改造投入</div></td>
+          <td class="lane-cell"><div class="task-chip muted">定团队路线（FP8/Mix）</div></td>
+          <td class="lane-cell"><div class="task-chip muted">定团队代码规范</div></td>
+          <td class="lane-cell"><div class="task-chip primary">看团队失败模式聚合</div></td>
+          <td class="lane-cell"><div class="task-chip muted">观察 Playbook 触发率</div></td>
+          <td class="lane-cell"><div class="task-chip primary">审 Playbook · 上线</div></td>
+        </tr>
+        <tr>
+          <th class="role-label">新手开发</th>
+          <td class="lane-cell"><div class="task-chip primary">看代际差异 / 术语</div></td>
+          <td class="lane-cell"><div class="task-chip primary">看 Mix 用法指引</div></td>
+          <td class="lane-cell"><div class="task-chip primary">跟 examples 学写法</div></td>
+          <td class="lane-cell"><div class="task-chip primary">啃报错术语</div></td>
+          <td class="lane-cell"><div class="task-chip primary">看 swimlane 学指标</div></td>
+          <td class="lane-cell"><div class="task-chip primary">沿 Playbook 学路径</div></td>
+        </tr>
+
+        <!-- Divider -->
+        <tr class="divider"><td class="divider-label"></td><td colspan="6"></td></tr>
+
+        <!-- Matrix rows: A5 影响 / 用户痛点 / 产品机会点 -->
+        <tr>
+          <th class="matrix-label">A5 影响<small>A5 IMPACT</small></th>
+          <td class="matrix-cell">
+            <p>新增能力族（NDDMA / 128B Sector L2 / FP8&nbsp;family / BufferID / UnifiedBus / URMA / CCU）在 trace 中可信度分布不均。<span class="src">impact §1</span></p>
+            <p>命名冲突高发：UnifiedBus 与 Unified Buffer 常被同时简写为 UB。<span class="src">glossary</span></p>
+          </td>
+          <td class="matrix-cell">
+            <p>Cube : Vector = 8 : 1，Vector 不再只是后处理。<span class="src">impact §4-2</span></p>
+            <p>Mix 子图（DAV_3510）允许 CV 同 scope，受三条约束。<span class="src">impact §4-4</span></p>
+            <p>dtype 空间扩大（FP8 / MXFP8 / MXFP4 / HiF8）。</p>
+            <p>同一算子在 910 / A2 / A3 / 950 上需不同 tile / pass / runtime。</p>
+          </td>
+          <td class="matrix-cell">
+            <p>Cube-Vector 后处理归属直接影响子图可合并性。<span class="src">impact §4-1</span></p>
+            <p>TileShape 需为 Cube / Vector 双侧预对齐。</p>
+            <p>NDDMA / 128B Sector L2 / layout / stride 与计算 × 传输耦合更紧。</p>
+          </td>
+          <td class="matrix-cell">
+            <p>MixSubgraphSplit 成为新失败源。<span class="src">impact §4-4</span></p>
+            <p>失败成因复杂：三约束 × TileShape 组合。</p>
+            <p>编译成功 ≠ 选择最优：Pass 决策对运行时影响放大。<span class="src">studio</span></p>
+          </td>
+          <td class="matrix-cell">
+            <p>Sync Wait 成一级性能问题（CV_SYNC_SET / WAIT 显式同步）。<span class="src">impact §5-1</span></p>
+            <p>TileShape 失配级联 → 子图碎片化。</p>
+            <p>多旋钮冲突：L1Reuse / NBuffer / L2 affinity / ReduceCopy / Mix schedule。</p>
+            <p>跨视图定位链长：swimlane → rootHash → … → GM / L2。</p>
+            <p>PMU counter 语义需在 A5 上重建（Group 2 Pipeline Balance 等）。<span class="src">pmu-script</span></p>
+          </td>
+          <td class="matrix-cell">
+            <p>跨代配置漂移：910 / A2 / A3 / 950 三套独立 tile / pass / runtime。<span class="src">impact §4-5</span></p>
+            <p>新增 counter / Pass / 硬件路径需沉淀到团队 Playbook。</p>
+            <p>调优经验需可被 msprof 复用。<span class="src">studio</span></p>
+          </td>
+        </tr>
+        <tr>
+          <th class="matrix-label">用户痛点<small>PAIN POINTS</small></th>
+          <td class="matrix-cell">
+            <p><span class="role-pre">[算]</span>分不清"已落地"与"公料宣称"，规划易踩坑。<span class="src">impact §5-5</span></p>
+            <p><span class="role-pre">[新]</span>一句话讲不出 A5 与上一代差异；术语爆炸。</p>
+            <p><span class="role-pre">[Lead]</span>950 改造工作量与风险评估无依据。</p>
+          </td>
+          <td class="matrix-cell">
+            <p><span class="role-pre">[算]</span>纯 Cube vs Mix vs Vector 主导无判定依据；dtype × layout × tile 早期就要锁死。<span class="src">tiling.md</span></p>
+            <p><span class="role-pre">[新]</span>没有"什么场景该用 Mix"的引导，依赖专家口传。</p>
+            <p><span class="role-pre">[Lead]</span>团队 FP8 路线 / Mix 默认开关无数据支撑。</p>
+          </td>
+          <td class="matrix-cell">
+            <p><span class="role-pre">[算]</span>写 Vector op 时不知道哪些应紧贴 MatMul；TileShape 决策孤立于编辑器。</p>
+            <p><span class="role-pre">[调]</span>偶尔回 kernel 改 schedule，但 IDE 与 trace 视图割裂。<span class="src">studio</span></p>
+            <p><span class="role-pre">[新]</span>examples 多但讲解少，写法 → 硬件路径无可视化对应。</p>
+          </td>
+          <td class="matrix-cell">
+            <p><span class="role-pre">[算]</span>MixSubgraphSplit 报错只显示失败点，不解释触发的约束。</p>
+            <p><span class="role-pre">[调]</span>编译通过但跑得慢，缺少"为什么选了这个 Pass"解释。</p>
+            <p><span class="role-pre">[新]</span>报错术语门槛高，定位流程跨 4 个工具。<span class="src">trouble_shooting/</span></p>
+            <p><span class="role-pre">[Lead]</span>团队重复踩同一失败模式，无去重视图。</p>
+          </td>
+          <td class="matrix-cell">
+            <p><span class="role-pre">[调]</span>四大痛点齐发：Sync Wait 不可见 / 级联难追首因 / 旋钮冲突无预测 / 跨视图手工 grep。<span class="src">impact §5-1~§5-4</span></p>
+            <p><span class="role-pre">[算]</span>950 上慢，分不清 tile / dtype / mix 哪层导致。</p>
+            <p><span class="role-pre">[新]</span>swimlane 的 Wrap 含义、Group counter 语义都看不懂。</p>
+            <p><span class="role-pre">[Lead]</span>团队调优结论散落在个人 trace 与 IM 中。</p>
+          </td>
+          <td class="matrix-cell">
+            <p><span class="role-pre">[算]</span>三套配置漂移靠人工维护。</p>
+            <p><span class="role-pre">[调]</span>经验留在脑子里，没有 msprof 可调用的 Playbook 模板。</p>
+            <p><span class="role-pre">[Lead]</span>Playbook 评审、跨代迁移检查、上线可信度审核 无工具承载。</p>
+          </td>
+        </tr>
+        <tr>
+          <th class="matrix-label">产品机会点<small>OPPORTUNITIES</small></th>
+          <td class="matrix-cell">
+            <p>三档可信度（verified / inferred / claim）分层 UI。<span class="src">spec §3</span></p>
+            <p>"代际差异一图速览"——精简化 hardware-map。</p>
+            <p>概念词表升级为可交互术语卡，覆盖 UB 歧义警告。</p>
+            <p>HAL 平台能力对照表。<span class="src">top-design §1.2</span></p>
+          </td>
+          <td class="matrix-cell">
+            <p>选型决策助手：形状 + 平台 + dtype → Mix / 纯 Cube 推荐与置信度。</p>
+            <p>Mix 子图合并判定可视化（三约束 → 决策树）。</p>
+            <p>dtype 收益-风险对比卡。</p>
+            <p>跨平台配置抽象层（呼应 HAL）。</p>
+          </td>
+          <td class="matrix-cell">
+            <p>编辑器内"硬件路径预览"（接 ascend-950-hardware-v1）。</p>
+            <p>TileShape Helper：实时对齐状态 + 失配预警。<span class="src">impact §6</span></p>
+            <p>代码 ↔ 硬件视图双向高亮（升级现有 three-column）。</p>
+            <p>Examples 智能推荐。</p>
+          </td>
+          <td class="matrix-cell">
+            <p>Pass Tracer 升级（V4 原型）：约束高亮 + 修复路径。</p>
+            <p>编译失败模式聚合（团队级去重）。</p>
+            <p>与 16 个 trouble_shooting 文档智能对接。</p>
+            <p>"编译成功也要可解释"——Pass 决策卡。</p>
+            <p><span class="star">★</span>泳道任务按 <b>同构子图（Block Graph hash）</b> 着色，让"子图碎片化"在 swimlane 上可见。<span class="src">block-graph.md §3.6</span></p>
+          </td>
+          <td class="matrix-cell">
+            <p><span class="star">★</span><b>A5 PMU 数据可视化</b>（Group 2 Pipeline Balance）：clc / total / gap 三联 + counter 分解。<span class="src">pmu-script</span></p>
+            <p><span class="star">★</span><b>泳道 Mix 模式</b>：78 lanes → 24 Wraps 重组，counter-composition 着色。</p>
+            <p><span class="star">★</span><b>AICPU 调度泳道</b>与 AIC / AIV 并列：区分"等数据"还是"等调度"。<span class="src">pmu-sample</span></p>
+            <p><span class="star">★</span><b>同构子图着色</b>叠加：相同 Block Graph hash 用相同浅底色。</p>
+            <p>6 跳转入口一键穿透（源代码 / CALL / BlockGraph / hwpath / Peer / nextGroup）。</p>
+            <p>Sync Wait 可视化分层：计算 bound vs 等待 bound。</p>
+            <p>多旋钮冲突预测器。</p>
+            <p>Replay 模式：调优会话可原样重播。<span class="src">top-design FR-10</span></p>
+          </td>
+          <td class="matrix-cell">
+            <p><b>Contribute Back 沉淀回路</b>：个人诊断 → 团队 Playbook → msprof 资产。<span class="src">studio</span></p>
+            <p>跨代配置 diff & 自动适配：一份逻辑配置 → 三平台编译产物。</p>
+            <p>Playbook 评审工作台（Tech Lead 专属，含可信度签字）。</p>
+            <p>Function caching via content hash 作为 Playbook 复用底座。<span class="src">top-design FR-7</span></p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px; color: var(--text-muted); margin-top:14px;">
+      <span class="star">★</span> 标记 = 本次面向 A5 的关键能力增量（PMU 可视化 / Mix 泳道 / AICPU 泳道 / 同构子图着色）。
+      表中两条 <span style="color: var(--brass);">↓</span> 箭头展示核心交接：①【编译诊断】算子开发者 → 调优工程师（交 trace 与上下文）；
+      ②【沉淀复用】调优工程师 → Tech Lead（交 Playbook 草稿待审）。
+    </p>
+  </section>
+
+  <!-- ============ PRINCIPLES ============ -->
+  <section id="principles">
+    <div class="eyebrow">05 · 设计原则</div>
+    <h2>新一代工具 ≠ 老工具加新功能</h2>
+    <p class="lead">
+      在进入方案之前，明确三条立场。这三条不仅指导 A5 上的设计选择，也是和顶层设计文档
+      （<a href="https://github.com/hengliao1972/pypto_top_level_design_documents/tree/main/pypto-runtime-arch-docs" target="_blank" rel="noopener" style="color: var(--brass); text-decoration: underline; text-decoration-color: var(--brass-dim);">Simpler runtime redesign</a>）同向的产品立场。
+    </p>
+    <div class="principles">
+      <div class="principle">
+        <div class="pnum">01</div>
+        <h4>从「看现象」到「指根因」</h4>
+        <p>过去的工具大多是仪表盘，把数据画出来就交差。新一代工具必须给出"为什么"的可解释路径，而不是只告诉你"哪里慢"。</p>
+        <span class="vs">仪表盘 → 诊断闭环</span>
+      </div>
+      <div class="principle">
+        <div class="pnum">02</div>
+        <h4>从「按图分割」到「按定位链贯通」</h4>
+        <p>swimlane / Block Graph / 源代码 / 硬件路径 不应是四个孤岛。一次点击应能穿透完整定位链，<b style="color: var(--brass);">可信度分层</b>始终在场。</p>
+        <span class="vs">四工具 grep → 一键穿透</span>
+      </div>
+      <div class="principle">
+        <div class="pnum">03</div>
+        <h4>从「专家私货」到「团队资产」</h4>
+        <p>调优经验不能只留在个人 trace 和 IM 里。Contribute Back 让一次诊断成为团队 Playbook，让下一次同类问题被工具主动识别。</p>
+        <span class="vs">单兵英雄 → 集体智慧</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SOLUTIONS ============ -->
+  <section id="solutions">
+    <div class="eyebrow">06 · 设计方案</div>
+    <h2>嵌入旅程的四类工具 · 与一个深入场景</h2>
+    <p class="lead">
+      方案不在"做一个新工具"，而在让 A5 的能力以正确的形态嵌入算子开发全旅程。
+      下方先给出四类工具与阶段的映射，再以"调优工程师主场景"作为深入演示。
+    </p>
+
+    <h3>方案总览：四类工具如何嵌进用户旅程</h3>
+
+    <table class="journey-table">
+      <colgroup>
+        <col style="width:11%;" />
+        <col style="width:14.83%;" /><col style="width:14.83%;" /><col style="width:14.83%;" />
+        <col style="width:14.83%;" /><col style="width:14.83%;" /><col style="width:14.83%;" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="corner">阶段</th>
+          <th><span class="stage-num">STAGE 01</span>需求理解</th>
+          <th><span class="stage-num">STAGE 02</span>架构选型</th>
+          <th><span class="stage-num">STAGE 03</span>编码实现</th>
+          <th><span class="stage-num">STAGE 04</span>编译诊断</th>
+          <th><span class="stage-num">STAGE 05</span>运行调优</th>
+          <th><span class="stage-num">STAGE 06</span>沉淀复用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Swimlane rows (same order as section 04) -->
+        <tr>
+          <th class="role-label">算子开发者</th>
+          <td class="lane-cell"><div class="task-chip primary">读 A5 能力清单</div></td>
+          <td class="lane-cell"><div class="task-chip primary">选 Mix / dtype / 平台</div></td>
+          <td class="lane-cell"><div class="task-chip primary">写 Cube + Vector + TileShape</div></td>
+          <td class="lane-cell"><div class="task-chip primary">读 Split 报错</div></td>
+          <td class="lane-cell"><div class="task-chip muted">回炉调 tile / schedule</div></td>
+          <td class="lane-cell"><div class="task-chip muted">同步三平台配置</div></td>
+        </tr>
+        <tr>
+          <th class="role-label">调优工程师</th>
+          <td class="lane-cell"><div class="task-chip muted">—</div></td>
+          <td class="lane-cell"><div class="task-chip muted">—</div></td>
+          <td class="lane-cell"><div class="task-chip muted">偶尔回 kernel</div></td>
+          <td class="lane-cell"><div class="task-chip primary">接管 trace · 看 Pass 决策</div></td>
+          <td class="lane-cell"><div class="task-chip primary">跨视图定位 · 试旋钮</div></td>
+          <td class="lane-cell"><div class="task-chip primary">起草 Playbook</div></td>
+        </tr>
+        <tr>
+          <th class="role-label">Tech Lead</th>
+          <td class="lane-cell"><div class="task-chip muted">评估 950 改造投入</div></td>
+          <td class="lane-cell"><div class="task-chip muted">定团队路线</div></td>
+          <td class="lane-cell"><div class="task-chip muted">定团队代码规范</div></td>
+          <td class="lane-cell"><div class="task-chip primary">看团队失败模式聚合</div></td>
+          <td class="lane-cell"><div class="task-chip muted">观察 Playbook 触发率</div></td>
+          <td class="lane-cell"><div class="task-chip primary">审 Playbook · 上线</div></td>
+        </tr>
+        <tr>
+          <th class="role-label">新手开发</th>
+          <td class="lane-cell"><div class="task-chip primary">看代际差异 / 术语</div></td>
+          <td class="lane-cell"><div class="task-chip primary">看 Mix 用法指引</div></td>
+          <td class="lane-cell"><div class="task-chip primary">跟 examples 学写法</div></td>
+          <td class="lane-cell"><div class="task-chip primary">啃报错术语</div></td>
+          <td class="lane-cell"><div class="task-chip primary">看 swimlane 学指标</div></td>
+          <td class="lane-cell"><div class="task-chip primary">沿 Playbook 学路径</div></td>
+        </tr>
+
+        <!-- Divider -->
+        <tr class="divider"><td class="divider-label"></td><td colspan="6"></td></tr>
+
+        <!-- Design solution row with merged cells -->
+        <tr>
+          <th class="matrix-label">设计方案<small>SOLUTIONS</small></th>
+          <td class="tool-cell" colspan="3">
+            <span class="stage-span">STAGE 01 – 03</span>
+            <div class="tool-name">A5 硬件地图 + 编辑器集成</div>
+            <p class="tool-desc">代际差异速览、术语卡、HAL 平台对照、写代码时的硬件路径预览、TileShape Helper、代码↔硬件双向高亮。</p>
+          </td>
+          <td class="tool-cell">
+            <span class="stage-span">STAGE 04</span>
+            <div class="tool-name">Pass Tracer + 失败模式聚合</div>
+            <p class="tool-desc">编译失败约束高亮、Pass 决策可解释、团队失败模式聚合、与 trouble_shooting 文档智能对接、同构子图着色。</p>
+          </td>
+          <td class="tool-cell primary-tool">
+            <span class="stage-span">STAGE 05 · 主场景</span>
+            <div class="tool-name">A5 PMU + Mix swimlane + 6 跳转</div>
+            <p class="tool-desc">Group 2 Pipeline Balance 可视化、Mix 模式 + AICPU 泳道、同构子图着色、6 跳转跨视图一键穿透、多旋钮冲突预测、Replay 模式。</p>
+          </td>
+          <td class="tool-cell">
+            <span class="stage-span">STAGE 06</span>
+            <div class="tool-name">Contribute Back · Playbook</div>
+            <p class="tool-desc">个人诊断沉淀为 Playbook、跨代配置 diff、Tech Lead 评审工作台、msprof 可调用、Function caching 复用底座。</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:36px;">深入场景 · 调优工程师如何在 7 步内完成一次诊断</h3>
+    <p>
+      场景：会话 <span class="mono">glm_attention.py · #c4a7e21</span>，运行慢 2.3×。
+      下方每张 slide 标注：<b>动作 · 看到 · 痛点命中 · 机会点 · 高光</b>。
+      高光标记：<span class="hl-badge">🅰</span> 跨视图定位穿透 ·
+      <span class="hl-badge">🅱</span> 可信度分层 ·
+      <span class="hl-badge">🅲</span> Contribute Back 沉淀回路。
+    </p>
+
+    <div class="scenario">
+
+      <!-- Slide 1 -->
+      <div class="slide">
+        <div class="snum"><b>01</b>入场</div>
+        <div class="sbody">
+          <h4>trace 落桌，但不知道从哪看起</h4>
+          <div class="saction">打开会话 · 渲染 78 lanes · 默认 opType 着色</div>
+          <p><span class="label">看到</span>1 AICCtrl + 3 AIC Sched + 24 AIC + 48 AIV + mte_in / mte_out + <b>AICPU 调度 lane</b>。</p>
+          <p><span class="label">不变的</span>所有 lane 全景出现在第一帧，不需要切窗口拼图。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>跨视图手工 grep · 首要目标不明</div>
+          <div><span class="mlabel">机会点</span>A5 PMU 全景 lane（含 AICPU）</div>
+          <div><span class="mlabel">高光</span>—</div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="slide">
+        <div class="snum"><b>02</b>引导</div>
+        <div class="sbody">
+          <h4>让工具说出"先看哪里"</h4>
+          <div class="saction">Immediate Attention 面板自动弹出</div>
+          <p><span class="label">看到</span>临界 lane / 临界 Wrap / 主导 counter / nextGroup 建议四联高亮；Top-3 候选 W7（wait −42%） / W12（scalar-bound −29%） / W19（overlap +18%）。</p>
+          <p><span class="label">埋钩子</span>这个推荐不是规则，是团队历史 Playbook 的输出——为第 7 张埋伏笔。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>不知道哪些指标该先看 · 经验未沉淀</div>
+          <div><span class="mlabel">机会点</span>诊断目标自动推荐 · 从被动看图升级为主动引导</div>
+          <div><span class="mlabel">高光</span><span class="hl-badge hidden">🅲</span>（伏笔）</div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="slide">
+        <div class="snum"><b>03</b>钻取</div>
+        <div class="sbody">
+          <h4>第一个根因：Sync Wait</h4>
+          <div class="saction">点击 Wrap 7 临界任务 · 右侧详情面板展开</div>
+          <p><span class="label">看到</span><b>clc / total / gap 三联 chip</b> + counter 分解条 + icache 事件（非 clc）+ Peer 任务列表 + 6 跳转按钮 + 指标可信度角标。</p>
+          <p><span class="label">关键判断</span>gap 占比把"算 vs 等"在 0.5 秒内分清——这是 Sync Wait 成为可量化对象的关键。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>Sync Wait vs 算力 bound 分不清 · 公料 vs 实证混淆</div>
+          <div><span class="mlabel">机会点</span>★ A5 PMU 可视化 Group 2 核心面板</div>
+          <div><span class="mlabel">高光</span><span class="hl-badge">🅱</span> 可信度分层首次出现</div>
+        </div>
+      </div>
+
+      <!-- Slide 4 -->
+      <div class="slide">
+        <div class="snum"><b>04</b>切视角</div>
+        <div class="sbody">
+          <h4>Mix 模式 + 同构子图着色 + AICPU 并列</h4>
+          <div class="saction">切到 Mix 模式 · 78 lanes → 24 Wraps</div>
+          <p><span class="label">看到</span>AIC_k + AIV_(2k−1) + AIV_(2k) 重组；着色换为 group2-counter-composition（compute 靛 / scalar 灰 / mte1 青绿 / mte2 琥珀 / mte3 珊瑚 / fixpipe 品红）。</p>
+          <p><span class="label">叠加层</span><b>同构子图色带</b>——相同 Block Graph hash 用相同浅底色；AICPU 泳道与 Wrap 块并列，立刻区分"等数据"与"等调度"。</p>
+          <p><span class="label">这一帧最重</span>三个 A5 专属机会点（Mix 泳道 / AICPU 泳道 / 同构着色）同时落地。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>TileShape 失配级联 · 子图碎片化不可见</div>
+          <div><span class="mlabel">机会点</span>★★★ 三机会点同帧呈现</div>
+          <div><span class="mlabel">高光</span>—（为下一帧穿透铺路）</div>
+        </div>
+      </div>
+
+      <!-- Slide 5 -->
+      <div class="slide">
+        <div class="snum"><b>05</b>穿透</div>
+        <div class="sbody">
+          <h4>六个跳转，一键打通定位链</h4>
+          <div class="saction">从详情面板点击 6 个跳转入口</div>
+          <p><span class="label">入口</span>源代码 · CALL 树 · Block Graph · <b>硬件路径</b> · Peer 视图 · nextGroup 建议。</p>
+          <p><span class="label">演示</span>硬件路径跳转：弹出 A5 硬件示意图（GM / L2 在 AI Core 外），主导 MTE2 通路高亮，verified / inferred / claim 三档线型同步呈现。</p>
+          <p><span class="label">最强一击</span>原本需要打开 4 个工具、做 4 次 grep 的定位，现在是一个点击。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>跨视图定位链 swimlane → rootHash → … → GM/L2 手工 grep</div>
+          <div><span class="mlabel">机会点</span>6 跳转穿透 + 硬件路径预览</div>
+          <div><span class="mlabel">高光</span><span class="hl-badge">🅰</span> + <span class="hl-badge">🅱</span></div>
+        </div>
+      </div>
+
+      <!-- Slide 6 -->
+      <div class="slide">
+        <div class="snum"><b>06</b>对比</div>
+        <div class="sbody">
+          <h4>三个 Wrap 横向看冲突</h4>
+          <div class="saction">拉出 Top-3 临界 Wrap 对比面板</div>
+          <p><span class="label">看到</span>W7（wait −42%） / W12（scalar-bound −29%） / W19（overlap +18%）三列并排；旋钮敏感度雷达图（L1Reuse / NBuffer / L2 affinity / ReduceCopy / Mix schedule）。</p>
+          <p><span class="label">能做</span>调一个旋钮 → 预测哪个 Wrap 改善 / 哪个变差。试错从盲动变成有图谱。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>多旋钮冲突无预测 · TileShape 级联难追</div>
+          <div><span class="mlabel">机会点</span>多旋钮冲突预测器（接 cost_model）</div>
+          <div><span class="mlabel">高光</span>—</div>
+        </div>
+      </div>
+
+      <!-- Slide 7 -->
+      <div class="slide">
+        <div class="snum"><b>07</b>收口</div>
+        <div class="sbody">
+          <h4>诊断 → 沉淀 → 团队资产</h4>
+          <div class="saction">点击「贡献回流」· Playbook 草稿生成</div>
+          <p><span class="label">看到</span>触发条件（A5 + Mix + MTE2 dominant + gap &gt; 30%）→ 检查步骤（参考本次 6 跳转路径）→ 推荐 action；Tech Lead 审核状态 chip；msprof 可调用标识；Replay 入口（顶层设计 FR-10）。</p>
+          <p><span class="label">闭环</span>本次沉淀将成为下一位调优工程师入场（slide 2）时的自动推荐——伏笔回收。</p>
+        </div>
+        <div class="smeta">
+          <div><span class="mlabel">痛点命中</span>经验留脑中 · 跨代迁移无工具 · 团队重复爬坡</div>
+          <div><span class="mlabel">机会点</span>Contribute Back · Playbook 评审 · Replay</div>
+          <div><span class="mlabel">高光</span><span class="hl-badge">🅲</span> 闭环收口</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ HIGHLIGHTS ============ -->
+  <section id="highlights">
+    <div class="eyebrow">07 · 高光设计点</div>
+    <h2>三个不可替代的差异点</h2>
+    <p class="lead">
+      不罗列十几个细节。从全部设计中挑出三个最有冲击力的：每一个都解决一个无法靠"老工具加功能"
+      解决的根本问题。
+    </p>
+    <div class="highlights">
+
+      <div class="highlight">
+        <div class="badge">🅰 · HIGHLIGHT 01</div>
+        <h4>跨视图定位链一键穿透</h4>
+        <p>swimlane → rootHash → callOpMagic → leafHash → wrapId → Graph / AIC / AIV / GM / L2。
+          过去要打开 4 个工具、做 4 次 grep；现在是详情面板里的 6 个跳转按钮。</p>
+        <div class="solves"><b>它解决了：</b>A5 上"定位链长 + 跨视图工具割裂"这一最高频的痛点；调优工程师 / 算子开发者 / 新手开发 三个角色共同受益。</div>
+      </div>
+
+      <div class="highlight">
+        <div class="badge">🅱 · HIGHLIGHT 02</div>
+        <h4>可信度分层 UI</h4>
+        <p>verified / inferred / article-claim 三档线型与卡片样式，贯穿硬件图 · PMU 详情 · 报错提示
+          · Playbook 沉淀。每一条事实都自带"我有多确定"的视觉标识。</p>
+        <div class="solves"><b>它解决了：</b>BufferID / URMA / CCU 等公开材料宣称与 trace 实证混淆的根本风险；让工具"诚实"成为可被信任的产品基石。</div>
+      </div>
+
+      <div class="highlight">
+        <div class="badge">🅲 · HIGHLIGHT 03</div>
+        <h4>Contribute Back 沉淀回路</h4>
+        <p>一次个人诊断 → 团队 Playbook → 下一次进入 swimlane 时的自动推荐。配合顶层设计的
+          Replay 模式，调优会话本身可以被原样重播。</p>
+        <div class="solves"><b>它解决了：</b>调优经验依赖单兵英雄的根本问题，让 Tech Lead 与"团队整体"成为新一代工具的真正用户。</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ NEXT ============ -->
+  <section id="next">
+    <div class="eyebrow">08 · 后续</div>
+    <h2>从 exploration-only 走向 share-safe</h2>
+    <p class="lead">
+      当前所有原型基于 L3 demo 数据，可外发前需补齐真实数据底座、覆盖未实现的 Toolkit 场景，
+      并与顶层设计文档同步对齐 HAL / Replay / 跨节点等长期方向。
+    </p>
+    <div class="next-list">
+      <div class="next-item">
+        <h5>L2 数据底座对齐</h5>
+        <p>把 <span class="mono">tilefwk_prof_pmu.csv</span> + <span class="mono">merged_swimlane.json</span> + counter→hwpipe 映射表替换进 Group 2 原型，让 PMU 视图从 L3 走向 L2。</p>
+      </div>
+      <div class="next-item">
+        <h5>AICPU PMU 接入</h5>
+        <p>当前 AICPU 泳道仅占位，等待 AI CPU PMU 真实数据接入后，把"等数据 vs 等调度"做实。</p>
+      </div>
+      <div class="next-item">
+        <h5>同构子图着色对接 Block Graph hash</h5>
+        <p>与 PyPTO 内部 Block Graph hash 去重机制打通，让 swimlane 的同构色带具备底层支撑。</p>
+      </div>
+      <div class="next-item">
+        <h5>HAL 视角的"平台变量"清单</h5>
+        <p>与顶层设计 (a2a3 / a5 / sim) HAL 抽象对齐，输出可扩展的"平台能力对照表"产品形态。</p>
+      </div>
+      <div class="next-item">
+        <h5>Pass Tracer 升级 + 失败模式聚合</h5>
+        <p>把已有 V4 原型升级为 A5 约束高亮版本，并打通团队级失败模式聚合视图。</p>
+      </div>
+      <div class="next-item">
+        <h5>Contribute Back 多分支可视化</h5>
+        <p>Playbook 在演化过程中会出现多个分支版本，需要设计 Tech Lead 评审 + 灰度上线的可视化形态。</p>
+      </div>
+    </div>
+
+    <footer>
+      <div>
+        Report ｜ <span class="mono">01-inbox/a5-design-report.html</span><br />
+        Sources ｜
+        <a href="../02-knowledge/00-shared/ascend-a5-950-hardware/a5-950-pypto-impact-report.md">impact-report</a> ·
+        <a href="../04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md">interaction-spec</a> ·
+        <a href="../05-prototypes/06-a5-pmu-visualization/notes/script-2026-05-12.md">pmu-script</a> ·
+        <a href="../05-prototypes/05-pypto-studio/notes/prototype-notes.md">studio-notes</a><br />
+        Credibility ｜ exploration-only · L3 demo data (PMU)
+      </div>
+    </footer>
+  </section>
+
+  </main>
+</div>
+</body>
+</html>
