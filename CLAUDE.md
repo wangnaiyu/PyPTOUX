@@ -27,9 +27,15 @@ Claude 在本仓库默认负责：
 - `AGENTS.md`
 - 当前任务对应的 `04-uxdesign/<topic>/prd.md` 或 interaction-spec
 - 当前任务对应的 `05-prototypes/<topic>/notes/sample-data.md`
+- 做前端原型、PTO 风格页面或视觉改造时，先读 `.agents/skills/pto-design-system/SKILL.md`
 
 ### 3.2 按需补读
 
+- `.agents/skills/pto-design-system/DESIGN.md`
+- `.agents/skills/pto-design-system/references/quick-reference.md`
+- `.agents/skills/pto-design-system/references/pto-design-system-map.md`
+- `.agents/skills/pto-design-system/design-system-preview.html`
+- `.agents/skills/pto-design-system/patterns/`
 - `10-docs/01-conventions/dual-agent-collaboration.md`
 - `10-docs/01-conventions/content-routing.md`
 - `07-designsystem/03-guidance/`
@@ -63,7 +69,9 @@ Claude 在本仓库默认负责：
 ## 5. 原型实现与分享规则
 
 - 不默认继承历史 `experiments/` demo 的视觉、布局、交互。
+- 默认优先继承 `.agents/skills/pto-design-system/` 的 tokens、class、preview 和 patterns。
 - 默认继承 `07-designsystem/01-foundations/` 的 tokens 与 `07-designsystem/03-guidance/` 的 guidance。
+- 若 `.agents/skills/pto-design-system/` 与 `07-designsystem/` 出现差异，以当前任务明确指定者为准；未指定时先采用 `pto-design-system`，并在 `notes/` 中标记需要 Codex 同步的设计系统差异。
 - 风格不明确时：提出 2–3 个方向，不自由发挥。
 - `share-safe`：不依赖运行时远程资源，可稳定外发。
 - 构建时固化资源可以；运行时远程依赖不行。

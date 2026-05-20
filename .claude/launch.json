@@ -13,6 +13,18 @@
       "runtimeExecutable": "bash",
       "runtimeArgs": ["-c", "cd /tmp && exec python3 -m http.server 8770 --bind 127.0.0.1 --directory /tmp/pyptoux-preview/06-a5-pmu-group2-loop"],
       "port": 8770
+    },
+    {
+      "name": "pto-design-system-preview",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /tmp && exec python3 -m http.server 8771 --bind 127.0.0.1 --directory /tmp/pyptoux-preview/pto-design-system"],
+      "port": 8771
+    },
+    {
+      "name": "swimlane-profiler-preview",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /tmp && exec python3 -m http.server 8772 --bind 127.0.0.1 --directory /tmp/pyptoux-preview/swimlane-profiler"],
+      "port": 8772
     }
   ]
 }

@@ -1,0 +1,1454 @@
+<!doctype html>
+<!--
+  PyPTO Swimlane Profiler — Mix 子图核间同步可视化原型
+  课题: 04-uxdesign/02-swimlane-profiler/ux-analysis.md (Issue #1121)
+
+  数据等级: L3-placeholder
+    - 所有 task / sync / 耗时为按硬件拓扑与执行逻辑编造的占位数据。
+    - 已植入「瓶颈剧本」: Attention Score 子图 Wrap 06 的 AIC 跑超大 BMM,
+      配对 AIV 长时间 stall; 同组其他 wrap 早完空转 (负载不均)。
+    - 待 Codex 补 merged_swimlane.json 真实样本后替换 buildModel()。
+  分享级别: exploration-only (不可外发)
+
+  设计系统: 复用 .agents/skills/pto-design-system
+    - tokens/foundation|semantic|components.css —— 内联固化 (build-time)
+    - patterns/swimlane-task/pattern.js —— 内联固化, task bar 经 drawTaskBar 渲染
+    - 共享组件类: .btn / .btn-solid / .btn-ghost / .segmented-control / .stat-chip
+    - 同步弧线 / 等待段斜纹 / mix group 配色 属 data-viz exempt
+-->
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PyPTO Swimlane Profiler · Mix 子图核间同步</title>
+<style>
+/* ============================================================
+   1. 设计系统 tokens —— 内联自 .agents/skills/pto-design-system/tokens
+   ============================================================ */
+:root {
+  --ark-neutral-0: #0b0b0b; --ark-neutral-1: #101010; --ark-neutral-2: #141414;
+  --ark-neutral-3: #1a1a1a; --ark-neutral-4: #343434;
+  --ark-blue-500: #4369efff; --ark-blue-600: #5a92e6; --ark-domain-aux: #7c8db8;
+  --ark-green-500: #04d793ff; --ark-orange-500: #ffaa3bff; --ark-red-500: #ff4b7bff;
+  --font-sans: 'Inter', 'Source Han Sans SC', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-weight-semibold: 600; --font-weight-medium: 500;
+  --letter-spacing-label: 0.5px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px; --radius-pill: 999px;
+  --shadow-lg: 0 12px 30px rgba(0,0,0,0.42);
+  --z-overlay: 200;
+  --duration-fast: 100ms; --easing-default: cubic-bezier(0.4,0,0.2,1);
+}
+:root, :root[data-theme='dark'] {
+  --background: var(--ark-neutral-1); --background-elevated: var(--ark-neutral-2);
+  --surface-1: #161616; --surface-2: #1c1c1c; --surface-3: #262626; --surface-4: #313131;
+  --foreground: rgba(255,255,255,0.90); --foreground-secondary: rgba(255,255,255,0.60);
+  --foreground-muted: rgba(255,255,255,0.40); --foreground-disabled: rgba(255,255,255,0.25);
+  --border-subtle: rgba(255,255,255,0.06); --border-default: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.16);
+  --primary: var(--ark-blue-500); --primary-hover: var(--ark-blue-600);
+  --accent: var(--ark-domain-aux); --success: var(--ark-green-500);
+  --warning: var(--ark-orange-500); --danger: var(--ark-red-500);
+  --focus-ring: rgba(67,105,239,0.42);
+  --state-hover: rgba(255,255,255,0.06); --state-press: rgba(255,255,255,0.10);
+  --state-muted: rgba(255,255,255,0.06); --state-selected: rgba(67,105,239,0.14);
+  --surface-disabled: rgba(255,255,255,0.04);
+  --tone-warning-bg: color-mix(in srgb, var(--warning) 16%, transparent);
+  --button-height-md: 36px; --button-height-sm: 30px; --button-radius: var(--radius-lg);
+  --button-padding-x-md: var(--space-3); --button-padding-x-sm: var(--space-2); --button-gap: 6px;
+  --button-font: 500 12px/1 var(--font-sans);
+  --button-solid-bg: var(--foreground); --button-solid-bg-hover: color-mix(in srgb,var(--foreground) 88%,transparent);
+  --button-solid-fg: var(--background);
+  --button-secondary-bg: color-mix(in srgb,var(--surface-2) 92%,white 3%);
+  --button-secondary-bg-hover: var(--surface-3);
+  --button-secondary-bg-press: color-mix(in srgb,var(--surface-3) 84%,black);
+  --button-secondary-border: var(--border-subtle); --button-secondary-fg: var(--foreground);
+  --button-secondary-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 8px rgba(0,0,0,0.16);
+  --button-ghost-bg-hover: var(--state-hover); --button-ghost-fg: var(--foreground-secondary);
+  --button-ghost-fg-hover: var(--foreground);
+  --text-title-1: 600 20px/1.30 var(--font-sans); --text-title-2: 600 16px/1.30 var(--font-sans);
+  --text-body: 400 14px/1.50 var(--font-sans); --text-body-sm: 400 12px/1.50 var(--font-sans);
+  --text-label: 500 11px/1.20 var(--font-sans); --text-mono: 500 12px/1.40 var(--font-mono);
+  --tag-height: 20px;
+  --stat-chip-height: 22px; --stat-chip-bg: var(--surface-2);
+  --stat-chip-border: var(--border-subtle); --stat-chip-fg: color-mix(in srgb,var(--foreground) 88%,var(--background));
+  --segmented-control-bg: var(--surface-disabled); --segmented-control-border: var(--border-subtle);
+}
+
+/* ============================================================
+   2. 共享组件类 —— 内联自 css/style.css (子集)
+   ============================================================ */
+* { box-sizing: border-box; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--button-gap);
+  min-height: var(--button-height-md); padding: 0 var(--button-padding-x-md);
+  border-radius: var(--button-radius); background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border); box-shadow: var(--button-secondary-shadow);
+  color: var(--button-secondary-fg); font: var(--button-font); cursor: pointer;
+  white-space: nowrap; appearance: none; -webkit-appearance: none;
+  transition: background var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default), color var(--duration-fast) var(--easing-default);
+}
+.btn:hover { background: var(--button-secondary-bg-hover); border-color: var(--border-default); }
+.btn:active { background: var(--button-secondary-bg-press); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--focus-ring), var(--button-secondary-shadow); }
+.btn-sm { min-height: var(--button-height-sm); padding-inline: var(--button-padding-x-sm); }
+.btn-icon { min-width: var(--button-height-sm); width: var(--button-height-sm); padding: 0;
+  min-height: var(--button-height-sm); font-size: 14px; }
+.btn-solid { background: var(--button-solid-bg); border-color: transparent; box-shadow: none;
+  color: var(--button-solid-fg); font-weight: var(--font-weight-semibold); }
+.btn-solid:hover { background: var(--button-solid-bg-hover); border-color: transparent; }
+.btn-ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--button-ghost-fg); }
+.btn-ghost:hover { background: var(--button-ghost-bg-hover); border-color: transparent; color: var(--button-ghost-fg-hover); }
+.btn.is-selected, .btn.is-selected:hover { background: var(--foreground); border-color: transparent;
+  color: var(--background); box-shadow: none; }
+.segmented-control {
+  display: inline-flex; align-items: center; gap: 3px; padding: 3px; border-radius: 10px;
+  border: 1px solid var(--segmented-control-border); background: var(--segmented-control-bg);
+}
+.segmented-control > .btn { min-height: 28px; }
+.segmented-control > .btn:not(.is-selected) { background: transparent; border-color: transparent; box-shadow: none; }
+.segmented-control > .btn:not(.is-selected):hover { background: var(--button-ghost-bg-hover); }
+.stat-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--stat-chip-height);
+  padding: 0 8px; border-radius: var(--radius-pill); background: var(--stat-chip-bg);
+  border: 1px solid var(--stat-chip-border); color: var(--stat-chip-fg);
+  font: var(--text-label); white-space: nowrap;
+}
+
+/* ============================================================
+   3. 模块布局 —— 局部 layout/structure 类 (sl- 前缀)
+   ============================================================ */
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--background); color: var(--foreground);
+  font-family: var(--font-sans); -webkit-font-smoothing: antialiased;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sl-topbar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-3);
+  padding: 10px var(--space-4); border-bottom: 1px solid var(--border-subtle);
+}
+.sl-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sl-brand-mark {
+  width: 30px; height: 30px; flex: 0 0 auto; border-radius: 8px;
+  background: color-mix(in srgb, var(--foreground) 82%, var(--background));
+  display: grid; place-items: center; color: var(--background); font-weight: 700; font-size: 13px;
+}
+.sl-brand-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sl-brand-title { font: var(--text-title-2); }
+.sl-brand-sub {
+  font: var(--text-label); color: var(--foreground-muted);
+  text-transform: uppercase; letter-spacing: var(--letter-spacing-label);
+}
+.sl-spacer { flex: 1 1 auto; }
+.sl-topbar-metrics { display: flex; gap: 6px; }
+.sl-ctl-group { display: flex; align-items: center; gap: 6px; }
+.sl-ctl-label {
+  font: var(--text-label); color: var(--foreground-muted);
+  text-transform: uppercase; letter-spacing: var(--letter-spacing-label);
+}
+.sl-zoom-readout {
+  min-width: 46px; text-align: center; font: var(--text-mono);
+  color: color-mix(in srgb, var(--foreground) 84%, var(--background));
+}
+.sl-stage { flex: 1 1 auto; display: flex; gap: 10px; padding: 10px var(--space-4) var(--space-4); min-height: 0; }
+.sl-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0;
+  border-radius: 10px; background: #242424; overflow: hidden; }
+.sl-pane-canvas { flex: 1 1 auto; }
+.sl-pane-inspector { flex: 0 0 332px; }
+.sl-pane-head { flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-3);
+  padding: 10px 14px; min-height: 50px; }
+.sl-pane-title { font: var(--text-title-2); }
+.sl-pane-kicker { font: var(--text-label); color: var(--foreground-muted);
+  text-transform: uppercase; letter-spacing: var(--letter-spacing-label); }
+.sl-legend { display: flex; align-items: center; gap: 11px; flex-wrap: wrap; }
+.sl-legend-item { display: flex; align-items: center; gap: 5px; font: var(--text-label); color: var(--foreground-secondary); }
+.sl-legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+.sl-legend-swatch.is-wait {
+  background: repeating-linear-gradient(135deg, rgba(255,170,59,0.85) 0 2px, transparent 2px 4px),
+    color-mix(in srgb, var(--warning) 18%, transparent);
+}
+
+.sl-grid { flex: 1 1 auto; display: grid; min-height: 0;
+  grid-template-columns: 184px 1fr; grid-template-rows: 34px 1fr; }
+.sl-corner {
+  border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-default);
+  display: flex; align-items: center; padding: 0 12px; background: #242424;
+  font: var(--text-label); color: var(--foreground-muted);
+  text-transform: uppercase; letter-spacing: var(--letter-spacing-label);
+}
+.sl-axis-wrap { overflow: hidden; border-bottom: 1px solid var(--border-default); }
+.sl-lane-wrap { overflow: hidden; border-right: 1px solid var(--border-subtle); }
+.sl-body-wrap { overflow: auto; }
+.sl-axis-wrap canvas, .sl-lane-wrap canvas, .sl-body-wrap canvas { display: block; }
+.sl-body-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+.sl-body-wrap::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: 8px; border: 3px solid #242424; }
+.sl-body-wrap::-webkit-scrollbar-corner { background: #242424; }
+
+/* Inspector */
+.sl-insp-body { flex: 1 1 auto; overflow: auto; padding: 0 14px 16px; }
+.sl-crumb { display: flex; align-items: center; flex-wrap: wrap; gap: 3px;
+  padding: 8px 0 4px; font: var(--text-body-sm); }
+.sl-crumb-item { color: var(--foreground-muted); cursor: pointer; }
+.sl-crumb-item:hover { color: var(--foreground); }
+.sl-crumb-item.is-current { color: var(--foreground); cursor: default; font-weight: 600; }
+.sl-crumb-sep { color: var(--foreground-disabled); }
+.sl-insp-section { margin-top: 14px; }
+.sl-insp-section-label { font: var(--text-label); color: var(--foreground-muted);
+  text-transform: uppercase; letter-spacing: var(--letter-spacing-label); margin-bottom: 7px; }
+.sl-kv { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; font: var(--text-body-sm); }
+.sl-kv + .sl-kv { border-top: 1px solid var(--border-subtle); }
+.sl-kv-key { color: var(--foreground-secondary); }
+.sl-kv-val { color: var(--foreground); font-family: var(--font-mono); text-align: right; }
+.sl-meter { height: 8px; border-radius: var(--radius-pill); background: var(--surface-3); overflow: hidden; margin: 6px 0 2px; }
+.sl-meter-fill { height: 100%; }
+.sl-insp-hint { font: var(--text-body-sm); color: var(--foreground-muted); line-height: 1.65; }
+.sl-insp-hint b { color: var(--foreground); font-weight: 600; }
+.sl-row {
+  display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: var(--radius-md);
+  cursor: pointer; transition: background var(--duration-fast) var(--easing-default);
+}
+.sl-row:hover { background: var(--state-hover); }
+.sl-row.is-active { background: var(--state-selected); }
+.sl-row.is-flag { box-shadow: inset 2px 0 0 var(--warning); }
+.sl-dot { width: 11px; height: 11px; border-radius: 3px; flex: 0 0 auto; }
+.sl-row-name { flex: 1 1 auto; min-width: 0; font: var(--text-body-sm); color: var(--foreground); }
+.sl-row-name small { color: var(--foreground-muted); }
+.sl-row-meta { font: var(--text-label); color: var(--foreground-muted); font-family: var(--font-mono); }
+.sl-pill { display: inline-flex; align-items: center; gap: 4px; height: var(--tag-height);
+  padding: 0 8px; border-radius: var(--radius-pill); background: var(--surface-3); font: var(--text-label); }
+.sl-pill.is-warn { color: var(--warning); }
+.sl-pill.is-ok { color: var(--success); }
+.sl-sync-item { padding: 8px 9px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--background) 26%, transparent);
+  margin-top: 6px; font: var(--text-body-sm); color: var(--foreground-secondary); line-height: 1.55; }
+.sl-sync-item b { color: var(--foreground); font-weight: 600; }
+.sl-sync-item .mono { font-family: var(--font-mono); color: var(--foreground); }
+.sl-callout {
+  margin-top: 12px; padding: 10px 11px; border-radius: var(--radius-md);
+  background: var(--tone-warning-bg); border-left: 3px solid var(--warning);
+  font: var(--text-body-sm); color: var(--foreground-secondary); line-height: 1.6;
+}
+.sl-callout b { color: color-mix(in srgb, var(--warning) 82%, var(--foreground)); font-weight: 600; }
+.sl-callout .sl-btn-drill { margin-top: 8px; width: 100%; }
+
+/* Tooltip */
+.sl-tooltip {
+  position: fixed; z-index: var(--z-overlay); pointer-events: none; max-width: 290px;
+  padding: 9px 11px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--background-elevated) 96%, black);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg);
+  font: var(--text-body-sm); color: var(--foreground); display: none;
+}
+.sl-tt-title { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.sl-tt-row { color: var(--foreground-secondary); display: flex; justify-content: space-between; gap: 14px; }
+.sl-tt-row .mono { font-family: var(--font-mono); color: var(--foreground); }
+.sl-tt-dot { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+
+.sl-banner {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+  padding: 6px var(--space-4); font: var(--text-body-sm); color: var(--foreground-muted);
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sl-banner b { color: color-mix(in srgb, var(--warning) 82%, var(--foreground)); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header class="sl-topbar">
+  <div class="sl-brand">
+    <div class="sl-brand-mark">PT</div>
+    <div class="sl-brand-text">
+      <span class="sl-brand-title">Swimlane Profiler</span>
+      <span class="sl-brand-sub">Issue #1121 · Mix 子图核间同步</span>
+    </div>
+  </div>
+  <div class="sl-topbar-metrics" id="topMetrics"></div>
+  <div class="sl-spacer"></div>
+  <div class="sl-ctl-group">
+    <span class="sl-ctl-label">模式</span>
+    <div class="segmented-control" id="modeCtl">
+      <button class="btn btn-sm is-selected" data-mode="classic">经典</button>
+      <button class="btn btn-sm" data-mode="mix">Mix</button>
+    </div>
+  </div>
+  <button class="btn btn-sm" id="syncPathBtn" title="弱化无同步边的 task，聚焦核间协作">只看同步路径</button>
+  <div class="sl-ctl-group">
+    <span class="sl-ctl-label">缩放</span>
+    <button class="btn btn-sm btn-icon" id="zoomOut" aria-label="缩小">−</button>
+    <span class="sl-zoom-readout" id="zoomReadout">100%</span>
+    <button class="btn btn-sm btn-icon" id="zoomIn" aria-label="放大">+</button>
+  </div>
+</header>
+
+<div class="sl-banner">
+  <b>L3-placeholder</b>
+  <span id="bannerText">占位数据 · 已植入「Wrap 06 超大 BMM」瓶颈剧本 · 待 Codex 补 merged_swimlane.json 真实样本后替换 · exploration-only</span>
+</div>
+
+<div class="sl-stage">
+  <section class="sl-pane sl-pane-canvas">
+    <div class="sl-pane-head">
+      <div>
+        <div class="sl-pane-title">执行泳道 · 78 lanes</div>
+        <div class="sl-pane-kicker" id="orderKicker">经典顺序 · AI CPU → AIC → AIV → MTE</div>
+      </div>
+      <div class="sl-spacer"></div>
+      <div class="sl-legend" id="legend"></div>
+    </div>
+    <div class="sl-grid" id="grid">
+      <div class="sl-corner">核 / 时间 →</div>
+      <div class="sl-axis-wrap" id="axisWrap"><canvas id="axisCanvas"></canvas></div>
+      <div class="sl-lane-wrap" id="laneWrap"><canvas id="laneCanvas"></canvas></div>
+      <div class="sl-body-wrap" id="bodyWrap"><canvas id="bodyCanvas"></canvas></div>
+    </div>
+  </section>
+
+  <aside class="sl-pane sl-pane-inspector">
+    <div class="sl-pane-head">
+      <div class="sl-pane-title" id="inspTitle">Mix 子图概览</div>
+    </div>
+    <div class="sl-insp-body" id="inspBody"></div>
+  </aside>
+</div>
+
+<div class="sl-tooltip" id="tooltip"></div>
+
+<script>
+/* ============================================================
+   4. swimlane-task pattern —— 内联自 patterns/swimlane-task/pattern.js
+      (canonical task-bar 渲染器, 禁止本地重写 segment / alpha / 字体阈值)
+   ============================================================ */
+(function registerPtoSwimlaneTaskPattern(global) {
+  'use strict';
+  const DEFAULTS = {
+    minBarSegmentCountsPx: 84, sideRatio: 0.2, minInWidth: 10, maxInWidth: 42,
+    minOutWidth: 12, maxOutWidth: 48, selectedLightenAmount: 28, emphasizedLightenAmount: 14,
+    baseFillAlpha: 0.24, borderSelected: 'rgba(255,255,255,0.88)', borderRelated: 'rgba(255,255,255,0.46)',
+    borderDefault: 'rgba(255,255,255,0.16)', textColor: 'rgba(255,255,255,0.92)', topHighlight: 'rgba(255,255,255,0.08)',
+  };
+  function buildTaskSegmentSpec(task, widthPx) {
+    const semantic = String(task?.label || task?.displayName || task?.rawName || 'compute');
+    const inputCount = Array.isArray(task?.inputRawMagic) ? task.inputRawMagic.length : 0;
+    const outputCount = Array.isArray(task?.outputRawMagic) ? task.outputRawMagic.length : 0;
+    const showCounts = widthPx >= DEFAULTS.minBarSegmentCountsPx;
+    return [
+      { key: 'in', text: showCounts ? `IN ${inputCount}` : 'IN' },
+      { key: 'compute', text: semantic },
+      { key: 'out', text: showCounts ? `OUT ${outputCount}` : 'OUT' },
+    ];
+  }
+  function lightenHexColor(hex, amount) {
+    if (!hex || hex[0] !== '#') return hex;
+    const value = parseInt(hex.slice(1), 16);
+    return `rgb(${Math.min(255,(value>>16)+amount)},${Math.min(255,((value>>8)&0xff)+amount)},${Math.min(255,(value&0xff)+amount)})`;
+  }
+  function alphaHexColor(color, alpha) {
+    if (!color || color[0] !== '#') return color;
+    const value = parseInt(color.slice(1), 16);
+    return `rgba(${value >> 16},${(value >> 8) & 0xff},${value & 0xff},${alpha})`;
+  }
+  function mixHexColors(base, target, ratio) {
+    if (!base || !target || base[0] !== '#' || target[0] !== '#') return base;
+    const from = parseInt(base.slice(1), 16), to = parseInt(target.slice(1), 16);
+    const mix = (l, r) => Math.round(l + (r - l) * ratio);
+    return `rgb(${mix(from>>16,to>>16)},${mix((from>>8)&0xff,(to>>8)&0xff)},${mix(from&0xff,to&0xff)})`;
+  }
+  function resolveDisplayColor(baseColor, o = {}) {
+    if (o.isSelected) return lightenHexColor(baseColor, DEFAULTS.selectedLightenAmount);
+    if (o.isEmphasized) return lightenHexColor(baseColor, DEFAULTS.emphasizedLightenAmount);
+    return baseColor;
+  }
+  function resolveBorderColor(o = {}) {
+    if (o.isSelected) return DEFAULTS.borderSelected;
+    if (o.isRelated) return DEFAULTS.borderRelated;
+    return DEFAULTS.borderDefault;
+  }
+  function drawTaskBar(ctx, options) {
+    const task = options.task || {};
+    const barX = options.x || 0, barY = options.y || 0;
+    const width = Math.max(0, options.width || 0), height = Math.max(0, options.height || 0);
+    const radius = options.radius ?? 2;
+    const fontFamily = options.fontFamily || 'sans-serif';
+    const baseColor = options.baseColor || '#5f6775';
+    const displayColor = resolveDisplayColor(baseColor, { isSelected: options.isSelected, isEmphasized: options.isEmphasized });
+    const borderColor = resolveBorderColor({ isSelected: options.isSelected, isRelated: options.isRelated });
+    const inW = Math.max(DEFAULTS.minInWidth, Math.min(width * DEFAULTS.sideRatio, DEFAULTS.maxInWidth));
+    const outW = Math.max(DEFAULTS.minOutWidth, Math.min(width * DEFAULTS.sideRatio, DEFAULTS.maxOutWidth));
+    const computeW = Math.max(0, width - inW - outW);
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(barX, barY, width, height, radius + 1); ctx.clip();
+    ctx.fillStyle = alphaHexColor(displayColor, DEFAULTS.baseFillAlpha);
+    ctx.fillRect(barX, barY, width, height);
+    [
+      { x: barX, w: inW, fill: mixHexColors(displayColor, '#ffffff', 0.16) },
+      { x: barX + inW, w: computeW, fill: displayColor },
+      { x: barX + inW + computeW, w: outW, fill: mixHexColors(displayColor, '#0b0f17', 0.2) },
+    ].forEach((s) => { if (s.w <= 0) return; ctx.fillStyle = s.fill; ctx.fillRect(s.x, barY, s.w, height); });
+    ctx.fillStyle = DEFAULTS.topHighlight; ctx.fillRect(barX, barY, width, 1);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.roundRect(barX + 0.5, barY + 0.5, Math.max(0, width - 1), Math.max(0, height - 1), radius + 1);
+    ctx.strokeStyle = borderColor; ctx.lineWidth = options.isSelected ? 1.4 : 1; ctx.stroke();
+    if (width < 28) return { displayColor, borderColor };
+    const segments = buildTaskSegmentSpec(task, width);
+    const font = width >= 72 ? `600 9px ${fontFamily}` : `600 8px ${fontFamily}`;
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(barX + 1, barY + 1, Math.max(0, width - 2), Math.max(0, height - 2), radius); ctx.clip();
+    ctx.font = font; ctx.textBaseline = 'middle';
+    [
+      { x: barX, w: inW, align: 'center', text: segments[0].text },
+      { x: barX + inW, w: computeW, align: 'left', text: segments[1].text },
+      { x: barX + inW + computeW, w: outW, align: 'center', text: segments[2].text },
+    ].forEach((segment, index) => {
+      if (segment.w < (index === 1 ? 20 : 14)) return;
+      ctx.fillStyle = DEFAULTS.textColor;
+      if (segment.align === 'left') {
+        ctx.textAlign = 'left';
+        const maxChars = Math.max(4, Math.floor((segment.w - 8) / 6));
+        const label = segment.text.length > maxChars ? `${segment.text.slice(0, Math.max(0, maxChars - 1))}…` : segment.text;
+        ctx.fillText(label, segment.x + 5, barY + height / 2 + 0.5);
+        return;
+      }
+      ctx.textAlign = 'center';
+      if (segment.w < segment.text.length * 5.2) return;
+      ctx.fillText(segment.text, segment.x + segment.w / 2, barY + height / 2 + 0.5);
+    });
+    ctx.restore();
+    return { displayColor, borderColor };
+  }
+  global.PtoSwimlaneTaskPattern = {
+    defaults: DEFAULTS, buildTaskSegmentSpec, lightenHexColor, alphaHexColor,
+    mixHexColors, resolveDisplayColor, resolveBorderColor, drawTaskBar,
+  };
+})(window);
+
+
+/* ============================================================
+   5. 数据模型 + 剧本 (L3-placeholder)
+
+   剧本: 一个 transformer 解码层跑 3 次迭代 (L0/L1/L2)。
+   解码层被切成 6 个 mix 子图, 静态绑定到 24 个 1C2V wrap
+   (每子图 4 个 wrap; 每个 wrap = 1 AIC + 2 AIV)。
+
+   植入瓶颈:
+     - 子图 g1 "Attention Score" 是全局瓶颈。
+     - 根因在 g1 的 Wrap 06: 该 wrap 的 AIC 跑了一个超大 BMM
+       (K 维未切分), 单 task 耗时 ~2.5x 正常值。
+     - Wrap 06 的两个 AIV 算完一小段后, 长时间 stall 等待该 AIC 的 SyncSet。
+     - g1 其余 wrap (04/05/07) 的 AIC 早早算完, AIV 也早完 -> 出现明显空转,
+       形成"负载不均": 一个 wrap 拖慢整个子图。
+   ============================================================ */
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const SCENARIO = {
+  bottleneckGroup: 1,   // Attention Score
+  slowWrap: 6,          // 全局 wrap 编号 (g1 的本地 k=2)
+};
+
+function buildModel() {
+  const rand = mulberry32(0x5117A2);
+  const rnd = (a, b) => a + rand() * (b - a);
+  const rndi = (a, b) => Math.floor(a + rand() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+
+  /* 6 个 mix 子图 (颜色属 data-viz exempt) */
+  const groups = [
+    { id: 0, name: 'QKV Projection',     short: 'QKV',    color: '#3F7DF6', cScale: 1.00, wChar: 0.20 },
+    { id: 1, name: 'Attention Score',    short: 'AttnQK', color: '#9B6BF0', cScale: 1.08, wChar: 0.30 },
+    { id: 2, name: 'Attention Context',  short: 'AttnV',  color: '#1FB6C9', cScale: 1.00, wChar: 0.22 },
+    { id: 3, name: 'FFN Up · GeLU',      short: 'FFN-Up', color: '#EF8A3C', cScale: 1.06, wChar: 0.18 },
+    { id: 4, name: 'FFN Down',           short: 'FFN-Dn', color: '#86C541', cScale: 1.04, wChar: 0.24 },
+    { id: 5, name: 'Residual · RMSNorm', short: 'Resid',  color: '#E25A92', cScale: 0.72, wChar: 0.12 },
+  ];
+
+  /* 78 条泳道 (核身份固定; 显示顺序见 buildOrder) */
+  const cores = [];
+  cores.push({ key: 'cpu_ctrl', label: 'AI CPU Ctrl', kind: 'cpu', section: 'AI CPU' });
+  for (let i = 0; i < 3; i++) cores.push({ key: 'cpu_sched_' + i, label: 'AI CPU Sched ' + i, kind: 'cpu', section: 'AI CPU' });
+  for (let i = 0; i < 24; i++) cores.push({ key: 'aic_' + i, label: 'AIC ' + String(i).padStart(2, '0'), kind: 'aic', section: 'AIC', group: Math.floor(i / 4), wrap: i });
+  for (let i = 0; i < 48; i++) cores.push({ key: 'aiv_' + i, label: 'AIV ' + String(i).padStart(2, '0'), kind: 'aiv', section: 'AIV', group: Math.floor(i / 8), wrap: Math.floor(i / 2) });
+  cores.push({ key: 'mte_in', label: 'MTE In', kind: 'mte', section: 'MTE' });
+  cores.push({ key: 'mte_out', label: 'MTE Out', kind: 'mte', section: 'MTE' });
+  cores.forEach((c, i) => { c.idx = i; });
+  const idxOf = {};
+  cores.forEach((c) => { idxOf[c.key] = c.idx; });
+  const aicIdxOfWrap = (w) => idxOf['aic_' + w];
+  const aivIdxOfWrap = (w) => [idxOf['aiv_' + (2 * w)], idxOf['aiv_' + (2 * w + 1)]];
+
+  const AIC_OPS = ['MatMul Tile', 'BMM K-split', 'MatMul Accum', 'GEMM Pack'];
+  const AIC_SLOW_OP = 'BMM (K 未切分)';
+  const AIV_OPS = ['Softmax', 'RMSNorm', 'GeLU Act', 'Add Bias', 'Cast fp16', 'Reduce Sum', 'Eltwise Mul', 'RoPE Apply'];
+
+  const tasks = [];
+  const edges = [];
+  let taskSeq = 0, edgeSeq = 0;
+  const tasksByCore = cores.map(() => []);
+  const mk = (coreIdx, name, start, computeEnd, end, group, wrap, kind, inN, outN) => {
+    const t = {
+      id: 't' + (taskSeq++), coreIdx, name, start, computeEnd, end, group, wrap, kind,
+      inputRawMagic: Array.from({ length: inN }, (_, i) => 'in' + i),
+      outputRawMagic: Array.from({ length: outN }, (_, i) => 'out' + i),
+      syncIn: [], syncOut: [],
+    };
+    tasks.push(t);
+    tasksByCore[coreIdx].push(t);
+    return t;
+  };
+  const addEdge = (group, wrap, dir, prod, prodT, waiter, waitStartT) => {
+    const e = {
+      id: 'e' + (edgeSeq++), group, wrap, dir,
+      fromCore: prod.coreIdx, fromT: prodT, fromTask: prod.id,
+      toCore: waiter.coreIdx, toT: waitStartT, toTask: waiter.id,
+      wait: waiter.end - waitStartT,
+    };
+    edges.push(e);
+    prod.syncOut.push(e.id);
+    waiter.syncIn.push(e.id);
+    return e;
+  };
+
+  const LAYERS = 3, LAYER0 = 80, LAYER_SPAN = 820, STAGGER = 84;
+
+  for (let L = 0; L < LAYERS; L++) {
+    const layerStart = LAYER0 + L * LAYER_SPAN;
+    mk(idxOf['cpu_ctrl'], 'Layer Dispatch', layerStart - 50, layerStart - 26, layerStart - 26, null, null, 'cpu', 0, 0);
+
+    for (let g = 0; g < 6; g++) {
+      const gcfg = groups[g];
+      const winStart = layerStart + g * STAGGER;
+      const schedCore = idxOf['cpu_sched_' + (g % 3)];
+      mk(schedCore, 'Subgraph Launch', winStart - 22, winStart - 8, winStart - 8, g, null, 'cpu', 0, 0);
+      mk(idxOf['mte_in'], 'HBM→L1 Load', winStart - 36, winStart + 16, winStart + 16, g, null, 'mte', 1, rndi(4, 7));
+
+      let groupComputeEnd = winStart;
+
+      for (let k = 0; k < 4; k++) {
+        const w = g * 4 + k;
+        const isSlow = (w === SCENARIO.slowWrap);
+        const aicCore = aicIdxOfWrap(w);
+        const aivCores = aivIdxOfWrap(w);
+
+        /* ---- AIC: matmul tile ---- */
+        const aicTasks = [];
+        let cursor = winStart + 10 + rnd(0, 12);
+        if (isSlow) {
+          /* 超大 BMM: 3 个长 task, 几乎无等待 (它是被等的一方) */
+          for (let s = 0; s < 3; s++) {
+            const dur = rnd(78, 116);
+            const start = cursor, computeEnd = start + dur, end = computeEnd + rnd(0, 6);
+            aicTasks.push(mk(aicCore, s === 0 ? AIC_SLOW_OP : 'BMM Accum', start, computeEnd, end, g, w, 'aic', 3, 1));
+            cursor = end + rnd(4, 9);
+          }
+        } else {
+          const n = rndi(4, 6);
+          for (let s = 0; s < n; s++) {
+            const dur = rnd(16, 40) * gcfg.cScale;
+            const wait = rand() < 0.22 ? rnd(8, 22) : 0;
+            const start = cursor, computeEnd = start + dur, end = computeEnd + wait;
+            aicTasks.push(mk(aicCore, pick(AIC_OPS), start, computeEnd, end, g, w, 'aic', rndi(2, 3), 1));
+            cursor = end + rnd(3, 8);
+          }
+        }
+        const aicComputeDone = aicTasks[aicTasks.length - 1].computeEnd;
+        groupComputeEnd = Math.max(groupComputeEnd, aicComputeDone);
+
+        /* ---- AIV: 向量算子, 等待 AIC ---- */
+        aivCores.forEach((aivCore, half) => {
+          let cur = winStart + 26 + rnd(0, 14);
+          const n = isSlow ? rndi(5, 6) : rndi(6, 9);
+          for (let s = 0; s < n; s++) {
+            const dur = rnd(9, 24);
+            let wait = 0, prod = null, waitStartT = null;
+            if (isSlow && s < 3) {
+              /* 剧本核心: 算一小段后长时间 stall 等 Wrap06 的超大 BMM */
+              prod = aicTasks[s];
+              waitStartT = cur + dur;
+              const end = prod.computeEnd + rnd(5, 16);
+              const t = mk(aivCore, pick(AIV_OPS), cur, waitStartT, Math.max(end, waitStartT + 6), g, w, 'aiv', rndi(1, 2), 1);
+              addEdge(g, w, 'aic2aiv', prod, prod.computeEnd, t, waitStartT);
+              cur = t.end + rnd(2, 6);
+              continue;
+            }
+            /* 普通 wrap: 部分 task 等待对应 AIC */
+            if (rand() < 0.42) {
+              prod = aicTasks[Math.min(aicTasks.length - 1, 1 + (s % 2))];
+              if (prod.computeEnd > cur + dur + 2) {
+                waitStartT = cur + dur;
+                wait = prod.computeEnd - waitStartT + rnd(3, 12) * (1 + gcfg.wChar);
+              }
+            }
+            const start = cur, computeEnd = start + dur, end = computeEnd + Math.max(0, wait);
+            const t = mk(aivCore, pick(AIV_OPS), start, computeEnd, end, g, w, 'aiv', rndi(1, 2), 1);
+            if (prod && waitStartT != null) addEdge(g, w, 'aic2aiv', prod, prod.computeEnd, t, computeEnd);
+            cur = end + rnd(2, 7);
+          }
+        });
+
+        /* AIV → AIC 回写同步 (普通 wrap, 1 条/wrap): AIC 末 task 等 AIV 结果 */
+        if (!isSlow && rand() < 0.7) {
+          const aivList = tasksByCore[aivCores[0]];
+          const prod = aivList[rndi(1, Math.max(1, aivList.length - 2))];
+          const lastAic = aicTasks[aicTasks.length - 1];
+          if (prod && prod.computeEnd > lastAic.computeEnd - 6) {
+            lastAic.end = prod.computeEnd + rnd(5, 14);
+            addEdge(g, w, 'aiv2aic', prod, prod.computeEnd, lastAic, lastAic.computeEnd);
+          }
+        }
+      }
+
+      mk(idxOf['mte_out'], 'L1→HBM Store', groupComputeEnd + 6, groupComputeEnd + 44, groupComputeEnd + 44, g, null, 'mte', rndi(2, 4), 1);
+    }
+  }
+
+  const timelineEnd = Math.max(...tasks.map((t) => t.end)) + 70;
+  const layerMarks = [];
+  for (let L = 0; L < LAYERS; L++) layerMarks.push({ t: LAYER0 + L * LAYER_SPAN, label: 'L' + L });
+
+  return { cores, groups, tasks, edges, timelineEnd, layerMarks, idxOf, aicIdxOfWrap, aivIdxOfWrap, LAYERS, LAYER0, LAYER_SPAN, STAGGER };
+}
+
+
+/* ============================================================
+   6. 渲染基础
+   ============================================================ */
+const MODEL = buildModel();
+const edgeById = {}; MODEL.edges.forEach((e) => { edgeById[e.id] = e; });
+const taskById = {}; MODEL.tasks.forEach((t) => { taskById[t.id] = t; });
+
+const ROW_H = 21, BAR_PAD = 3, BAR_H = ROW_H - 2 * BAR_PAD;
+const AXIS_H = 34, PX_PER_US_BASE = 1.05;
+const KIND_ACCENT = { cpu: '#7C8DB8', aic: '#5A92E6', aiv: '#9B6BF0', mte: '#EAB308' };
+
+const state = {
+  zoom: 1, mixMode: false, syncPathOnly: false,
+  hoverTask: null,
+  level: 'overview',      // overview | group | wrap | task
+  selGroup: null, selWrap: null, selTask: null,
+};
+
+/* ---- 显示顺序: rowToCore[row]=coreIdx, rowOf[coreIdx]=row ---- */
+let rowToCore = [], rowOf = [];
+function buildOrder() {
+  const order = [];
+  const id = MODEL.idxOf;
+  order.push(id['cpu_ctrl'], id['cpu_sched_0'], id['cpu_sched_1'], id['cpu_sched_2']);
+  if (state.mixMode) {
+    /* Mix: AI CPU — Wrap(1C2V: AIC + 两 AIV) — MTE */
+    for (let w = 0; w < 24; w++) {
+      order.push(MODEL.aicIdxOfWrap(w));
+      const av = MODEL.aivIdxOfWrap(w);
+      order.push(av[0], av[1]);
+    }
+  } else {
+    /* 经典: AI CPU — AIC — AIV — MTE */
+    for (let i = 0; i < 24; i++) order.push(MODEL.idxOf['aic_' + i]);
+    for (let i = 0; i < 48; i++) order.push(MODEL.idxOf['aiv_' + i]);
+  }
+  order.push(id['mte_in'], id['mte_out']);
+  rowToCore = order;
+  rowOf = [];
+  order.forEach((coreIdx, row) => { rowOf[coreIdx] = row; });
+}
+
+/* mix 模式下 wrap w 的行区间 [起, 止] (含) */
+function wrapRowRange(w) { return [4 + 3 * w, 4 + 3 * w + 2]; }
+function groupRowRange(g) { return [4 + 12 * g, 4 + 12 * g + 11]; }
+
+const bodyCanvas = document.getElementById('bodyCanvas');
+const axisCanvas = document.getElementById('axisCanvas');
+const laneCanvas = document.getElementById('laneCanvas');
+const bodyWrap = document.getElementById('bodyWrap');
+const axisWrap = document.getElementById('axisWrap');
+const laneWrap = document.getElementById('laneWrap');
+const tooltip = document.getElementById('tooltip');
+let bctx, actx, lctx;
+
+const LABEL_W = 184;
+function pxPerUs() { return PX_PER_US_BASE * state.zoom; }
+function bodyW() { return Math.ceil(MODEL.timelineEnd * pxPerUs()) + 40; }
+function bodyH() { return MODEL.cores.length * ROW_H; }
+function rowMidY(row) { return row * ROW_H + ROW_H / 2; }
+function hexToRgba(hex, a) {
+  const v = parseInt(hex.slice(1), 16);
+  return `rgba(${v >> 16},${(v >> 8) & 0xff},${v & 0xff},${a})`;
+}
+function setupCanvas(canvas, wCss, hCss) {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(wCss * dpr);
+  canvas.height = Math.round(hCss * dpr);
+  canvas.style.width = wCss + 'px';
+  canvas.style.height = hCss + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return ctx;
+}
+
+/* ============================================================
+   7. 主体画布渲染
+   ============================================================ */
+function focusInfo() {
+  /* 返回当前需高亮的 task / edge / group / wrap, 用于渐进式聚焦 */
+  const relTasks = new Set();
+  const relEdges = new Set();
+  let dimGroup = null, dimWrap = null;
+  const focusTask = state.selTask || state.hoverTask;
+  if (state.level === 'group' && state.selGroup != null) dimGroup = state.selGroup;
+  if (state.level === 'wrap' && state.selWrap != null) { dimGroup = Math.floor(state.selWrap / 4); dimWrap = state.selWrap; }
+  if (state.level === 'task' && state.selTask) {
+    dimGroup = state.selTask.group;
+    dimWrap = state.selTask.wrap;
+  }
+  if (focusTask) {
+    relTasks.add(focusTask.id);
+    focusTask.syncIn.concat(focusTask.syncOut).forEach((eid) => {
+      relEdges.add(eid);
+      relTasks.add(edgeById[eid].fromTask);
+      relTasks.add(edgeById[eid].toTask);
+    });
+  }
+  return { relTasks, relEdges, dimGroup, dimWrap, focusTask };
+}
+
+function drawBody() {
+  const w = bodyW(), h = bodyH(), scale = pxPerUs();
+  bctx.clearRect(0, 0, w, h);
+  const fi = focusInfo();
+
+  /* 行底纹: mix 按 wrap 隔行, 经典按 section */
+  for (let row = 0; row < MODEL.cores.length; row++) {
+    let stripe = false;
+    if (state.mixMode) {
+      if (row >= 4 && row <= 75) stripe = Math.floor((row - 4) / 3) % 2 === 1;
+    } else {
+      const k = MODEL.cores[rowToCore[row]].kind;
+      stripe = k === 'aic' || k === 'mte';
+    }
+    if (stripe) { bctx.fillStyle = 'rgba(255,255,255,0.014)'; bctx.fillRect(0, row * ROW_H, w, ROW_H); }
+  }
+
+  /* mix: group 染色带 (连续 12 行/子图, 圆角虚线框) */
+  if (state.mixMode) drawGroupBands(fi);
+
+  /* 时间网格 + 迭代 barrier */
+  bctx.strokeStyle = 'rgba(255,255,255,0.05)'; bctx.lineWidth = 1;
+  for (let t = 0; t <= MODEL.timelineEnd; t += 100) {
+    const x = Math.round(t * scale) + 0.5;
+    bctx.beginPath(); bctx.moveTo(x, 0); bctx.lineTo(x, h); bctx.stroke();
+  }
+  MODEL.layerMarks.forEach((m) => {
+    const x = Math.round(m.t * scale) + 0.5;
+    bctx.strokeStyle = 'rgba(255,255,255,0.15)'; bctx.setLineDash([4, 4]);
+    bctx.beginPath(); bctx.moveTo(x, 0); bctx.lineTo(x, h); bctx.stroke();
+    bctx.setLineDash([]);
+  });
+
+  /* section / wrap / group 分隔线 */
+  drawSeparators(bctx, w);
+
+  /* task bars */
+  const fontFamily = "'Inter', sans-serif";
+  for (const t of MODEL.tasks) {
+    const row = rowOf[t.coreIdx];
+    const x = t.start * scale;
+    const computeW = (t.computeEnd - t.start) * scale;
+    const y = row * ROW_H + BAR_PAD;
+    const grp = t.group != null ? MODEL.groups[t.group] : null;
+    const baseColor = grp ? grp.color : KIND_ACCENT[t.kind];
+
+    let alpha = 1;
+    if (state.syncPathOnly && t.syncIn.length === 0 && t.syncOut.length === 0) alpha = 0.16;
+    if (fi.dimWrap != null) { if (t.wrap !== fi.dimWrap) alpha = Math.min(alpha, 0.2); }
+    else if (fi.dimGroup != null) { if (t.group !== fi.dimGroup) alpha = Math.min(alpha, 0.2); }
+    if (fi.focusTask && !fi.relTasks.has(t.id)) alpha = Math.min(alpha, 0.34);
+
+    bctx.globalAlpha = alpha;
+    if (computeW >= 1) {
+      window.PtoSwimlaneTaskPattern.drawTaskBar(bctx, {
+        x, y, width: computeW, height: BAR_H, baseColor, fontFamily, task: t,
+        isSelected: state.selTask && state.selTask.id === t.id,
+        isRelated: fi.relTasks.has(t.id) && fi.focusTask && fi.focusTask.id !== t.id,
+        isEmphasized: state.hoverTask && state.hoverTask.id === t.id,
+      });
+    }
+    const waitW = (t.end - t.computeEnd) * scale;
+    if (waitW >= 1) drawWaitSegment(x + computeW, y, waitW, BAR_H);
+    bctx.globalAlpha = 1;
+  }
+
+  /* mix: 同步弧线 (按层级渐进显示) */
+  if (state.mixMode) drawArcs(fi);
+}
+
+function drawGroupBands(fi) {
+  const scale = pxPerUs();
+  for (let L = 0; L < MODEL.LAYERS; L++) {
+    for (let g = 0; g < 6; g++) {
+      const isFocus = fi.dimGroup === g;
+      const faded = fi.dimGroup != null && !isFocus;
+      const grp = MODEL.groups[g];
+      const winStart = (MODEL.LAYER0 + L * MODEL.LAYER_SPAN + g * MODEL.STAGGER - 40) * scale;
+      const winW = (MODEL.STAGGER + 320) * scale;
+      const [r0] = groupRowRange(g);
+      const y = r0 * ROW_H, bh = 12 * ROW_H;
+      bctx.fillStyle = hexToRgba(grp.color, faded ? 0.025 : (isFocus ? 0.085 : 0.045));
+      bctx.fillRect(winStart, y, winW, bh);
+      bctx.strokeStyle = hexToRgba(grp.color, faded ? 0.18 : (isFocus ? 0.62 : 0.32));
+      bctx.lineWidth = 1; bctx.setLineDash([5, 3]);
+      bctx.beginPath();
+      bctx.roundRect(winStart + 0.5, y + 1.5, winW - 1, bh - 3, 8);
+      bctx.stroke();
+      bctx.setLineDash([]);
+      /* wrap 选中: 在 group 带内再描出 wrap 子框 */
+      if (fi.dimWrap != null && Math.floor(fi.dimWrap / 4) === g) {
+        const [wr0] = wrapRowRange(fi.dimWrap);
+        bctx.strokeStyle = hexToRgba(grp.color, 0.92);
+        bctx.lineWidth = 1.4;
+        bctx.beginPath();
+        bctx.roundRect(winStart + 2.5, wr0 * ROW_H + 1.5, winW - 5, 3 * ROW_H - 3, 6);
+        bctx.stroke();
+      }
+    }
+  }
+}
+
+function drawSeparators(ctx, w) {
+  const line = (row, color, weight) => {
+    const y = row * ROW_H + 0.5;
+    ctx.strokeStyle = color; ctx.lineWidth = weight;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  };
+  if (state.mixMode) {
+    line(4, 'rgba(255,255,255,0.16)', 1);
+    line(76, 'rgba(255,255,255,0.16)', 1);
+    for (let g = 1; g < 6; g++) line(4 + 12 * g, 'rgba(255,255,255,0.12)', 1);
+    for (let wgap = 1; wgap < 24; wgap++) {
+      if (wgap % 4 === 0) continue;
+      line(4 + 3 * wgap, 'rgba(255,255,255,0.045)', 1);
+    }
+  } else {
+    [4, 28, 76].forEach((r) => line(r, 'rgba(255,255,255,0.14)', 1));
+  }
+}
+
+function drawWaitSegment(x, y, w, h) {
+  bctx.save();
+  bctx.beginPath(); bctx.roundRect(x, y, w, h, 2); bctx.clip();
+  bctx.fillStyle = hexToRgba('#FFAA3B', 0.14);
+  bctx.fillRect(x, y, w, h);
+  bctx.strokeStyle = 'rgba(255,170,59,0.5)'; bctx.lineWidth = 1;
+  for (let i = -h; i < w + h; i += 5) {
+    bctx.beginPath(); bctx.moveTo(x + i, y + h); bctx.lineTo(x + i + h, y); bctx.stroke();
+  }
+  bctx.restore();
+  bctx.strokeStyle = 'rgba(255,170,59,0.4)'; bctx.lineWidth = 1;
+  bctx.beginPath(); bctx.roundRect(x + 0.5, y + 0.5, Math.max(0, w - 1), h - 1, 2); bctx.stroke();
+  if (w >= 6) {
+    bctx.fillStyle = '#FFAA3B';
+    bctx.beginPath();
+    bctx.moveTo(x, y - 1); bctx.lineTo(x + 5, y - 1); bctx.lineTo(x + 2.5, y + 3.5);
+    bctx.closePath(); bctx.fill();
+  }
+}
+
+/* 同步弧线: 渐进显示
+   overview -> 不画; group -> 该子图弧线中等; wrap -> 该 wrap 弧线强;
+   task -> 选中 task 弧线最强, 同 wrap 其余弱 */
+function drawArcs(fi) {
+  let visible, strongPred;
+  if (fi.focusTask) {
+    visible = MODEL.edges.filter((e) => e.wrap === fi.focusTask.wrap);
+    strongPred = (e) => fi.relEdges.has(e.id);
+  } else if (fi.dimWrap != null) {
+    visible = MODEL.edges.filter((e) => e.wrap === fi.dimWrap);
+    strongPred = () => true;
+  } else if (fi.dimGroup != null) {
+    visible = MODEL.edges.filter((e) => e.group === fi.dimGroup);
+    strongPred = () => false;
+  } else {
+    return; /* overview: 保持干净, 不画弧线 */
+  }
+  /* 先弱后强, 保证强线在上层 */
+  visible.filter((e) => !strongPred(e)).forEach((e) => drawArc(e, false));
+  visible.filter((e) => strongPred(e)).forEach((e) => drawArc(e, true));
+  /* 选中 task 的同步点 barrier 竖线 */
+  if (fi.focusTask) {
+    fi.focusTask.syncIn.concat(fi.focusTask.syncOut).forEach((eid) => {
+      const e = edgeById[eid];
+      drawBarrier(e.fromT, MODEL.groups[e.group].color);
+      drawBarrier(e.toT, MODEL.groups[e.group].color);
+    });
+  }
+}
+
+function drawArc(e, strong) {
+  const scale = pxPerUs();
+  const x1 = e.fromT * scale, y1 = rowMidY(rowOf[e.fromCore]);
+  const x2 = e.toT * scale, y2 = rowMidY(rowOf[e.toCore]);
+  const color = MODEL.groups[e.group].color;
+  const bow = Math.max(14, Math.abs(y2 - y1) * 0.55) * (strong ? 1.15 : 1);
+  bctx.save();
+  bctx.strokeStyle = hexToRgba(color, strong ? 0.95 : 0.3);
+  bctx.lineWidth = strong ? 1.7 : 1;
+  if (e.dir === 'aiv2aic') bctx.setLineDash(strong ? [5, 3] : [3, 3]);
+  /* 控制点右推 -> 平滑外凸曲线; 终点水平进入便于统一箭头 */
+  bctx.beginPath();
+  bctx.moveTo(x1, y1);
+  bctx.bezierCurveTo(x1 + bow, y1, x2 + bow, y2, x2, y2);
+  bctx.stroke();
+  bctx.setLineDash([]);
+  /* 起点 (SyncSet) 实心圆点 */
+  bctx.fillStyle = hexToRgba(color, strong ? 1 : 0.55);
+  bctx.beginPath(); bctx.arc(x1, y1, strong ? 2.6 : 1.8, 0, Math.PI * 2); bctx.fill();
+  /* 终点 (SyncWait) 箭头, 水平指向 -x */
+  const ah = strong ? 5 : 3.6;
+  bctx.beginPath();
+  bctx.moveTo(x2, y2);
+  bctx.lineTo(x2 + ah, y2 - ah * 0.72);
+  bctx.lineTo(x2 + ah, y2 + ah * 0.72);
+  bctx.closePath(); bctx.fill();
+  bctx.restore();
+}
+
+function drawBarrier(tUs, color) {
+  const x = Math.round(tUs * pxPerUs()) + 0.5;
+  bctx.save();
+  bctx.strokeStyle = hexToRgba(color, 0.45);
+  bctx.lineWidth = 1; bctx.setLineDash([2, 3]);
+  bctx.beginPath(); bctx.moveTo(x, 0); bctx.lineTo(x, bodyH()); bctx.stroke();
+  bctx.restore();
+}
+
+/* ---- 时间轴 ---- */
+function drawAxis() {
+  const w = bodyW(), scale = pxPerUs();
+  actx.clearRect(0, 0, w, AXIS_H);
+  actx.fillStyle = 'rgba(255,255,255,0.40)';
+  actx.font = "500 10px 'JetBrains Mono', monospace";
+  actx.textBaseline = 'middle';
+  for (let t = 0; t <= MODEL.timelineEnd; t += 50) {
+    const x = Math.round(t * scale) + 0.5;
+    const major = t % 100 === 0;
+    actx.strokeStyle = major ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.10)';
+    actx.beginPath();
+    actx.moveTo(x, major ? AXIS_H - 11 : AXIS_H - 6); actx.lineTo(x, AXIS_H); actx.stroke();
+    if (major) { actx.textAlign = 'left'; actx.fillText(t + 'μs', x + 3, 9); }
+  }
+  MODEL.layerMarks.forEach((m) => {
+    const x = m.t * scale;
+    actx.fillStyle = 'rgba(255,255,255,0.62)';
+    actx.font = "600 10px 'Inter', sans-serif";
+    actx.textAlign = 'left';
+    actx.fillText('迭代 ' + m.label, x + 4, 22);
+  });
+}
+
+/* ---- 泳道标签列 ---- */
+function drawLanes() {
+  const h = bodyH();
+  lctx.clearRect(0, 0, LABEL_W, h);
+  lctx.textBaseline = 'middle';
+  const fi = focusInfo();
+  for (let row = 0; row < MODEL.cores.length; row++) {
+    const c = MODEL.cores[rowToCore[row]];
+    const y = row * ROW_H;
+    /* 行底纹同步 */
+    let stripe = false;
+    if (state.mixMode && row >= 4 && row <= 75) stripe = Math.floor((row - 4) / 3) % 2 === 1;
+    else if (!state.mixMode) stripe = c.kind === 'aic' || c.kind === 'mte';
+    if (stripe) { lctx.fillStyle = 'rgba(255,255,255,0.014)'; lctx.fillRect(0, y, LABEL_W, ROW_H); }
+    /* kind 强调条 */
+    lctx.fillStyle = KIND_ACCENT[c.kind]; lctx.globalAlpha = 0.85;
+    lctx.fillRect(0, y + 3, 3, ROW_H - 6); lctx.globalAlpha = 1;
+
+    const dim = (fi.dimWrap != null && c.wrap !== fi.dimWrap)
+      || (fi.dimWrap == null && fi.dimGroup != null && c.group !== fi.dimGroup);
+    /* group 色点 */
+    if (c.group != null) {
+      const grp = MODEL.groups[c.group];
+      lctx.fillStyle = hexToRgba(grp.color, dim ? 0.28 : 1);
+      lctx.beginPath();
+      lctx.roundRect(LABEL_W - 16, y + ROW_H / 2 - 4, 8, 8, 2);
+      lctx.fill();
+    }
+    /* 标签 */
+    lctx.fillStyle = dim ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.8)';
+    lctx.font = "500 11px 'Inter', sans-serif";
+    lctx.textAlign = 'left';
+    lctx.fillText(c.label, 11, y + ROW_H / 2 + 0.5);
+    /* mix: AIC 行附 wrap 号 */
+    if (state.mixMode && c.kind === 'aic') {
+      lctx.fillStyle = dim ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.42)';
+      lctx.font = "600 9px 'JetBrains Mono', monospace";
+      lctx.textAlign = 'right';
+      lctx.fillText('W' + String(c.wrap).padStart(2, '0'), LABEL_W - 22, y + ROW_H / 2 + 0.5);
+    }
+  }
+  /* 分隔线 */
+  const line = (row, color, weight) => {
+    const yy = row * ROW_H + 0.5;
+    lctx.strokeStyle = color; lctx.lineWidth = weight;
+    lctx.beginPath(); lctx.moveTo(0, yy); lctx.lineTo(LABEL_W, yy); lctx.stroke();
+  };
+  if (state.mixMode) {
+    line(4, 'rgba(255,255,255,0.16)', 1); line(76, 'rgba(255,255,255,0.16)', 1);
+    for (let g = 1; g < 6; g++) line(4 + 12 * g, 'rgba(255,255,255,0.12)', 1);
+    for (let wgap = 1; wgap < 24; wgap++) {
+      if (wgap % 4 === 0) continue;
+      line(4 + 3 * wgap, 'rgba(255,255,255,0.045)', 1);
+    }
+  } else {
+    [4, 28, 76].forEach((r) => line(r, 'rgba(255,255,255,0.14)', 1));
+  }
+}
+
+function layout() {
+  const w = bodyW(), h = bodyH();
+  bctx = setupCanvas(bodyCanvas, w, h);
+  actx = setupCanvas(axisCanvas, w, AXIS_H);
+  lctx = setupCanvas(laneCanvas, LABEL_W, h);
+  drawAxis(); drawLanes(); drawBody();
+}
+function refresh() { drawLanes(); drawBody(); }
+
+function hitTest(px, py) {
+  const row = Math.floor(py / ROW_H);
+  if (row < 0 || row >= MODEL.cores.length) return null;
+  const coreIdx = rowToCore[row];
+  const scale = pxPerUs();
+  for (const t of MODEL.tasks) {
+    if (t.coreIdx !== coreIdx) continue;
+    if (px >= t.start * scale - 1 && px <= t.end * scale + 1) return t;
+  }
+  return null;
+}
+
+/* ============================================================
+   8. 交互
+   ============================================================ */
+bodyWrap.addEventListener('scroll', () => {
+  axisWrap.scrollLeft = bodyWrap.scrollLeft;
+  laneWrap.scrollTop = bodyWrap.scrollTop;
+});
+
+bodyCanvas.addEventListener('mousemove', (e) => {
+  const rect = bodyCanvas.getBoundingClientRect();
+  const t = hitTest(e.clientX - rect.left, e.clientY - rect.top);
+  if (t !== state.hoverTask) {
+    state.hoverTask = t;
+    bodyCanvas.style.cursor = t ? 'pointer' : 'default';
+    drawBody();
+  }
+  if (t) showTooltip(t, e.clientX, e.clientY);
+  else tooltip.style.display = 'none';
+});
+bodyCanvas.addEventListener('mouseleave', () => {
+  state.hoverTask = null;
+  tooltip.style.display = 'none';
+  drawBody();
+});
+bodyCanvas.addEventListener('click', (e) => {
+  const rect = bodyCanvas.getBoundingClientRect();
+  const px = e.clientX - rect.left, py = e.clientY - rect.top;
+  const t = hitTest(px, py);
+  if (t) { selectTask(t); return; }
+  /* 点空白: Mix 模式下按所在 wrap / group 下钻 */
+  if (state.mixMode) {
+    const row = Math.floor(py / ROW_H);
+    if (row >= 4 && row <= 75) {
+      const w = Math.floor((row - 4) / 3);
+      const g = Math.floor(w / 4);
+      if (state.level === 'wrap' && state.selWrap === w) selectGroup(g);
+      else if (state.selGroup === g && state.level !== 'overview') selectWrap(w);
+      else selectGroup(g);
+      return;
+    }
+  }
+  goOverview();
+});
+
+function selectTask(t) {
+  state.level = 'task'; state.selTask = t;
+  state.selGroup = t.group; state.selWrap = t.wrap;
+  refresh(); renderInspector();
+}
+function selectGroup(g) {
+  state.level = 'group'; state.selGroup = g; state.selWrap = null; state.selTask = null;
+  refresh(); renderInspector();
+}
+function selectWrap(w) {
+  state.level = 'wrap'; state.selWrap = w; state.selGroup = Math.floor(w / 4); state.selTask = null;
+  refresh(); renderInspector(); scrollWrapIntoView(w);
+}
+function goOverview() {
+  state.level = 'overview'; state.selGroup = null; state.selWrap = null; state.selTask = null;
+  refresh(); renderInspector();
+}
+function scrollWrapIntoView(w) {
+  const [r0, r1] = wrapRowRange(w);
+  const top = r0 * ROW_H, mid = (top + r1 * ROW_H) / 2;
+  bodyWrap.scrollTop = Math.max(0, mid - bodyWrap.clientHeight / 2);
+}
+
+function showTooltip(t, cx, cy) {
+  const grp = t.group != null ? MODEL.groups[t.group] : null;
+  const compute = (t.computeEnd - t.start).toFixed(1);
+  const wait = (t.end - t.computeEnd).toFixed(1);
+  const total = (t.end - t.start) || 1;
+  const ratio = ((t.end - t.computeEnd) / total * 100).toFixed(0);
+  const color = grp ? grp.color : KIND_ACCENT[t.kind];
+  tooltip.innerHTML = `
+    <div class="sl-tt-title"><span class="sl-tt-dot" style="background:${color}"></span>${t.name}</div>
+    <div class="sl-tt-row"><span>泳道</span><span class="mono">${MODEL.cores[t.coreIdx].label}${t.wrap != null ? ' · W' + String(t.wrap).padStart(2, '0') : ''}</span></div>
+    <div class="sl-tt-row"><span>mix 子图</span><span class="mono">${grp ? grp.name : '—'}</span></div>
+    <div class="sl-tt-row"><span>区间</span><span class="mono">${t.start.toFixed(0)}–${t.end.toFixed(0)}μs</span></div>
+    <div class="sl-tt-row"><span>计算 / 等待</span><span class="mono">${compute} / ${wait}μs</span></div>
+    <div class="sl-tt-row"><span>等待占比</span><span class="mono" style="color:${ratio >= 30 ? 'var(--warning)' : 'inherit'}">${ratio}%</span></div>`;
+  tooltip.style.display = 'block';
+  const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+  let x = cx + 16, y = cy + 16;
+  if (x + tw > window.innerWidth - 8) x = cx - tw - 16;
+  if (y + th > window.innerHeight - 8) y = cy - th - 16;
+  tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+}
+
+document.getElementById('modeCtl').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const mix = btn.dataset.mode === 'mix';
+  if (mix === state.mixMode) return;
+  state.mixMode = mix;
+  document.querySelectorAll('#modeCtl button').forEach((b) => b.classList.toggle('is-selected', b === btn));
+  document.getElementById('orderKicker').textContent = mix
+    ? 'Mix 顺序 · AI CPU → Wrap (1C2V) → MTE'
+    : '经典顺序 · AI CPU → AIC → AIV → MTE';
+  if (!mix) goOverview();
+  buildOrder();
+  layout();
+  renderInspector();
+});
+document.getElementById('syncPathBtn').addEventListener('click', (e) => {
+  state.syncPathOnly = !state.syncPathOnly;
+  e.currentTarget.classList.toggle('is-selected', state.syncPathOnly);
+  drawBody();
+});
+document.getElementById('zoomIn').addEventListener('click', () => setZoom(state.zoom * 1.25));
+document.getElementById('zoomOut').addEventListener('click', () => setZoom(state.zoom / 1.25));
+function setZoom(z) {
+  state.zoom = Math.min(2.6, Math.max(0.5, z));
+  document.getElementById('zoomReadout').textContent = Math.round(state.zoom * 100) + '%';
+  layout();
+}
+
+/* ============================================================
+   9. Inspector (概览 → 子图 → Wrap → Task 下钻)
+   ============================================================ */
+function coreStats(coreIdx, group, wrap) {
+  let compute = 0, wait = 0, n = 0;
+  for (const t of MODEL.tasks) {
+    if (t.coreIdx !== coreIdx) continue;
+    if (group != null && t.group !== group) continue;
+    compute += t.computeEnd - t.start; wait += t.end - t.computeEnd; n++;
+  }
+  return { compute, wait, n, ratio: wait / (compute + wait || 1) };
+}
+function groupStats(g) {
+  let compute = 0, wait = 0;
+  for (const t of MODEL.tasks) {
+    if (t.group !== g) continue;
+    if (MODEL.cores[t.coreIdx].kind !== 'aic' && MODEL.cores[t.coreIdx].kind !== 'aiv') continue;
+    compute += t.computeEnd - t.start; wait += t.end - t.computeEnd;
+  }
+  return { compute, wait, ratio: wait / (compute + wait || 1) };
+}
+function wrapStats(w) {
+  const aic = MODEL.aicIdxOfWrap(w), aiv = MODEL.aivIdxOfWrap(w);
+  const s = (ci) => coreStats(ci);
+  const all = [s(aic), s(aiv[0]), s(aiv[1])];
+  let compute = 0, wait = 0;
+  all.forEach((x) => { compute += x.compute; wait += x.wait; });
+  return { aic: all[0], aiv0: all[1], aiv1: all[2], ratio: wait / (compute + wait || 1) };
+}
+
+function renderTopMetrics() {
+  let compute = 0, wait = 0;
+  MODEL.tasks.forEach((t) => { compute += t.computeEnd - t.start; wait += t.end - t.computeEnd; });
+  const ratio = (wait / (compute + wait) * 100).toFixed(1);
+  document.getElementById('topMetrics').innerHTML = `
+    <span class="stat-chip">78 lanes</span>
+    <span class="stat-chip">${MODEL.tasks.length} tasks</span>
+    <span class="stat-chip">${MODEL.edges.length} sync</span>
+    <span class="stat-chip" style="color:var(--warning)">同步等待 ${ratio}%</span>`;
+}
+function renderLegend() {
+  let html = '';
+  MODEL.groups.forEach((g) => {
+    html += `<span class="sl-legend-item"><span class="sl-legend-swatch" style="background:${g.color}"></span>${g.short}</span>`;
+  });
+  html += `<span class="sl-legend-item"><span class="sl-legend-swatch is-wait"></span>同步等待段</span>`;
+  document.getElementById('legend').innerHTML = html;
+}
+
+function crumbHtml() {
+  const parts = [{ k: 'overview', label: '概览' }];
+  if (state.selGroup != null) parts.push({ k: 'group', label: MODEL.groups[state.selGroup].short });
+  if (state.selWrap != null) parts.push({ k: 'wrap', label: 'Wrap ' + String(state.selWrap).padStart(2, '0') });
+  if (state.selTask) parts.push({ k: 'task', label: state.selTask.name });
+  return '<div class="sl-crumb">' + parts.map((p, i) => {
+    const cur = i === parts.length - 1;
+    return (i ? '<span class="sl-crumb-sep">›</span>' : '')
+      + `<span class="sl-crumb-item ${cur ? 'is-current' : ''}" data-nav="${p.k}">${p.label}</span>`;
+  }).join('') + '</div>';
+}
+
+function renderInspector() {
+  const title = document.getElementById('inspTitle');
+  const body = document.getElementById('inspBody');
+  let html = crumbHtml();
+
+  if (!state.mixMode) {
+    title.textContent = state.selTask ? state.selTask.name : '经典视图';
+    html = '';
+    if (state.selTask) html += taskDetailHtml(state.selTask);
+    else html += `<div class="sl-insp-section"><div class="sl-insp-hint">
+      <b>经典视图</b> —— 78 条泳道按 AI CPU → AIC → AIV → MTE 排布, 即 UX 分析的「第一层嗅探视图」:
+      task bar 末尾的<b>斜纹段</b>即同步等待, 无需打开 Mix 模式也能嗅到瓶颈。<br><br>
+      切到 <b>Mix</b> 模式可按 1C2V wrap 重排泳道, 并逐层下钻核间同步关系。
+      点击任意 task 查看计算/等待拆解。</div></div>`;
+    body.innerHTML = html;
+    bindInspector();
+    return;
+  }
+
+  if (state.level === 'task' && state.selTask) {
+    title.textContent = state.selTask.name;
+    html += taskDetailHtml(state.selTask);
+  } else if (state.level === 'wrap' && state.selWrap != null) {
+    title.textContent = 'Wrap ' + String(state.selWrap).padStart(2, '0');
+    html += wrapDetailHtml(state.selWrap);
+  } else if (state.level === 'group' && state.selGroup != null) {
+    title.textContent = MODEL.groups[state.selGroup].name;
+    html += groupDetailHtml(state.selGroup);
+  } else {
+    title.textContent = 'Mix 子图概览';
+    html += overviewHtml();
+  }
+  body.innerHTML = html;
+  bindInspector();
+}
+
+function overviewHtml() {
+  let html = `<div class="sl-insp-section">
+    <div class="sl-insp-hint">3 次迭代的解码层, 切成 <b>6 个 mix 子图</b>流水执行,
+    各子图静态绑定 4 个 <b>1C2V wrap</b> (1 AIC + 2 AIV)。点击子图逐层下钻。</div>
+  </div>
+  <div class="sl-insp-section"><div class="sl-insp-section-label">6 个 mix 子图 · 同步等待占比</div>`;
+  MODEL.groups.forEach((g) => {
+    const st = groupStats(g.id);
+    const pct = (st.ratio * 100).toFixed(0);
+    const bn = g.id === SCENARIO.bottleneckGroup;
+    html += `<div class="sl-row ${bn ? 'is-flag' : ''}" data-group="${g.id}">
+        <span class="sl-dot" style="background:${g.color}"></span>
+        <span class="sl-row-name">${g.name}${bn ? ' <small>· 瓶颈</small>' : ''}</span>
+        <span class="sl-row-meta">${pct}%</span></div>
+      <div class="sl-meter"><div class="sl-meter-fill" style="width:${pct}%;background:${pct >= 35 ? 'var(--warning)' : g.color}"></div></div>`;
+  });
+  html += `</div>`;
+  const bg = MODEL.groups[SCENARIO.bottleneckGroup];
+  html += `<div class="sl-callout">
+    <b>剧本 · 定位提示</b><br>
+    <b>${bg.name}</b> 的同步等待占比明显高于其它子图。根因疑似落在它的某个
+    1C2V wrap —— 一个 AIC 把整组其它核拖在 SyncWait 上。
+    <button class="btn btn-sm btn-solid sl-btn-drill" data-drill="bottleneck">▶ 下钻到瓶颈 Wrap</button>
+  </div>
+  <div class="sl-insp-section"><div class="sl-insp-section-label">硬件拓扑</div>
+    <div class="sl-kv"><span class="sl-kv-key">AI CPU</span><span class="sl-kv-val">1 Ctrl + 3 Sched</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">1C2V Wrap</span><span class="sl-kv-val">24 · 每组 1 AIC + 2 AIV</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">AIC / AIV</span><span class="sl-kv-val">24 / 48</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">MTE</span><span class="sl-kv-val">in / out</span></div>
+  </div>`;
+  return html;
+}
+
+function groupDetailHtml(g) {
+  const grp = MODEL.groups[g];
+  const st = groupStats(g);
+  const pct = (st.ratio * 100).toFixed(0);
+  let html = `<div class="sl-insp-section">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <span class="sl-pill" style="color:${grp.color}"><span class="sl-dot" style="width:8px;height:8px;background:${grp.color}"></span>${grp.short}</span>
+      <span class="sl-pill ${st.ratio >= 0.35 ? 'is-warn' : 'is-ok'}">${st.ratio >= 0.35 ? '同步瓶颈' : '同步健康'}</span>
+    </div>
+    <div class="sl-kv"><span class="sl-kv-key">绑定 wrap</span><span class="sl-kv-val">W${String(g * 4).padStart(2, '0')}–W${String(g * 4 + 3).padStart(2, '0')}</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">同步等待占比</span><span class="sl-kv-val" style="color:${pct >= 35 ? 'var(--warning)' : 'inherit'}">${pct}%</span></div>
+  </div>
+  <div class="sl-insp-section"><div class="sl-insp-section-label">4 个 1C2V Wrap · 等待占比</div>`;
+  let slowW = -1, slowR = -1;
+  for (let k = 0; k < 4; k++) {
+    const w = g * 4 + k;
+    const ws = wrapStats(w);
+    if (ws.ratio > slowR) { slowR = ws.ratio; slowW = w; }
+  }
+  for (let k = 0; k < 4; k++) {
+    const w = g * 4 + k;
+    const ws = wrapStats(w);
+    const pctw = (ws.ratio * 100).toFixed(0);
+    const flag = w === slowW;
+    html += `<div class="sl-row ${flag ? 'is-flag' : ''}" data-wrap="${w}">
+        <span class="sl-dot" style="background:${grp.color}"></span>
+        <span class="sl-row-name">Wrap ${String(w).padStart(2, '0')} <small>AIC${String(w).padStart(2, '0')} + AIV${String(w * 2).padStart(2, '0')}/${String(w * 2 + 1).padStart(2, '0')}</small></span>
+        <span class="sl-row-meta">${pctw}%</span></div>
+      <div class="sl-meter"><div class="sl-meter-fill" style="width:${pctw}%;background:${flag ? 'var(--warning)' : grp.color}"></div></div>`;
+  }
+  html += `</div>`;
+  if (g === SCENARIO.bottleneckGroup) {
+    html += `<div class="sl-callout">
+      <b>Wrap ${String(slowW).padStart(2, '0')}</b> 的等待占比远高于同组其它 wrap。
+      该 wrap 的 AIC 在跑一个超大 BMM, 同组其它 wrap 早早算完后空转 —— 典型的<b>核间负载不均</b>。
+      点击该 wrap 行查看 1C2V 内部三个核的耗时拆解。</div>`;
+  }
+  return html;
+}
+
+function wrapDetailHtml(w) {
+  const g = Math.floor(w / 4);
+  const grp = MODEL.groups[g];
+  const ws = wrapStats(w);
+  const aicCore = MODEL.aicIdxOfWrap(w), aivCores = MODEL.aivIdxOfWrap(w);
+  const cores3 = [
+    { ci: aicCore, st: ws.aic, role: 'AIC (Cube)' },
+    { ci: aivCores[0], st: ws.aiv0, role: 'AIV-0 (Vector)' },
+    { ci: aivCores[1], st: ws.aiv1, role: 'AIV-1 (Vector)' },
+  ];
+  const slow = cores3.reduce((a, b) => (b.st.compute > a.st.compute ? b : a));
+  let html = `<div class="sl-insp-section">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <span class="sl-pill" style="color:${grp.color}"><span class="sl-dot" style="width:8px;height:8px;background:${grp.color}"></span>${grp.short}</span>
+      <span class="sl-pill ${ws.ratio >= 0.4 ? 'is-warn' : 'is-ok'}">${ws.ratio >= 0.4 ? '同步瓶颈' : '健康'}</span>
+    </div>
+    <div class="sl-insp-hint">1C2V 单元 = 1 个 Cube 核 + 2 个 Vector 核, 物理上协同执行。</div>
+  </div>
+  <div class="sl-insp-section"><div class="sl-insp-section-label">单元内三核 · 计算 vs 同步等待</div>`;
+  cores3.forEach((c) => {
+    const tot = c.st.compute + c.st.wait || 1;
+    const cp = (c.st.compute / tot * 100), wp = (c.st.wait / tot * 100);
+    html += `<div style="margin-top:8px">
+      <div class="sl-kv" style="padding-bottom:3px;border:0">
+        <span class="sl-kv-key">${MODEL.cores[c.ci].label} · ${c.role}</span>
+        <span class="sl-kv-val">${c.st.compute.toFixed(0)} / ${c.st.wait.toFixed(0)}μs</span></div>
+      <div class="sl-meter">
+        <div class="sl-meter-fill" style="width:${cp}%;background:${grp.color};float:left"></div>
+        <div class="sl-meter-fill" style="width:${wp}%;background:repeating-linear-gradient(135deg,rgba(255,170,59,0.9) 0 3px,rgba(255,170,59,0.35) 3px 6px);float:left"></div>
+      </div></div>`;
+  });
+  html += `</div>`;
+  const edgeN = MODEL.edges.filter((e) => e.wrap === w).length;
+  html += `<div class="sl-insp-section">
+    <div class="sl-kv"><span class="sl-kv-key">单元内同步边</span><span class="sl-kv-val">${edgeN}</span></div>
+  </div>`;
+  if (w === SCENARIO.slowWrap) {
+    html += `<div class="sl-callout">
+      <b>根因锁定</b> —— <b>${MODEL.cores[aicCore].label}</b> 在跑一个「K 维未切分」的超大 BMM,
+      单 task 计算量约为正常 tile 的 2.5x。它一直没发出 SyncSet,
+      配对的两个 AIV 算完一小段后就长时间 stall。<br>
+      优化方向: 对该 BMM 做 K-split, 把单核长 task 拆成多个 tile, 让 AIV 不必整段等待。</div>`;
+  } else {
+    html += `<div class="sl-callout" style="background:color-mix(in srgb,var(--success) 12%,transparent);border-left-color:var(--success)">
+      该 wrap 三核耗时较均衡。点击 task 查看单个 task 的同步事件。</div>`;
+  }
+  return html;
+}
+
+function taskDetailHtml(t) {
+  const grp = t.group != null ? MODEL.groups[t.group] : null;
+  const compute = t.computeEnd - t.start, wait = t.end - t.computeEnd;
+  const total = (t.end - t.start) || 1, ratio = wait / total;
+  const pct = (ratio * 100).toFixed(0);
+  let html = `<div class="sl-insp-section">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <span class="sl-pill" style="color:${grp ? grp.color : 'var(--accent)'}">
+        <span class="sl-dot" style="width:8px;height:8px;background:${grp ? grp.color : 'var(--accent)'}"></span>
+        ${grp ? grp.short : MODEL.cores[t.coreIdx].section}</span>
+      <span class="sl-pill ${ratio >= 0.3 ? 'is-warn' : 'is-ok'}">${ratio >= 0.3 ? '同步瓶颈' : '计算主导'}</span>
+    </div>
+    <div class="sl-kv"><span class="sl-kv-key">泳道</span><span class="sl-kv-val">${MODEL.cores[t.coreIdx].label}</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">所属 Wrap</span><span class="sl-kv-val">${t.wrap != null ? 'W' + String(t.wrap).padStart(2, '0') : '—'}</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">区间</span><span class="sl-kv-val">${t.start.toFixed(1)}–${t.end.toFixed(1)}μs</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">输入 / 输出</span><span class="sl-kv-val">IN ${t.inputRawMagic.length} · OUT ${t.outputRawMagic.length}</span></div>
+  </div>
+  <div class="sl-insp-section"><div class="sl-insp-section-label">计算 vs 同步等待</div>
+    <div class="sl-meter" style="height:14px">
+      <div class="sl-meter-fill" style="width:${compute / total * 100}%;background:${grp ? grp.color : 'var(--accent)'};float:left"></div>
+      <div class="sl-meter-fill" style="width:${pct}%;background:repeating-linear-gradient(135deg,rgba(255,170,59,0.9) 0 3px,rgba(255,170,59,0.35) 3px 6px);float:left"></div>
+    </div>
+    <div class="sl-kv"><span class="sl-kv-key">计算段</span><span class="sl-kv-val">${compute.toFixed(1)}μs</span></div>
+    <div class="sl-kv"><span class="sl-kv-key">同步等待段</span><span class="sl-kv-val" style="color:var(--warning)">${wait.toFixed(1)}μs · ${pct}%</span></div>
+  </div>`;
+  const ins = t.syncIn.map((id) => edgeById[id]);
+  const outs = t.syncOut.map((id) => edgeById[id]);
+  html += `<div class="sl-insp-section"><div class="sl-insp-section-label">同步事件 (${ins.length + outs.length})</div>`;
+  if (ins.length + outs.length === 0) {
+    html += `<div class="sl-insp-hint">该 task 无登记的核间同步边。${wait > 0 ? '末段为未归因的 barrier 等待。' : ''}</div>`;
+  }
+  ins.forEach((e) => {
+    html += `<div class="sl-sync-item">▼ <b>SyncWait</b> · 等待 <span class="mono">${MODEL.cores[e.fromCore].label}</span>
+      的 SyncSet @ <span class="mono">${e.fromT.toFixed(1)}μs</span>, 等待耗时 <span class="mono">${e.wait.toFixed(1)}μs</span></div>`;
+  });
+  outs.forEach((e) => {
+    html += `<div class="sl-sync-item">▲ <b>SyncSet</b> · 向 <span class="mono">${MODEL.cores[e.toCore].label}</span>
+      发出信号 @ <span class="mono">${e.fromT.toFixed(1)}μs</span></div>`;
+  });
+  html += `</div>`;
+  if (wait > 0) {
+    html += `<div class="sl-callout">
+      该 task 实际计算仅 <b>${compute.toFixed(0)}μs</b>, 另有 <b>${wait.toFixed(0)}μs</b> 在等待同步。
+      ${ins.length ? '优先缩短上游 <b>' + MODEL.cores[ins[0].fromCore].label + '</b> 的前序计算量。'
+        : '检查同 wrap 内核间负载是否均衡。'}</div>`;
+  }
+  return html;
+}
+
+function bindInspector() {
+  const body = document.getElementById('inspBody');
+  body.querySelectorAll('.sl-crumb-item').forEach((el) => {
+    el.addEventListener('click', () => {
+      const nav = el.dataset.nav;
+      if (nav === 'overview') goOverview();
+      else if (nav === 'group' && state.selGroup != null) selectGroup(state.selGroup);
+      else if (nav === 'wrap' && state.selWrap != null) selectWrap(state.selWrap);
+    });
+  });
+  body.querySelectorAll('[data-group]').forEach((el) => {
+    el.addEventListener('click', () => selectGroup(Number(el.dataset.group)));
+  });
+  body.querySelectorAll('[data-wrap]').forEach((el) => {
+    el.addEventListener('click', () => selectWrap(Number(el.dataset.wrap)));
+  });
+  const drill = body.querySelector('[data-drill="bottleneck"]');
+  if (drill) drill.addEventListener('click', () => selectWrap(SCENARIO.slowWrap));
+}
+
+/* ============================================================
+   10. 启动
+   ============================================================ */
+function init() {
+  buildOrder();
+  renderTopMetrics();
+  renderLegend();
+  layout();
+  renderInspector();
+}
+init();
+</script>
+</body>
+</html>
