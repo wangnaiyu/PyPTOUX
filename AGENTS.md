@@ -66,6 +66,16 @@
   - 代码 -> 图 -> 性能说明型 demo
   - 需要把 `program.json`、`merged_swimlane.json`、`Pass_*`、源码片段组合成演示内容
 
+### 3.5 `pto-design-system`
+
+- 路径：`.agents/skills/pto-design-system/SKILL.md`
+- 用途：在生成或改造 PyPTOUX 前端原型、PTO 风格页面、graph/workbench UI 时，强制复用 PTO 设计系统
+- 适用场景：
+  - 新建 `05-prototypes/` 下的 HTML / JSX / app 前端页面
+  - 把现有 demo 迁移到 PTO 样式
+  - 需要复用 PTO tokens、组件 class、graph/swimlane/workbench patterns
+  - 需要判断是否应新增共享视觉模式及 preview gate
+
 ## 4. 常见任务怎么选 skill
 
 | 任务 | 先用什么 | 再用什么 |
@@ -73,6 +83,7 @@
 | 新增或整理仓库文档 | `pyptoux-content-router` | 按需要补 `pyptoux-git-github` |
 | 查 `PyPTO` 业务知识并沉淀结论 | `pypto-knowledge-source` | `pyptoux-content-router` |
 | 做 `PyPTO` demo 并填真实素材 | `pypto-demo-data-filling` | 如需先查事实，先用 `pypto-knowledge-source` |
+| 做前端原型、PTO 风格页面或视觉改造 | `pto-design-system` | 如需真实素材，补 `pypto-demo-data-filling`；如需路由，补 `pyptoux-content-router` |
 | 提交、推送、开 PR | `pyptoux-git-github` | 无 |
 | 查到新业务事实后写回知识库 | `pypto-knowledge-source` | `pyptoux-content-router` |
 
@@ -143,6 +154,7 @@
 - `.agents/skills/pyptoux-git-github/SKILL.md`
 - `.agents/skills/pypto-knowledge-source/SKILL.md`
 - `.agents/skills/pypto-demo-data-filling/SKILL.md`
+- `.agents/skills/pto-design-system/SKILL.md`
 - `10-docs/01-conventions/agent-writing-style.md`
 - `10-docs/01-conventions/content-routing.md`
 - `10-docs/01-conventions/dual-agent-collaboration.md`
