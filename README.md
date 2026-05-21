@@ -25,7 +25,8 @@ PyPTOUX/
 ├── 08-assets/        # 截图、图标、导出资源
 ├── 09-references/    # 外部资料来源索引
 ├── 10-docs/          # 规范、模板、索引
-└── 11-archive/       # 冻结或已归档内容
+├── 11-archive/       # 冻结或已归档内容
+└── 12-pages/         # GitHub Pages 短链接源码入口
 ```
 
 ## Working Rules
