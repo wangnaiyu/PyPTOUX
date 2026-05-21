@@ -19,6 +19,7 @@
 | 颜色、字体、组件规范、UI 基础件 | `07-designsystem/` |
 | 截图、录屏、导出图 | `08-assets/` |
 | 外部来源、链接、出处 | `09-references/` 或对应目录的 `sources.md` |
+| GitHub Pages 短链接、线上发布入口 | `12-pages/` |
 
 ## By Existing Topic
 

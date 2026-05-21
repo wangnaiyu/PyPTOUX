@@ -36,6 +36,8 @@
   -> `01-inbox/`
 - 内容已废弃或冻结，但仍希望保留
   -> `11-archive/`
+- 面向 GitHub Pages 的稳定短链接源码入口
+  -> `12-pages/`
 
 ## 2. Then Decide: `00-shared/` Or Topic
 

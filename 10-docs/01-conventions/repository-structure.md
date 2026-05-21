@@ -15,6 +15,11 @@
 - `05-prototypes/`：交互 demo 与原型演进记录
 - `06-tools/`：为原型和设计流程服务的工具
 - `07-designsystem/`：视觉基础、组件规则和可复用 UI
+- `08-assets/`：截图、图标、视频与导出资源
+- `09-references/`：外部来源、资料出处与链接索引
+- `10-docs/`：仓库规范、模板与索引
+- `11-archive/`：冻结或已归档内容
+- `12-pages/`：GitHub Pages 稳定短链接源码入口；发布后 URL 不包含这一层目录
 
 更细的判断树见 [content-routing.md](/Users/wny/Documents/1%20项目%20Projects/PyPTOUX/10-docs/01-conventions/content-routing.md)。
 
