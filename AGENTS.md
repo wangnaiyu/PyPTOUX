@@ -94,6 +94,8 @@
 - 新写的说明性内容默认优先中文
 - 目录名、稳定文件名、命令、路径、代码标识保持英文
 - 尽量复用 canonical filenames，如 `overview.md`、`sources.md`、`glossary.md`、`prd.md`
+- `.md`、`.html` 都可以作为正式文档 / 报告的阅读格式；路由先看内容意图，不单凭文件扩展名判断归属
+- Codex 新建或更新 `02-knowledge/`、`03-insights/`、`04-uxdesign/` 下某主题的正式输出时，默认同步维护该主题下的 `prompts/` 与 `notes/`；`prompts/` 保存可再次执行、可复现当次输出效果的复合 prompt，而不是用户原始 prompt 逐字稿
 - 新增 topic 或 shared framework 时，记得同步更新 `10-docs/03-indexes/`
 
 ### 5.2 `PyPTO` 业务知识检索
@@ -145,6 +147,11 @@
 - `PyPTOUX` 默认采用 Codex + Claude Desktop 协作
 - Codex 主责：规划与方案、业务知识检索、内容路由、结构维护、demo 素材准备、构建与后端、Git / GitHub
 - Claude Desktop 主责：前端原型、视觉与交互、工作台前端、自测与原型记录
+- Claude 的原型验证、待办、备忘默认写入 `05-prototypes/<topic>/notes/`，不要直接写入 `04-uxdesign/<topic>/notes/`
+- `04-uxdesign/` 下如需保留 review notes，必须由 Codex 接收后落盘，并在文件头标明 `owner`、`status`、`decision`
+- `05-prototypes/<topic>/notes/sample-data.md` 是 Codex + Claude 共享文件；Codex 把关数据真实性与等级，Claude 可按 demo 叙事调整，影响事实或 L2 推导时必须标记待 Codex review
+- `share-safe` 原型如果使用 `L2`，必须在原型可见位置披露数据等级、来源摘要与生成规则摘要；`L3` 不可标记为 `share-safe`
+- 未提交工作树锁全局适用：即便目录 owner 允许，也不要覆盖别人尚未 commit / merge 的改动
 - `10-docs/03-indexes/` 的索引同步由 Codex 主责；触发边界与例外见 `10-docs/01-conventions/dual-agent-collaboration.md`
 - 出现跨边界争议时，先看目录 owner，再看决策 owner；事实、结构、契约、构建归 Codex，视觉、交互、前端呈现归 Claude；若仍无法收敛，由用户最终仲裁
 

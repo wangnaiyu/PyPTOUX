@@ -52,7 +52,7 @@
 | 业务知识检索 | 检索 `pypto`、样例数据、业务规则、schema、真实产物，并沉淀到 `02-knowledge/` |
 | 内容路由与结构维护 | 决定新内容放哪里、怎么命名、是否要更新索引 |
 | 原型素材准备 | 准备 `L1` 真实数据或 `L2` 推导数据，整理 sample-data |
-| 设计输出整理 | 维护 `04-uxdesign/` 下的 PRD、UX 分析、interaction-spec |
+| 设计输出整理 | 维护 `04-uxdesign/` 下的 PRD、UX 分析、interaction-spec，并同步记录 Codex 侧 prompts / notes |
 | 构建与集成 | 初始化 `app/` 工程、设计数据层、维护构建脚本与工作台集成方案 |
 | 后端与契约 | 未来引入 API、数据库、文件操作、数据契约、接口层时主导实现 |
 | Git / GitHub | 分支、提交、推送、PR、索引同步、版本归档 |
@@ -75,12 +75,13 @@
 - Claude 可以指出 PRD 不清晰、sample-data 不足、结构不合理，但不直接修改非自己 owner 的正文目录。
 - Codex 可以评审原型结构、数据使用和模式提炼，但不直接进入 Claude owner 的前端文件做视觉微调。
 - 当需要修改 Claude owner 的原型代码时，Codex 提供明确建议，由 Claude 落盘。
-- 当需要修改 Codex owner 的知识库、PRD 或索引时，Claude 在 `notes/` 或对话中提出，由 Codex 落盘。
+- 当需要修改 Codex owner 的知识库、PRD、UX spec 或索引时，Claude 在对话或 `05-prototypes/<topic>/notes/` 中提出，由 Codex 决定是否落盘。
 
 默认建议载体：
 
-- Codex 对 Claude owner 文件的结构、数据、事实类建议，默认写入当前课题 `notes/`，如 `review-YYYY-MM-DD.md`，或留在 PR comment 中。
-- Claude 对 Codex owner 文件的澄清请求与修订建议，默认写入当前课题 `notes/` 的对应记录，或在 PR / 对话中明确列出。
+- Codex 对 Claude owner 文件的结构、数据、事实类建议，默认写入当前原型课题 `05-prototypes/<topic>/notes/`，如 `review-YYYY-MM-DD.md`，或留在 PR comment 中。
+- Claude 对 Codex owner 文件的澄清请求与修订建议，默认写入相关原型课题 `05-prototypes/<topic>/notes/`，或在 PR / 对话中明确列出。
+- `04-uxdesign/<topic>/notes/` 不是 Claude 的默认运行记录目录；只有 Codex 接收后，才可把 review notes 作为设计决策记录落入该目录。
 - 只有当建议已经被目标 owner 接收后，才进入实际落盘修改。
 
 ---
@@ -94,9 +95,13 @@
 | `02-knowledge/` | Codex | 业务知识、事实、schema、上游解释 |
 | `03-insights/` | Codex | 竞品、跨域洞察、研究归纳 |
 | `04-uxdesign/` | Codex | PRD、IA、interaction-spec、设计分析 |
+| `02-knowledge/**/prompts/`、`03-insights/**/prompts/`、`04-uxdesign/**/prompts/` | Codex | Codex 新建 / 更新正式输出时沉淀的可复现复合 prompt |
+| `02-knowledge/**/notes/`、`03-insights/**/notes/`、`04-uxdesign/**/notes/` | Codex | Codex 新建 / 更新正式输出时的判断、决策、影响范围和待确认记录 |
+| `04-uxdesign/*/notes/` | Codex | Codex 接收后的设计决策记录、review 归档、正式澄清记录 |
 | `05-prototypes/*/experiments/` | Claude | 单文件 HTML / JSX 实验稿 |
 | `05-prototypes/*/prompts/` | Claude | 原型 prompt 与上下文记录 |
 | `05-prototypes/*/notes/` | Claude | 原型验证记录、待办、待澄清 |
+| `05-prototypes/*/notes/sample-data.md` | Codex + Claude | demo 数据说明与故事化样例；数据真实性由 Codex 把关，demo 表达可由 Claude 调整 |
 | `05-prototypes/*/snapshots/` | Claude | 原型截图与验证图 |
 | `05-prototypes/*/app/src/` | Claude | 前端工程源码 |
 | `05-prototypes/*/app/package.json`、`tsconfig*.json`、`vite.config.*`、构建脚本 | Codex | 脚手架、构建配置、集成配置 |
@@ -125,16 +130,57 @@
 
 - Codex 不直接微调 Claude owner 原型文件中的视觉细节，如颜色、动画曲线、SVG 路径、像素级布局。
 - Claude 不直接改写 `02-knowledge/`、`03-insights/`、`04-uxdesign/`、`10-docs/` 下的正文。
+- Claude 不直接在 `04-uxdesign/<topic>/notes/` 新建运行备忘、待办或 review 草稿；这些内容默认写入 `05-prototypes/<topic>/notes/` 或留在对话 / PR 中。
 - 两个 agent 都不得把上游 literal 改写成更“统一”的命名方式，例如把 `leafHash` 改成 `leaf_hash`。
 - Claude 不得自行把 `L3` 升级为 `L2`。
+- Claude 不得把自己调整过但未经 Codex 复核的 sample-data 标记为 `L1`、`verified` 或可外发 `L2`。
 
 ### 4.4 允许的协作方式
 
-- Codex 可以在对话、`notes/` 建议稿或 review 意见中指出原型数据与事实问题。
-- Claude 可以在 `notes/` 中记录 `PRD 待澄清`、`sample-data 不足`、`结构待确认`，推动 Codex 补齐外围约束。
+- Codex 可以在对话、`05-prototypes/<topic>/notes/` 建议稿或 review 意见中指出原型数据与事实问题。
+- Claude 可以在 `05-prototypes/<topic>/notes/` 中记录 `PRD 待澄清`、`sample-data 不足`、`结构待确认`，推动 Codex 补齐外围约束。
+- Codex 可以在 `04-uxdesign/<topic>/notes/` 保留已接收的 review notes，但必须让它成为可追溯的设计决策记录，而不是未分拣备忘。
+- Codex 与 Claude 都可以修改 `05-prototypes/<topic>/notes/sample-data.md`：Codex 负责来源、数据等级、字段 literal、L1/L2 可追溯性；Claude 可以根据 demo 叙事、交互表达和用户反馈调整样例组织、字段呈现和故事线。凡影响业务事实、L2 推导或外发可信度的调整，必须标记 `needs-codex-review` 或在说明中列出待 Codex 复核项。
 - 进入 `app/` 或 workbench 阶段后，若前端代码同时涉及构建与视觉，按“Codex 改配置与契约，Claude 改页面与组件”的原则拆开执行。
 
-### 4.5 协作灰区规则（补充）
+### 4.4.1 Codex 正式输出记录
+
+Codex 新建或更新 `02-knowledge/`、`03-insights/`、`04-uxdesign/` 下某主题的正式输出时，默认同步维护该主题内的 `prompts/` 与 `notes/`：
+
+- `prompts/YYYY-MM-DD-<slug>.md`：保存可再次执行并尽量复现当次正式输出效果的复合 prompt，而不是用户原始 prompt 逐字稿。
+- 复合 prompt 应揉合：
+  - 用户原始目标与多轮对话中追加的修正信息。
+  - Codex 执行时实际采用的关键引用、sample data、上游路径、字段 literal 和事实口径。
+  - 涉及的 skill、规则文档、索引文件和工程状态。
+  - 最终输出需要遵守的结构、语言、边界、取舍和验收标准。
+- 复合 prompt 应写成后续 agent 可以直接复用的“系统式”任务说明；必要时用路径和摘要指向上下文，避免保存冗长、敏感或无复现价值的过程噪音。
+- `notes/update-YYYY-MM-DD.md`：记录本次更新摘要、事实依据、重要判断、影响范围、未解决问题和后续动作。
+- 若同一天多次更新同一主题，可追加到当天同一条 `notes/update-YYYY-MM-DD.md`，避免碎片化。
+- 纯错别字、链接修复、机械格式化可合并进当天记录；如果当天没有记录，可在最终回复中说明这是 trivial change，暂不新增记录。
+- 该规则不改变目录 owner：这些 `prompts/` 与 `notes/` 仍归 Codex；Claude 默认只读不写，除非用户明确要求或 Codex 接收其建议。
+
+### 4.5 Review 交接生命周期
+
+Claude 对 Codex owner 文件提出 review、澄清请求或修订建议时，默认按以下流程走：
+
+1. Claude 将原始建议写入 `05-prototypes/<topic>/notes/review-YYYY-MM-DD.md`，也可以同时留在对话或 PR comment 中。
+2. Codex review 该文件后，选择一种处理方式：
+   - 直接把已接受结论合并进 `04-uxdesign/<topic>/prd.md`、`ux-analysis.md`、`interaction-spec.md` 等正式文件。
+   - 在 `04-uxdesign/<topic>/notes/decision-YYYY-MM-DD.md` 或 `clarification-YYYY-MM-DD.md` 中写成正式设计决策记录，并链接回原始 `05-prototypes/<topic>/notes/review-YYYY-MM-DD.md`。
+   - 明确标记为 `rejected` 或 `superseded`，不升格到 `04-uxdesign/`。
+3. 原始 Claude review 默认保留在 `05-prototypes/<topic>/notes/`，作为原型迭代依据；不要为了归档而移动回 `04-uxdesign/`。
+4. `04-uxdesign/<topic>/notes/` 只保存 Codex 接收后的决策、澄清或归档记录；它不是 review 草稿池。
+
+### 4.6 未提交工作树锁
+
+未提交工作树锁是全局规则，适用于所有目录。owner 规则决定“谁有权写”，工作树锁决定“即便有权写，也不能覆盖别人尚未交接的改动”。
+
+- 一份文件在 git 上已 commit 的修改 = 交接完成，对方可接力。
+- 一份文件存在未 commit / 未 merge 的修改 = 该文件被锁定，对方不写。
+- 不确定时，先看 `git status` / `git log` 和最近一次写者。
+- 这条规则在灰区目录、跨边界协作和临时修复对方 owner 文件时尤其重要。
+
+### 4.7 协作灰区规则（补充）
 
 本节只补充灰区目录的协作方式，不替代 §4.1 的 owner 表。
 
@@ -142,19 +188,19 @@
 
 - Codex 主导：新增 skill、章节结构、流程定义、矩阵规则、模板 / schema、删除内容。
 - Claude 可做：错别字、标点、链接修复、不改语义的措辞润色、补例子。
-- 冲突避免：遵守未提交工作树锁；结构性大改动建议先在 PR 或对话登记。
+- 冲突避免：遵守全局未提交工作树锁；结构性大改动建议先在 PR 或对话登记。
 
 #### `06-tools/01-prototype-kit/`：Codex 与 Claude 对等共写
 
 - Codex 与 Claude 都可以在 `previewer/`、`converters/`、`launchers/`、`shared/` 下创建或修改 prototype toolkit。
 - 一方创建新的 toolkit 后，必须在该 toolkit 目录下创建 `notes/spec.md`，说明用途、输入输出、命令入口、文件结构、接口约定、数据等级限制、已知边界和待 review 项。
 - 另一方基于 `notes/spec.md` 做事实 / 结构 review、使用反馈或前端体验反馈，避免直接从实现代码反推契约。
-- 冲突避免：遵守未提交工作树锁；同一个 toolkit 的结构性改动应先更新 `notes/spec.md`，再修改实现。
+- 冲突避免：遵守全局未提交工作树锁；同一个 toolkit 的结构性改动应先更新 `notes/spec.md`，再修改实现。
 
 #### `09-references/`：对等共写
 
 - Codex 与 Claude 均可写、可主导。
-- 冲突避免：遵守未提交工作树锁。
+- 冲突避免：遵守全局未提交工作树锁。
 - 结构性大改动（重排、拆分、归档、模板变更）建议先在 PR 或对话登记。
 - 新文件可选 frontmatter 标注 `owner: claude`、`owner: codex` 或 `owner: shared`。
 
@@ -165,11 +211,27 @@
 - 由用户决定是否手动处理或通知 Codex。
 - 一次会话只汇总一次；下次会话不主动重提。
 
-#### 未提交工作树锁定义
+#### `04-uxdesign/<topic>/notes/`：Codex 正式输出记录与接收型 review 归档
 
-- 一份文件在 git 上已 commit 的修改 = 交接完成，对方可接力。
-- 一份文件存在未 commit / 未 merge 的修改 = 该文件被锁定，对方不写。
-- 不确定时，先看 `git status` / `git log` 和最近一次写者。
+- Codex 新建或更新 `04-uxdesign/<topic>/` 下的正式设计输出时，可以按 §4.4.1 在本目录记录 `update-YYYY-MM-DD.md`。
+- 原型验证、运行备忘、待办和待澄清项仍优先放入 `05-prototypes/<topic>/notes/`。
+- 只有当 Claude / cross-review 结论需要作为正式设计输出的决策记录长期保留时，才由 Codex 在 `04-uxdesign/<topic>/notes/` 落盘。
+- review / decision / clarification 文件名推荐 `review-YYYY-MM-DD.md`、`decision-YYYY-MM-DD.md` 或 `clarification-YYYY-MM-DD.md`。
+- review / decision / clarification 文件头必须包含：
+
+```yaml
+---
+owner: codex
+status: proposed
+source: cross-review
+decision: pending
+---
+```
+
+- `status` 可用值：`proposed`、`accepted`、`superseded`
+- `source` 可用值：`codex`、`claude`、`user`、`cross-review`
+- `decision` 可用值：`pending`、`accepted`、`rejected`、`superseded`
+- 若 `status: proposed` 或 `decision: pending`，正文必须说明待 Codex / 用户确认的问题；确认后由 Codex 更新状态或把结论合并进 `prd.md`、`ux-analysis.md`、`interaction-spec.md` 等正式文件。
 
 ---
 
@@ -193,7 +255,7 @@
 
 1. Codex 准备 PRD、sample-data、术语边界。
 2. Claude 产出前端原型与视觉。
-3. Claude 自测并记录问题。
+3. Claude 自测并把原型验证、待办、待澄清项记录到 `05-prototypes/<topic>/notes/`。
 4. Codex review 事实、结构与后续沉淀点。
 5. 如果 review 发现问题：
    - Codex 输出问题清单与修订建议
@@ -282,11 +344,12 @@
 - 字段名严格遵循上游真实定义。
 - 数值范围、依赖关系、时间顺序、引用关系逻辑自洽。
 - 在 `notes/sample-data.md` 或相邻说明中注明：这是 `L2`，以及来源与生成规则。
+- 若对应原型标记为 `share-safe`，还必须在原型文件可见位置内嵌数据等级、来源摘要和生成规则摘要，不能只写在相邻文档里。
 
 `L2` 的生成责任：
 
-- 由 Codex 负责生成或明确给出生成规则。
-- Claude 只能消费，不自行发明新的 `L2` 数据结构。
+- Codex 负责生成或明确给出生成规则，并对可追溯性拍板。
+- Claude 可以根据 demo 需要调整 `notes/sample-data.md` 的叙事组织、字段呈现和样例组合；如果改动影响业务事实、字段结构、推导规则或外发可信度，必须标记 `needs-codex-review`，由 Codex 复核后才能作为可外发 `L2` 使用。
 
 ### 6.5 `L3` 规则
 
@@ -323,6 +386,7 @@
 - 不依赖外部 API。
 - 资源全部内嵌或使用本地相对路径。
 - 在目标浏览器中双击即可运行。
+- 数据等级披露完整，避免把 `L2` / `L3` 误读成 `L1` 真实运行结果。
 
 默认白名单：
 
@@ -348,6 +412,13 @@
 - 发给产品方
 - 发给设计师
 - 发给用户做体验演示
+
+数据披露要求：
+
+- 使用 `L1` 时，建议在页面 footer、About、Info panel 或文件头注释中标明来源摘要。
+- 使用 `L2` 时，必须在用户可见位置标明 `Data level: L2 synthetic / inferred`、来源摘要和生成规则摘要。
+- 使用任何 `needs-codex-review` 的 sample-data 时，不得标记为 `share-safe`，除非 Codex 已复核并清除该标记。
+- 使用 `L3` 时，不得标记为 `share-safe`。
 
 #### `exploration-only`
 
@@ -493,10 +564,10 @@ Claude 默认只读不写：
 2. **Codex** 准备外围约束：
    - 业务知识
    - PRD / UX 分析
-   - sample-data
+   - sample-data 初稿、数据等级与来源边界
    - literal 与术语边界
-3. **Claude** 根据外围约束实现原型。
-4. **Claude** 自测并在 `notes/` 记录验证结论与待澄清问题。
+3. **Claude** 根据外围约束实现原型；如 demo 叙事需要，可在 `05-prototypes/<topic>/notes/sample-data.md` 中调整样例组织和呈现，并标记需要 Codex 复核的数据事实变更。
+4. **Claude** 自测并在 `05-prototypes/<topic>/notes/` 记录验证结论与待澄清问题。
 5. **Codex** review：
    - 事实是否准确
    - 数据等级是否合理
@@ -546,7 +617,7 @@ Claude 默认只读不写：
 
 ### 11.3 `L2` 与 `L3` 混淆
 
-- `L2` 由 Codex 负责生成或确认；`L3` 仅用于早期布局，不外发，并强制归类为 `exploration-only`。见 §6.4、§6.5、§6.6。
+- `L2` 由 Codex 负责生成规则和外发复核；Claude 可调整 demo 呈现，但未经 Codex 复核不得标为可外发 `L2`。`L3` 仅用于早期布局，不外发，并强制归类为 `exploration-only`。见 §6.4、§6.5、§6.6。
 
 ### 11.4 旧 demo 被误当设计基线
 
@@ -558,26 +629,16 @@ Claude 默认只读不写：
 
 ---
 
-## 十二、对 `AGENTS.md` / `CLAUDE.md` 的后续沉淀建议
+## 十二、规则维护原则
 
-以下内容适合作为后续正式沉淀，但**不在本轮实施**：
+### 12.1 Canonical Source
 
-### 12.1 适合沉淀到 `AGENTS.md`
+- 本文件是 Codex + Claude 双 Agent 协作边界、owner 例外、review 交接、数据分层和 share-safe 要求的 canonical source。
+- `AGENTS.md` 作为项目级入口，只保留高频摘要与指向。
+- `CLAUDE.md` 作为 Claude 侧入口，只保留 Claude 直接执行所需的默认规则与指向。
 
-- Demo 数据三层策略（`L1` / `L2` / `L3`）
-- 双 Agent 基本分工
-- 索引同步责任
-- 跨边界拍板规则
+### 12.2 减少 Drift
 
-### 12.2 适合沉淀到未来 `CLAUDE.md`
-
-- Claude 的默认写入范围
-- Claude 的默认参考源
-- 不默认继承旧 demo 的规则
-- `share-safe` / `exploration-only` 的实现约束
-- 发现数据或 PRD 缺口时的标准动作
-
-### 12.3 本文档当前状态
-
-- 这份 v2 目前放在 `01-inbox/`，用于评审与确认。
-- 若确认作为正式基线，再决定拆分沉淀到哪些长期入口文件。
+- 修改双 Agent 协作边界时，优先更新本文档。
+- 只有当入口摘要会影响 agent 首轮行为时，才同步更新 `AGENTS.md` 或 `CLAUDE.md`。
+- 避免在多个入口文件重复长规则；重复处应保持短摘要，并链接回本文档。

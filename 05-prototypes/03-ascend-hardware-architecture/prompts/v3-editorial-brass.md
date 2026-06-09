@@ -4,7 +4,7 @@
 
 第三轮单文件 demo，基于
 [interaction-spec.md](../../../04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md)
-+ [review-2026-04-27.md](../../../04-uxdesign/03-ascend-hardware-architecture/notes/review-2026-04-27.md)
++ [review-2026-04-27.md](../notes/review-2026-04-27.md)
 
 继续在长期 demo 探索里积累互补图元语言。和 v1（dark-tech glassmorphic）、v2（paper hatch blueprint）刻意拉开。
 
