@@ -96,6 +96,7 @@
 - 尽量复用 canonical filenames，如 `overview.md`、`sources.md`、`glossary.md`、`prd.md`
 - `.md`、`.html` 都可以作为正式文档 / 报告的阅读格式；路由先看内容意图，不单凭文件扩展名判断归属
 - Codex 新建或更新 `02-knowledge/`、`03-insights/`、`04-uxdesign/` 下某主题的正式输出时，默认同步维护该主题下的 `prompts/` 与 `notes/`；`prompts/` 保存可再次执行、可复现当次输出效果的复合 prompt，而不是用户原始 prompt 逐字稿
+- 各主题下 `notes/story-YYYY-MM-DD.md` 用于记录用户场景、体验脚本、叙事脚本或 demo story；`04-uxdesign/` 与 `05-prototypes/` 下尤其适用，owner 仍按所在目录规则执行
 - 新增 topic 或 shared framework 时，记得同步更新 `10-docs/03-indexes/`
 
 ### 5.2 `PyPTO` 业务知识检索

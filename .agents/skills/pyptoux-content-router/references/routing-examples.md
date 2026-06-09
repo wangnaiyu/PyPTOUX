@@ -10,8 +10,10 @@
   -> `05-prototypes/<numbered-topic>/experiments/html/<demo-name>.html`
 - Claude 生成的 JSX 组件草稿
   -> `05-prototypes/<numbered-topic>/experiments/jsx/<demo-name>.jsx`
-- 原型对应的提示词
-  -> `05-prototypes/<numbered-topic>/prompts/<demo-name>.md`
+- 原型对应的复合 prompt
+  -> `05-prototypes/<numbered-topic>/prompts/YYYY-MM-DD-<slug>.md`
+- 原型或 UX 体验对应的故事脚本
+  -> `05-prototypes/<numbered-topic>/notes/story-YYYY-MM-DD.md`
 - 用于预览 JSX 的小工具
   -> `06-tools/01-prototype-kit/previewer/`
 - 全局按钮和面板视觉基线

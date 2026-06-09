@@ -20,7 +20,7 @@
 
 | 类型 | 来源 | 路径 / URL | 用途 | 可信度处理 |
 | --- | --- | --- | --- | --- |
-| 内部报告 | A5 / Ascend 950 与 PyPTO 影响报告 | `02-knowledge/00-shared/ascend-a5-950-hardware/a5-950-pypto-impact-report.md` | 将硬件架构、代际差异、PyPTO 适配、算子开发影响、调试调优影响和 Toolkit 场景整理成详细报告。 | derived source；用于刷新 `overview.md`，不替代其底层 primary / public sources。 |
+| 内部报告 | A5 / Ascend 950 与 PyPTO 影响报告 | `02-knowledge/00-shared/ascend-a5-950-hardware/impact-report.md` | 将硬件架构、代际差异、PyPTO 适配、算子开发影响、调试调优影响和 Toolkit 场景整理成详细报告。 | derived source；用于刷新 `overview.md`，不替代其底层 primary / public sources。 |
 | 项目 UX 设计 | 昇腾硬件结构 Demo 交互设计说明 | `04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md` | 硬件图 UI 的画法、可信度线型、场景路径。 | 作为内部设计规范，不作为硬件事实源。 |
 | 项目样例数据说明 | Ascend Hardware Map sample data | `05-prototypes/03-ascend-hardware-architecture/notes/sample-data.md` | 原型可消费的数据结构和状态分类。 | 作为 demo 数据结构参考。 |
 | 媒体报道 | IT之家：华为 CANN 开源开放首发支持昇腾 950 系列 | `https://www.ithome.com/0/939/089.htm` | 950PR / 950DT、CANN 对 950 系列支持的外部佐证。 | 只作 supporting source，不替代 CANN 文章或官方文档。 |

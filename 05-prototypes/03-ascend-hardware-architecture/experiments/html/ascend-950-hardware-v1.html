@@ -8,7 +8,7 @@
 /* ============================================================
    Ascend 950 standalone demo
    inherits v3 editorial-brass visual language;
-   content rebuilt from a5-950-pypto-impact-report.md §1.
+   content rebuilt from impact-report.md §1.
    ============================================================ */
 :root {
   --bg:        #0e0f14;
@@ -912,7 +912,7 @@ button, input, select { font: inherit; color: inherit; cursor: pointer; }
       <div></div>
       <div class="meta">
         // Source: 02-knowledge/00-shared/ascend-a5-950-hardware/<br>
-        // a5-950-pypto-impact-report.md §1
+        // impact-report.md §1
       </div>
     </div>
     <div class="canvas-wrap">
@@ -999,7 +999,7 @@ button, input, select { font: inherit; color: inherit; cursor: pointer; }
 
 /* ============================================================
    OBJECTS — 950 specific
-   credibility tiers per a5-950-pypto-impact-report.md §0
+   credibility tiers per impact-report.md §0
    ============================================================ */
 const OBJECTS = {
   // ---- Storage subsystem ----
@@ -1023,7 +1023,7 @@ const OBJECTS = {
       '颗粒度':'128B Sector (public)',
       '影响':'小包 / 离散访问 / TileShape 调优',
     },
-    src:'a5-950-pypto-impact-report.md §1.2'
+    src:'impact-report.md §1.2'
   },
   HBM_PKG: {
     kind:'storage', tier:'shared', label:'Memory Package', sub:'HiBL 1.0 / HiZQ 2.0',
@@ -1034,7 +1034,7 @@ const OBJECTS = {
       '产品形态':'950PR · 950DT',
       '说明':'同一代 Die，不同 Memory 合封',
     },
-    src:'a5-950-pypto-impact-report.md §1.1'
+    src:'impact-report.md §1.1'
   },
 
   // ---- AICORE subsystem · AIC ----
@@ -1101,7 +1101,7 @@ const OBJECTS = {
       'PyPTO 适配':'DAV_3510 · MixSubgraphSplit · CV_SYNC_*',
       '边界':'不画成本地 buffer 直连；trace 默认仍走 GM/L2',
     },
-    src:'a5-950-pypto-impact-report.md §1.2 + §3.3'
+    src:'impact-report.md §1.2 + §3.3'
   },
   NDDMA: {
     kind:'mte', tier:'shared', label:'NDDMA', sub:'复杂搬运 / 格式转换',
@@ -1112,7 +1112,7 @@ const OBJECTS = {
       '覆盖':'transpose · stride · broadcast · slice',
       '影响':'layout / dtype / TileShape 调优空间扩大',
     },
-    src:'a5-950-pypto-impact-report.md §1.2'
+    src:'impact-report.md §1.2'
   },
   BufferID: {
     kind:'sync', tier:'shared', label:'BufferID', sub:'同步依赖（控制流）',
@@ -1123,7 +1123,7 @@ const OBJECTS = {
       '类型':'控制 / 同步流，不搬数据',
       'PyPTO 映射':'CV_SYNC_SRC / CV_SYNC_DST（语义解释，不改写 trace）',
     },
-    src:'a5-950-pypto-impact-report.md §5.5 + overview.md §UI 原则 5'
+    src:'impact-report.md §5.5 + overview.md §UI 原则 5'
   },
 
   // ---- IO subsystem ----
@@ -1142,7 +1142,7 @@ const OBJECTS = {
     cred:'public', flow:'data',
     desc:'IO 子系统提供的 UBoE / PCIe 兼容接入。',
     tags:{ '所属':'IO subsystem' },
-    src:'a5-950-pypto-impact-report.md §1.1'
+    src:'impact-report.md §1.1'
   },
   URMA: {
     kind:'engine', tier:'claim', label:'URMA', sub:'用户态 RDMA',
@@ -1176,7 +1176,7 @@ const OBJECTS = {
       '架构':'双 DIE UMA (public)',
       '体验':'用户无感使用 2 Die 算力',
     },
-    src:'a5-950-pypto-impact-report.md §1.1'
+    src:'impact-report.md §1.1'
   },
 };
 
@@ -1900,7 +1900,7 @@ function renderDetail() {
         ? '控制 / 同步流。不搬运数据，只表达依赖关系。'
         : '数据搬运通路。'
     }</p></div>`;
-    html += `<div class="rail-source">SOURCE · a5-950-pypto-impact-report.md</div>`;
+    html += `<div class="rail-source">SOURCE · impact-report.md</div>`;
     railB.innerHTML = html;
     return;
   }

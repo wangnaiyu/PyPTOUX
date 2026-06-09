@@ -99,8 +99,8 @@
 | `02-knowledge/**/notes/`、`03-insights/**/notes/`、`04-uxdesign/**/notes/` | Codex | Codex 新建 / 更新正式输出时的判断、决策、影响范围和待确认记录 |
 | `04-uxdesign/*/notes/` | Codex | Codex 接收后的设计决策记录、review 归档、正式澄清记录 |
 | `05-prototypes/*/experiments/` | Claude | 单文件 HTML / JSX 实验稿 |
-| `05-prototypes/*/prompts/` | Claude | 原型 prompt 与上下文记录 |
-| `05-prototypes/*/notes/` | Claude | 原型验证记录、待办、待澄清 |
+| `05-prototypes/*/prompts/` | Claude | 可复现原型生成 / 迭代效果的复合 prompt |
+| `05-prototypes/*/notes/` | Claude | 原型更新记录、验证记录、review、待办、待澄清 |
 | `05-prototypes/*/notes/sample-data.md` | Codex + Claude | demo 数据说明与故事化样例；数据真实性由 Codex 把关，demo 表达可由 Claude 调整 |
 | `05-prototypes/*/snapshots/` | Claude | 原型截图与验证图 |
 | `05-prototypes/*/app/src/` | Claude | 前端工程源码 |
@@ -147,17 +147,25 @@
 
 Codex 新建或更新 `02-knowledge/`、`03-insights/`、`04-uxdesign/` 下某主题的正式输出时，默认同步维护该主题内的 `prompts/` 与 `notes/`：
 
-- `prompts/YYYY-MM-DD-<slug>.md`：保存可再次执行并尽量复现当次正式输出效果的复合 prompt，而不是用户原始 prompt 逐字稿。
+- `prompts/` 文件命名以 `10-docs/01-conventions/content-routing.md` 的主题记录层为准；其内容应保存可再次执行并尽量复现当次正式输出效果的复合 prompt，而不是用户原始 prompt 逐字稿。
 - 复合 prompt 应揉合：
   - 用户原始目标与多轮对话中追加的修正信息。
   - Codex 执行时实际采用的关键引用、sample data、上游路径、字段 literal 和事实口径。
   - 涉及的 skill、规则文档、索引文件和工程状态。
   - 最终输出需要遵守的结构、语言、边界、取舍和验收标准。
 - 复合 prompt 应写成后续 agent 可以直接复用的“系统式”任务说明；必要时用路径和摘要指向上下文，避免保存冗长、敏感或无复现价值的过程噪音。
-- `notes/update-YYYY-MM-DD.md`：记录本次更新摘要、事实依据、重要判断、影响范围、未解决问题和后续动作。
+- `notes/` 文件命名以 `content-routing.md` 的主题记录层为准；其内容记录本次更新摘要、事实依据、重要判断、用户故事、体验脚本、影响范围、未解决问题和后续动作。
 - 若同一天多次更新同一主题，可追加到当天同一条 `notes/update-YYYY-MM-DD.md`，避免碎片化。
 - 纯错别字、链接修复、机械格式化可合并进当天记录；如果当天没有记录，可在最终回复中说明这是 trivial change，暂不新增记录。
 - 该规则不改变目录 owner：这些 `prompts/` 与 `notes/` 仍归 Codex；Claude 默认只读不写，除非用户明确要求或 Codex 接收其建议。
+
+`05-prototypes/<topic>/prompts/` 与 `05-prototypes/<topic>/notes/` 也遵守同一主题记录层命名与用途：
+
+- `prompts/` 保存可再次执行并尽量复现当次原型生成 / 迭代效果的复合 prompt。
+- `notes/` 记录原型更新摘要、验证结论、用户场景、体验脚本、影响范围、待确认问题、review、决策和澄清。
+- `notes/story-YYYY-MM-DD.md` 用于保存原型或 UX 方案面向的用户场景、叙事脚本、demo story。用户可以给出片段式场景，Claude 或 Codex 可按 owner 边界补全为完整故事脚本。
+- `notes/sample-data.md` 是原型主题的共享数据说明例外，按 §4.4 与 §6.4 维护。
+- 该规则不改变 `05-prototypes/<topic>/app/`、`experiments/`、`snapshots/` 的既有目录分工。
 
 ### 4.5 Review 交接生命周期
 
