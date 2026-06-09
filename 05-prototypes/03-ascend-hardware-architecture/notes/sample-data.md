@@ -2,7 +2,7 @@
 
 > 用途：为 v2 demo 提供单文件原型可消费的硬件对象与数据搬移路径数据。
 > L 等级：本数据全部来自 `02-knowledge/00-shared/ascend-aicore-hardware/overview.md`（CANN 官方核对）+ `01-inbox/ascend-hardware-architecture-notes.md`（Claude 调研，含 article claim）。
-> Buffer 容量数字：按上一轮共识，**不放具体数字**，仅以相对大小符号 (`░ ▒ ▓`) 表达。
+> Buffer 容量数字：按 [review-2026-04-27.md](review-2026-04-27.md) 的上一轮共识，**不放具体数字**，仅以相对大小符号 (`░ ▒ ▓`) 表达。
 
 ## Architectures（视图）
 

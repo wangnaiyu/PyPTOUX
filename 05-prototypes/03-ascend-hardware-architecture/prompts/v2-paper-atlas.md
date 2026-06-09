@@ -3,7 +3,7 @@
 ## 目标
 
 基于 [interaction-spec.md](../../../04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md)
-+ [review-2026-04-27.md](../../../04-uxdesign/03-ascend-hardware-architecture/notes/review-2026-04-27.md)
++ [review-2026-04-27.md](../notes/review-2026-04-27.md)
 做第二版单文件 demo，**与 v1 dark-tech 风格刻意区别**，让长期 demo 探索能积累两套互补图元语言。
 
 ## 视觉方向

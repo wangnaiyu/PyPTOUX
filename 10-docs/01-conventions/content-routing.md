@@ -82,13 +82,37 @@
 - `glossary.md`：术语表
 - `meta.md`：关键词、关联层、检索入口
 
+Codex 正式输出记录：
+
+- `prompts/YYYY-MM-DD-<slug>.md`：可再次执行并复现当次正式输出效果的复合 prompt
+- `notes/update-YYYY-MM-DD.md`：本次正式输出的更新摘要、依据、决策、影响范围、待确认问题
+
+说明：
+
+- 适用于 `02-knowledge/<topic>/`、`03-insights/<topic>/`、`04-uxdesign/<topic>/`，包括 `00-shared/` 下的具体主题目录。
+- Codex 每次新建或更新正式输出时默认同步记录；纯错别字、链接修复、机械格式化可合并进当天同一条 `notes/update-YYYY-MM-DD.md`。
+- `prompts/` 不保存用户原始 prompt 逐字稿；应把用户原始目标、多轮对话中的修正信息、关键引用 / sample data、使用的 skill / 文档索引、工程状态和输出约束揉合成最终“系统式”复合 prompt。
+- `prompts/` 的目标是让后续 agent 可以直接再次使用该 prompt，尽量复现当次正式输出的内容结构、判断口径和交付效果。
+- `prompts/` 应避免冗长、敏感或无复现价值的过程噪音；必要时用路径和摘要指向上下文。
+- `notes/` 记录 Codex 的判断和交付状态，不替代正式输出本身。
+
 UX 设计：
 
 - `prd.md`
+- `prd.html`
 - `ux-analysis.md`
+- `ux-analysis.html`
 - `ia.md`
 - `interaction-spec.md`
 - `visual-direction.md`
+
+说明：
+
+- `.md`、`.html` 都可以作为正式设计文档 / 报告的阅读格式。文件扩展名不单独决定目录归属；先按内容意图判断。
+- 如果 `.html` 的主要用途是文档阅读、报告阅读或正式设计说明，可放在 `04-uxdesign/<topic>/`。
+- 如果 `.html` 的主要用途是可交互 demo、视觉 / 交互验证、前端实验或可分享原型，则放在 `05-prototypes/<topic>/experiments/html/`。
+- Claude 的原型验证、待办、备忘默认使用 `05-prototypes/<topic>/notes/<note-name>.md`。不要在 `04-uxdesign/<topic>/notes/` 新建 Claude 运行记录。
+- `04-uxdesign/<topic>/notes/` 用于 Codex 正式设计输出更新记录，以及 Codex 接收后的设计决策记录、review 归档或正式澄清记录；review / decision / clarification 文件头必须标明 `owner`、`status`、`decision`。
 
 原型：
 
@@ -96,6 +120,8 @@ UX 设计：
 - `experiments/jsx/<demo-name>.jsx`
 - `prompts/<demo-name>.md`
 - `notes/<demo-name>.md`
+- `notes/sample-data.md`：demo 样例数据、数据等级、来源与生成规则；Codex + Claude 共享维护
+- `notes/review-YYYY-MM-DD.md`：原型验证、cross-review、Claude 对 Codex owner 文件的澄清请求或修订建议
 
 工具：
 
@@ -111,7 +137,11 @@ UX 设计：
 - Claude 生成的 JSX / TSX 草案 -> `05-prototypes/<topic>/experiments/jsx/`
 - 对应提示词、生成上下文、迭代说明 -> `05-prototypes/<topic>/prompts/`
 - 原型结论、待办、验证结果 -> `05-prototypes/<topic>/notes/`
+- demo 样例数据、数据等级、来源与生成规则 -> `05-prototypes/<topic>/notes/sample-data.md`
+- Claude 对 Codex owner 文件的 review / 澄清请求 -> `05-prototypes/<topic>/notes/review-YYYY-MM-DD.md`
 - 当某个原型进入持续工程化 -> `05-prototypes/<topic>/app/`
+
+如果 Claude 输出的是正式设计文档或报告，而不是前端原型，由 Codex 按 `04-uxdesign/` owner 规则接收、改写或落盘；不要仅因为文件是 `.html` 就自动归入 `05-prototypes/`。
 
 如果暂时无法判断课题归属，但明显属于原型探索：
 
