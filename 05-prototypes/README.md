@@ -22,7 +22,7 @@
 - demo 数据分为 `L1 / L2 / L3`，详细规则见 `AGENTS.md` 与 `10-docs/01-conventions/dual-agent-collaboration.md`。
 - 单文件原型：`share-safe / exploration-only`
 - `app/` 阶段：`离线分享包 / 内部联调版本`
-- 原型 notes 建议使用 `10-docs/02-templates/prototype-notes.md`。
+- 原型更新记录使用 `notes/update-YYYY-MM-DD.md`；用户场景、体验脚本、demo story 使用 `notes/story-YYYY-MM-DD.md`；详细命名规则见 `10-docs/01-conventions/content-routing.md`。
 
 ## 推荐流程
 

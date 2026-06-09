@@ -25,7 +25,7 @@
 
 ## Related Paths
 
-- `02-knowledge/00-shared/ascend-a5-950-hardware/a5-950-pypto-impact-report.md`
+- `02-knowledge/00-shared/ascend-a5-950-hardware/impact-report.md`
 - `02-knowledge/00-shared/ascend-aicore-hardware/overview.md`
 - `02-knowledge/02-swimlane-profiler/overview.md`
 - `04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md`

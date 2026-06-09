@@ -5,6 +5,7 @@
 `CLAUDE.md` 是 Claude 在 `PyPTOUX` 仓库中的默认入口。
 
 - 项目级总规则以 `AGENTS.md` 为准。
+- 文件命名与路由以 `10-docs/01-conventions/content-routing.md` 为 canonical source。
 - 双 Agent 协作边界、owner 例外、review 交接、数据分层和 share-safe 要求的 canonical source 是 `10-docs/01-conventions/dual-agent-collaboration.md`。
 - 本文件只保留 Claude 侧需要直接执行的默认规则。
 
@@ -124,8 +125,8 @@ Claude 在本仓库默认负责：
 ## 8. 写完一个原型后的固定动作
 
 - 自测界面与交互。
-- 更新 `prompts/`。
-- 更新 `notes/`。
+- 按 `content-routing.md` 的主题记录层命名更新 `prompts/`，保存可复现本次原型生成 / 迭代效果的复合 prompt，而不是用户原始 prompt 逐字稿。
+- 按 `content-routing.md` 的主题记录层命名更新 `notes/`，记录验证结论、待办、用户场景 / 故事脚本、review、decision 或 clarification。
 - 必要时补 `snapshots/`。
 - 主动请 Codex 做事实与结构 review。
 - Codex 的问题清单默认落在 `notes/review-YYYY-MM-DD.md` 或 PR comment。

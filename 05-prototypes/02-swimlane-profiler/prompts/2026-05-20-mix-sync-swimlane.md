@@ -39,5 +39,5 @@
 - 未实现：双击展开核内流水（P2）、关键路径高亮 / 同步线虚拟化（P3）。
 
 ## 数据等级
-- `L3-placeholder` / `exploration-only`：见 `notes/build-2026-05-20.md`。
+- `L3-placeholder` / `exploration-only`：见 `notes/update-2026-05-20.md`。
 </content>

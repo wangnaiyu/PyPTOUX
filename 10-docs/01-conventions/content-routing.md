@@ -75,6 +75,8 @@
 
 优先使用稳定文件名，而不是一次性的描述性文件名。
 
+本节是全仓主题文件命名的 canonical source。`AGENTS.md`、`CLAUDE.md` 和 `dual-agent-collaboration.md` 只保留执行摘要或协作语义说明；若命名示例冲突，以本节为准。
+
 通用文档：
 
 - `overview.md`：课题概览 / 当前理解
@@ -82,19 +84,22 @@
 - `glossary.md`：术语表
 - `meta.md`：关键词、关联层、检索入口
 
-Codex 正式输出记录：
+主题记录层：
 
 - `prompts/YYYY-MM-DD-<slug>.md`：可再次执行并复现当次正式输出效果的复合 prompt
 - `notes/update-YYYY-MM-DD.md`：本次正式输出的更新摘要、依据、决策、影响范围、待确认问题
+- `notes/story-YYYY-MM-DD.md`：用户场景、叙事脚本、体验走查剧本或 demo story，用于承接“这次体验设计针对什么场景”
 
 说明：
 
-- 适用于 `02-knowledge/<topic>/`、`03-insights/<topic>/`、`04-uxdesign/<topic>/`，包括 `00-shared/` 下的具体主题目录。
+- 适用于 `02-knowledge/<topic>/`、`03-insights/<topic>/`、`04-uxdesign/<topic>/`、`05-prototypes/<topic>/`，包括 `00-shared/` 下的具体主题目录。
 - Codex 每次新建或更新正式输出时默认同步记录；纯错别字、链接修复、机械格式化可合并进当天同一条 `notes/update-YYYY-MM-DD.md`。
+- `05-prototypes/<topic>/prompts/` 和 `05-prototypes/<topic>/notes/` 也遵守本主题记录层规则；它们记录原型生成 / 迭代过程，不改变 `app/`、`experiments/`、`snapshots/` 的既有原型目录分工。
 - `prompts/` 不保存用户原始 prompt 逐字稿；应把用户原始目标、多轮对话中的修正信息、关键引用 / sample data、使用的 skill / 文档索引、工程状态和输出约束揉合成最终“系统式”复合 prompt。
 - `prompts/` 的目标是让后续 agent 可以直接再次使用该 prompt，尽量复现当次正式输出的内容结构、判断口径和交付效果。
 - `prompts/` 应避免冗长、敏感或无复现价值的过程噪音；必要时用路径和摘要指向上下文。
-- `notes/` 记录 Codex 的判断和交付状态，不替代正式输出本身。
+- `notes/` 记录判断、交付状态、验证结果、用户故事、体验脚本、review、decision 和待确认问题，不替代主题根目录下的正式输出或 `experiments/` / `app/` 中的原型实现。
+- `notes/story-YYYY-MM-DD.md` 适用于 `04-uxdesign/` 与 `05-prototypes/` 的体验叙事，也可用于 `02-knowledge/` / `03-insights/` 中需要长期保留的场景说明。它可以由用户提供初稿，再由 Codex 或 Claude 补全为更完整的故事脚本；owner 仍按所在目录规则执行。
 
 UX 设计：
 
@@ -118,8 +123,9 @@ UX 设计：
 
 - `experiments/html/<demo-name>.html`
 - `experiments/jsx/<demo-name>.jsx`
-- `prompts/<demo-name>.md`
-- `notes/<demo-name>.md`
+- `prompts/YYYY-MM-DD-<slug>.md`：可复现当次原型生成 / 迭代效果的复合 prompt
+- `notes/update-YYYY-MM-DD.md`：原型更新摘要、验证结论、影响范围、待确认问题
+- `notes/story-YYYY-MM-DD.md`：原型或体验设计对应的用户场景、叙事脚本、demo story
 - `notes/sample-data.md`：demo 样例数据、数据等级、来源与生成规则；Codex + Claude 共享维护
 - `notes/review-YYYY-MM-DD.md`：原型验证、cross-review、Claude 对 Codex owner 文件的澄清请求或修订建议
 
@@ -135,8 +141,9 @@ UX 设计：
 
 - Claude 生成的单文件 HTML -> `05-prototypes/<topic>/experiments/html/`
 - Claude 生成的 JSX / TSX 草案 -> `05-prototypes/<topic>/experiments/jsx/`
-- 对应提示词、生成上下文、迭代说明 -> `05-prototypes/<topic>/prompts/`
-- 原型结论、待办、验证结果 -> `05-prototypes/<topic>/notes/`
+- 对应复合 prompt、生成上下文、迭代约束 -> `05-prototypes/<topic>/prompts/YYYY-MM-DD-<slug>.md`
+- 原型结论、待办、验证结果 -> `05-prototypes/<topic>/notes/update-YYYY-MM-DD.md` 或对应类型的 `notes/<type>-YYYY-MM-DD.md`
+- 用户场景、体验脚本、demo story -> `05-prototypes/<topic>/notes/story-YYYY-MM-DD.md`
 - demo 样例数据、数据等级、来源与生成规则 -> `05-prototypes/<topic>/notes/sample-data.md`
 - Claude 对 Codex owner 文件的 review / 澄清请求 -> `05-prototypes/<topic>/notes/review-YYYY-MM-DD.md`
 - 当某个原型进入持续工程化 -> `05-prototypes/<topic>/app/`

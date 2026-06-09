@@ -2,7 +2,7 @@
 
 本文是 `A5 / Ascend 950` 主题的快速入口，用于建立硬件架构、代际变化、PyPTO 框架适配、算子开发影响、调试调优影响和 Toolkit 场景的总览。
 
-更完整的展开分析见 [a5-950-pypto-impact-report.md](a5-950-pypto-impact-report.md)。本文只保留可复用的结论、边界和跳转线索，不替代详细报告。
+更完整的展开分析见 [impact-report.md](impact-report.md)。本文只保留可复用的结论、边界和跳转线索，不替代详细报告。
 
 ## 可信度与读法
 

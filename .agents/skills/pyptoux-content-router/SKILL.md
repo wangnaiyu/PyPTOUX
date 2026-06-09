@@ -35,8 +35,9 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 5. 如果 artifact 来自 vibe coding，默认这样放：
    - HTML -> `05-prototypes/<numbered-topic>/experiments/html/`
    - JSX / TSX -> `05-prototypes/<numbered-topic>/experiments/jsx/`
-   - prompts -> `05-prototypes/<numbered-topic>/prompts/`
-   - prototype notes -> `05-prototypes/<numbered-topic>/notes/`
+   - composite prompt -> `05-prototypes/<numbered-topic>/prompts/YYYY-MM-DD-<slug>.md`
+   - prototype update notes -> `05-prototypes/<numbered-topic>/notes/update-YYYY-MM-DD.md`
+   - user scenario / story script -> `05-prototypes/<numbered-topic>/notes/story-YYYY-MM-DD.md`
    - matured project -> `05-prototypes/<numbered-topic>/app/`
 6. 如果仍然不确定，采用 smallest correct placement，避免发明新的顶层结构。
 7. 如果新引入了 topic、shared framework、prototype track、tool 或 designsystem area，记得更新相关索引文件。
