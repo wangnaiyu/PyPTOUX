@@ -18,6 +18,7 @@
 - `08-assets/`：截图、图标、视频与导出资源
 - `09-references/`：外部来源、资料出处与链接索引
 - `10-docs/`：仓库规范、模板与索引
+  - `10-docs/04-upgrade-plans/`：跨 session、跨目录的仓库升级计划和 active workbench；稳定结论最终应回写到正式规则、知识库或索引
 - `11-archive/`：冻结或已归档内容
 - `12-pages/`：GitHub Pages 稳定短链接源码入口；发布后 URL 不包含这一层目录
 

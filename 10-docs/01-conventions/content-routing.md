@@ -32,6 +32,8 @@
   -> `08-assets/`
 - 保存外部来源索引、资料出处、链接表
   -> `09-references/`
+- 维护跨多个目录、多个 skill、多个 session 的仓库治理 / 系统升级计划
+  -> `10-docs/04-upgrade-plans/<date-slug>/`
 - 内容尚未整理完成，暂时归档
   -> `01-inbox/`
 - 内容已废弃或冻结，但仍希望保留
@@ -189,6 +191,32 @@ UX 设计：
 - `callOpMagic`
 - `leafHash`
 
+## 7.2 Upgrade Plan Workbench Rule
+
+`10-docs/04-upgrade-plans/` 用于 active 的仓库升级工作包，不替代正式规则或知识库。
+
+适用条件：
+
+- 任务跨多个目录、多个 skills 或多个 agent
+- 任务预计需要跨 session 推进
+- 需要保存状态、决策、开放问题和续作 prompt
+
+默认结构：
+
+- `README.md`：目标、owner、生命周期和新 session 使用方式
+- `plan.md`：批次路线图
+- `status.md`：每轮进度和下一步
+- `decisions.md`：已确认决策
+- `open-questions.md`：待用户判断的问题
+- `batch-*.md`：单个 batch 的方案、实施边界和完成标准
+- `prompts/`：续作 prompt
+
+生命周期：
+
+- 推进中保留在 `10-docs/04-upgrade-plans/`
+- 完成后写 `final-report.md`，并确认稳定结论已回写到正式位置
+- 不再需要日常检索时，可整体归档到 `11-archive/upgrade-plans/`
+
 ## 8. Required Follow-Ups
 
 出现以下情况时，应同步更新索引：
@@ -203,3 +231,5 @@ UX 设计：
   -> 更新 `10-docs/03-indexes/tools.md`
 - 新增一个设计系统基础模块
   -> 更新 `10-docs/03-indexes/designsystem.md`
+- 新增一个长期仓库升级计划
+  -> 更新 `10-docs/03-indexes/content-map.md`
