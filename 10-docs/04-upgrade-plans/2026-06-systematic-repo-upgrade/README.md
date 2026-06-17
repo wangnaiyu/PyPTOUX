@@ -43,9 +43,11 @@
 - `sources-to-refresh.md`：外部源、优先级、刷新状态和处理策略。
 - `batch-a-agentic-search-governance-plan.md`：Batch A 在 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `batch-b-pypto-architecture-refresh-plan.md`：Batch B 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
+- `batch-c-toolkit-runtime-data-strategy-plan.md`：Batch C 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `prompts/resume.md`：新 session 续作时优先使用的通用 prompt。
 - `prompts/batch-a-source-governance.md`：正式启动 Batch A 时使用的 prompt。
 - `prompts/batch-b-pypto-architecture-refresh.md`：正式启动 Batch B 时使用的 prompt。
+- `prompts/batch-c-toolkit-runtime-data-strategy.md`：正式启动 Batch C 时使用的 prompt。
 
 ## 5. 新 Session 如何继续
 
@@ -72,6 +74,7 @@
 - 不确定当前做到哪里：使用 `prompts/resume.md`。
 - 只是想恢复上下文、让 agent 判断下一步：使用 `prompts/resume.md`。
 - 已经明确要启动某个 batch：使用对应 batch prompt，例如 `prompts/batch-a-source-governance.md` 或 `prompts/batch-b-pypto-architecture-refresh.md`。
+- Batch C 使用 `prompts/batch-c-toolkit-runtime-data-strategy.md`。
 - 最稳做法：先使用 `prompts/resume.md`，等 agent 汇报当前状态后，再要求继续执行某个 batch prompt。
 
 也可以直接使用组合句：

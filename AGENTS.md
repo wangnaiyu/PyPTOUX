@@ -102,8 +102,9 @@
 ### 5.2 `PyPTO` 业务知识检索
 
 - `PyPTO` 相关业务知识任务优先使用 `pypto-knowledge-source`
-- 先参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 缩小查询范围
-- 再到最匹配的来源检索信息
+- 可参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 作为 `orientation_hints` 缩小查询范围
+- 当前实现事实、字段、路径和上游 literal 必须回 `pypto` 本地镜像、官方文档或其他 authoritative source 校验
+- 再按 `pypto-knowledge-source` 的 evidence strategy 到最匹配的来源检索信息
 - 结论需要沉淀回 `02-knowledge/` 对应主题；没有合适主题时新建
 - 对上游 `pypto` 仓库或样例数据里的真实文件名、路径、字段键、索引键、trace key 保持原样，不要为了统一术语口径而改写
 - 可统一的是我们自己的解释性正文；不可改写的是用于追溯上游产物的 literal，例如 `program.json`、`*_ROOT.json`、`rootHash`、`callOpMagic`、`leafHash`

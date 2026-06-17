@@ -111,12 +111,12 @@
 - `not_for`: 官网对外措辞、非 PyPTO CANN 通用概念、未校验的设计意图、外部经验 claim。
 - `question_modes`: `lookup`, `freshness`, `diagnostic`, `optimization`, `workflow-research`, `demo-material`
 - `output_modes`: `answer`, `research-brief`, `demo-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: Batch A 不 refresh。默认每个自然天最多 clone / refresh 一次的规则保留给 Batch B；strong freshness 问题优先单点读取 upstream 或用户给定 URL。本地镜像只代表当前 checkout。
+- `freshness_policy`: Batch B 已于 `2026-06-17` 将本地 mirror hard sync 到 `origin/HEAD -> origin/master`，snapshot commit `91ea6d019b9e0d170934c6861ad63b89c63b9bf9`。后续默认每个自然天最多 clone / refresh 一次；strong freshness 问题优先单点读取 upstream 或用户给定 URL。本地镜像只代表当前 checkout。
 - `search_mode`: 本地优先 `rg`；用户给具体 URL 或强 freshness 问题时在线单点读取。线上仓库不用于大范围探索性检索。
 - `discovery_policy`: 可从当前问题出发跨目录 `rg`；发现 drift 时记录，不在 Batch A 刷新。
 - `claim_policy`: factual claim 以源码、文档源码或可追溯文件为准；字段名、路径、trace key、文件名等 literal 必须保留原样。
 - `writeback_policy`: verified claim 可建议写回 `02-knowledge/`；drift 记录到对应 `drift.md` 或任务包。
-- `orientation_hints`: `02-knowledge/00-shared/pypto-architecture/overview.md` 仅作目录 hint，不能限制 why/how/design/UX/demo 类探索。
+- `orientation_hints`: `02-knowledge/00-shared/pypto-architecture/overview.md` 仅作目录 hint 和架构速读，不能限制 why/how/design/UX/demo 类探索；当前 snapshot 细节见该目录的 `sources.md`。
 - `overwrite_guard`: local mirror 有未提交改动时，不得覆盖；先确认。
 
 ### pypto-official-docs

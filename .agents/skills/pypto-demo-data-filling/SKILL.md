@@ -22,7 +22,7 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 ## 先读什么 | What To Read First
 
 - 先读 [../../../AGENTS.md](../../../AGENTS.md)，确认项目级 demo 规则。
-- 先读 [../../../02-knowledge/00-shared/pypto-architecture/overview.md](../../../02-knowledge/00-shared/pypto-architecture/overview.md)，用它缩小检索范围。
+- 可读 [../../../02-knowledge/00-shared/pypto-architecture/overview.md](../../../02-knowledge/00-shared/pypto-architecture/overview.md) 作为 `orientation_hints` 缩小检索范围；不要用它替代当前 `pypto` snapshot 或样例数据事实。
 - 再读 [../../../02-knowledge/00-shared/pypto-sample-datasets/overview.md](../../../02-knowledge/00-shared/pypto-sample-datasets/overview.md)，确认当前有哪些已整理好的样例数据集。
 - 如果需要把代码、计算图、泳道图精确对齐，再读 [../../../02-knowledge/00-shared/pypto-sample-datasets/sources.md](../../../02-knowledge/00-shared/pypto-sample-datasets/sources.md)，优先复用已经确认过的映射入口。
 - 需要更快决定 demo 面板和素材映射时，读 [references/demo-patterns.md](references/demo-patterns.md)。
@@ -35,8 +35,8 @@ description: Use this skill when working inside the PyPTOUX repository and you n
    - 泳道图 / 性能分析
    - 三栏联动
    - 混合型说明
-2. 用 `pypto-architecture/overview.md` 缩小检索范围，决定先去：
-   - `docs/` 找编程指南、API、排障口径
+2. 用 `pypto-architecture/overview.md` 作为 orientation hint，决定先去：
+   - `docs/zh/` 找编程指南、API、排障口径
    - `examples/` 找官方推荐写法
    - `models/` 找更接近真实业务的实现
    - `python/pypto/`、`framework/src/` 找前端机制和底层编译链路

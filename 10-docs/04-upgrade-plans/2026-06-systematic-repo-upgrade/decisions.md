@@ -89,3 +89,21 @@
 - 决策：Batch B 的 `next_batch_gate` 设为 `discuss-first`，不得直接 refresh 或重写 `pypto-architecture`。
 - 原因：Batch B 涉及外部本地镜像、可能的 `fetch` / `pull`、未提交改动保护、snapshot 记录方式和 `overview.md` 信息形态，需要用户先确认。
 - 影响：`open-questions.md` 已将 Batch B preflight 问题提升为“启动前必须确认”；`prompts/batch-b-pypto-architecture-refresh.md` 要求先讨论再写 plan。
+
+## 2026-06-17 Batch B refresh 策略采用 read-only mirror hard sync
+
+- 决策：本地 `pypto` 作为 read-only upstream mirror / agent 检索缓存；Batch B 使用 `git fetch --prune` 后 hard sync 到远端默认分支的策略，不使用普通 `git pull`。GitCode 上的正确 sync 目标是 `master`，本轮用 `origin/HEAD` / `origin/master` 对齐。
+- 原因：用户通常不在本地 `pypto` mirror 中开发或保留本地修改；hard sync 可避免 merge/rebase 状态，让 snapshot 更接近 upstream。
+- 影响：hard sync 前必须检查 tracked worktree；如果 tracked files 有未提交修改，先暂停并汇报。untracked 内容不在本次默认清理范围内，但读取 snapshot 时要避免把 untracked 文件误当 upstream。
+
+## 2026-06-17 Batch B overview 形态和 snapshot 落点
+
+- 决策：`overview.md` 采用“检索地图 + 架构摘要”形态，保留少量来源标注的架构理解正文，但只作为 `orientation_hints`；snapshot 元数据同时写入 `overview.md` 和 `sources.md`。
+- 原因：`overview.md` 需要让读者快速判断可信度，同时不能重新变成唯一事实入口；`sources.md` 承载完整 source/snapshot/claim boundary 细节。
+- 影响：后续正式修改时，`overview.md` 必须声明使用边界；当前实现事实仍回 `pypto` 源码、文档源码或官方文档校验。
+
+## 2026-06-17 Batch B 执行完成
+
+- 决策：按已确认的 `batch-b-pypto-architecture-refresh-plan.md` 完成 Batch B，刷新 `pypto-architecture`，同步依赖旧 architecture hint 的规则/skills，并准备 Batch C handoff。
+- 原因：`pypto` 本地 mirror 已 hard sync 到当前 GitCode `master`，旧 architecture map 中的 snapshot、文档路径和工具路径已经漂移。
+- 影响：`02-knowledge/00-shared/pypto-architecture/overview.md` 现在只作为 `orientation_hints`；`sources.md` 记录 snapshot 和 source boundary；`drift.md` 记录本轮已吸收 drift；下一步进入 Batch C preflight。
