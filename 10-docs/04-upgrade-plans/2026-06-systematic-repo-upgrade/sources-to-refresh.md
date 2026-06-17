@@ -17,7 +17,7 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 
 | Source | 当前状态 | Batch A 处理结果 | 后续处理 |
 | --- | --- | --- | --- |
-| `pypto` | `active` | 保持当前代码事实、字段、literal、文档源码 freshness 的最高优先级；`overview.md` 降级为 `orientation_hints` | Batch B refresh 本地镜像并记录 snapshot |
+| `pypto` | `active` | Batch B 已 refresh：本地 mirror hard sync 到 `origin/HEAD -> origin/master`，snapshot commit `91ea6d019b9e0d170934c6861ad63b89c63b9bf9`；`overview.md` 仅作 `orientation_hints` | 后续按问题 freshness 需要单点读取 upstream；默认每自然天最多 refresh 一次 |
 | `pypto-official-docs` | `active` | 保持官网口径、对外措辞、教程入口 authoritative | 后续按问题在线读取 |
 | `pypto-top-level-design-documents` | `active` within design-intent / `mirror-candidate` | 保守降权：设计意图 active，当前实现事实必须回 `pypto` 校验 | 是否建 local mirror 待用户确认 |
 | `cann-docs-community-edition` | `active` | 保持非 PyPTO CANN / Ascend / API / 工具链官方来源 | 默认在线最新版；用户指定版本时按指定版本 |
@@ -60,6 +60,6 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 
 ## 下一步
 
-- Batch B：刷新 `pypto` 本地镜像并更新 `02-knowledge/00-shared/pypto-architecture/`。
+- Batch B：已刷新 `pypto` 本地镜像并更新 `02-knowledge/00-shared/pypto-architecture/`。
 - Batch C：确认 `pypto-tools`、运行数据、`PTO-TestData` 和 toolkit 设计稿的 mirror / manifest / demo 使用策略。
 - Batch D：确认 `yinyucheng0601/pto-design-system` 的同步方式和 `07-designsystem/` 投影边界。

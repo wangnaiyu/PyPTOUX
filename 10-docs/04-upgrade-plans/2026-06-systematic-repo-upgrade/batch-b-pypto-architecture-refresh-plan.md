@@ -78,39 +78,138 @@ Batch B 完成时，必须同时满足：
 
 状态：
 
-- `batch_status`: `pending`
-- `plan_status`: `needs-preflight-discussion`
+- `batch_status`: `complete`
+- `plan_status`: `implemented`
 
-本节由 Batch B preflight / Plan 确认阶段填写。确认前不要把本文件当作已批准实施方案。
+本节记录 Batch B preflight 已确认的策略、已执行的 refresh 检查、hard sync snapshot，以及已实施的正式修改。
 
 ### Audit Findings
 
-待填写。
+- 旧 `overview.md` 已有清晰的检索地图价值，但 snapshot 元数据为 `unknown`，不能作为当前实现事实出口。
+- 旧 `overview.md` 混合了事实、架构理解和检索建议；Batch B 应把它重构为“检索地图 + 少量来源标注的架构摘要”，并明确只作为 `orientation_hints`。
+- `sources.md` 当前只是来源列表，缺少 snapshot、refresh 策略、authority scope、claim boundary 和 no-refresh / refresh 结果。
+- `drift.md` 当前有 schema 和维护流程，但没有记录旧 overview 的已知验证债务、snapshot 缺失或本轮 refresh 结果。
+- Hard sync 后确认的主要 drift：
+  - 远端默认分支是 `master`，不是 `main`。
+  - 当前 tracked 文档主路径是 `docs/zh/...`；旧 overview 中的 `docs/tutorials/`、`docs/api/`、`docs/trouble_shooting/`、`docs/install/`、`docs/invocation/` 等路径需要改为 `docs/zh/tutorials/`、`docs/zh/api/`、`docs/zh/trouble_shooting/`、`docs/zh/install/`、`docs/zh/invocation/`。
+  - tracked 工具文档入口是 `docs/zh/tools/`；本地顶层 `docs/tools/` 是 untracked 内容，不能作为 upstream snapshot 事实。
+  - `models/` 当前包含 `arctic`、`deepseek_v32_exp`、`deepseek_v4`、`glm_v4_5`、`kimi`、`qat`、`qwen3_next`，旧 overview 应更新真实模型目录提示。
+  - `framework/src/` 当前包含 `adapter`、`cann_host_runtime`、`codegen`、`cost_model`、`interface`、`machine`、`operator`、`passes`、`platform`、`utils`，旧 overview 中的 framework 描述需要细化。
+  - `python/pypto/` 当前包含 `frontend`、`ir`、`op`、`pil`、`pypto_impl`、`runtime` 等入口，旧 overview 中的 Python 前端提示需要更新。
+- 依赖旧 architecture hint 的文件已初步发现：
+  - `AGENTS.md` 仍写着“先参考 overview 缩小查询范围”，需要改为“可作为 orientation hint，当前事实回 source registry / pypto 校验”。
+  - `.agents/skills/pypto-knowledge-source/SKILL.md` 已在 Batch A 降级为 `orientation_hints`，预计无需大改。
+  - `.agents/skills/pypto-knowledge-source/references/sources.md` 已登记 `overview.md` 只作 `orientation_hints`，需要在 Batch B 后更新 snapshot 相关说明。
+  - `.agents/skills/pypto-demo-data-filling/SKILL.md` 仍使用 “先读 overview 缩小检索范围” 的表达，需要同步降级。
+  - `10-docs/03-indexes/content-map.md`、`10-docs/03-indexes/shared-frameworks.md` 只作索引，预计不需要语义修改。
 
 ### Refresh Strategy
 
-待填写。
+- 用户已确认：本地 `pypto` 是 read-only upstream mirror / agent 检索缓存，通常不在其中开发或保留本地修改。
+- 用户已确认：允许先检查本地 mirror 的 `git status` 和 remote；允许执行 `git fetch --prune`；随后 hard sync 到远端默认分支；不使用普通 `git pull`，避免 merge/rebase 状态。
+- 用户已确认：如 tracked files 有未提交修改，先暂停并汇报，不直接覆盖。
+- 已执行检查：
+  - local mirror: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto`
+  - remote: `https://gitcode.com/cann/pypto`
+  - fetch 前本地分支: `master`
+  - fetch 前本地 commit: `4fec8188c4788318225ad90ede46e19c31846cdf`
+  - tracked worktree: clean
+  - pre-cleanup untracked files / dirs: present, including `.DS_Store` files and `docs/tools/`; later cleaned after user approval, and later reads must not treat pre-cleanup untracked content as upstream snapshot.
+- 已执行 `git fetch --prune`，远端更新到：
+  - `origin/HEAD -> origin/master`
+  - `origin/master`: `91ea6d019b9e0d170934c6861ad63b89c63b9bf9`
+  - 新增远端分支：`origin/9.1.0`、`origin/9.1.0-beta.3`
+  - 删除远端分支引用：`origin/cherry-pick-mr-1686-1773887871361-auto`
+- 用户已确认：GitCode 上的 sync 目标应为 `master` 而不是 `main`。
+- 已执行 `git reset --hard origin/HEAD`；当前 snapshot:
+  - local branch: `master`
+  - sync target: `origin/HEAD` -> `origin/master`
+  - snapshot commit: `91ea6d019b9e0d170934c6861ad63b89c63b9bf9`
+  - short commit: `91ea6d01`
+  - commit date: `2026-06-17T10:32:51+08:00`
+  - commit subject: `fix(machine): Change aicore_runtime function from uint64 to int64.`
+  - tracked worktree after sync: clean
+  - post-cleanup status: tracked worktree clean, no untracked cache pollution remains.
 
 ### Snapshot Metadata
 
-待填写。
+- `overview.md` 和 `sources.md` 都记录 snapshot。
+- `overview.md` 记录读者快速判断所需字段：
+  - `intended_use`: `orientation_hints`
+  - `source_snapshot_date`
+  - `local_mirror_path`
+  - `remote_url`
+  - `sync_target`
+  - `snapshot_branch`
+  - `snapshot_commit`
+  - `refresh_method`
+  - `verification_status`
+- `sources.md` 记录完整 source / snapshot / refresh 细节：
+  - fetch / sync 时间
+  - remote URL
+  - local path
+  - branch / commit
+  - remote HEAD
+  - dirty / untracked 状态摘要
+  - source authority scope
+  - claim boundary
+  - online fallback policy
+- 本轮 hard sync 已完成，snapshot 可标注为 `hard-synced-to-origin-master`。
 
 ### Overview Structure
 
-待填写。
+- 采用“检索地图 + 架构摘要”结构，避免恢复成唯一 source routing 入口。
+- 建议信息架构：
+  1. `Metadata / 使用边界`：声明只作 `orientation_hints`，当前事实回 `pypto` source 或官方 docs 校验。
+  2. `Architecture Summary`：保留少量来源标注的 PyPTO 架构理解正文。
+  3. `Repository Map`：按 `docs/`、`examples/`、`models/`、`python/pypto/`、`framework/src/`、`tools/` 给出定位线索。
+  4. `Common Retrieval Paths`：按 lookup、workflow、diagnostic、optimization、demo-material 等场景给入口。
+  5. `Claim Matrix`：对核心架构 claim 标注 source、claim type、verification status。
+  6. `Known Limits / Drift`：链接 `sources.md` 和 `drift.md`。
 
 ### Sources And Drift Rules
 
-待填写。
+- `sources.md` 从简单 source 列表升级为本主题内的 source snapshot 和引用边界记录，但不重复维护全局 registry；全局 source 能力仍以 `.agents/skills/pypto-knowledge-source/references/sources.md` 为准。
+- `drift.md` 记录：
+  - 旧 `overview.md` 的 snapshot metadata unknown。
+  - 若 hard sync 后发现路径变化、文档路径变化或 claim 不再成立，记录 `confirmed-drift`。
+  - 若因分支目标未确认导致未 hard sync，记录为 plan 阶段阻塞，不提前写入正式 drift。
+- refresh 失败时，用户允许线上单点读取辅助判断 drift，但不做无界 web crawl。
 
 ### Dependent Files
 
-待填写。
+- 需要在 `/goal` 阶段审计并按需更新：
+  - `AGENTS.md`
+  - `.agents/skills/pypto-demo-data-filling/SKILL.md`
+  - `.agents/skills/pypto-knowledge-source/references/sources.md`
+  - `10-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/status.md`
+  - `10-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/prompts/resume.md`
+- 已基本符合 Batch A 降级规则，可能只需要验证或轻量同步：
+  - `.agents/skills/pypto-knowledge-source/SKILL.md`
+  - `10-docs/03-indexes/content-map.md`
+  - `10-docs/03-indexes/shared-frameworks.md`
 
 ### User Decisions Needed
 
-待填写。
+- Batch B 已无阻塞问题。
+- 用户已允许清理本地 mirror 中的 untracked `.DS_Store` 与顶层 `docs/tools/` 缓存污染；本轮已清理并验证 mirror clean。
+- Batch C 启动前仍需确认 `pypto-tools`、运行数据、`PTO-TestData` 和 toolkit 设计稿的 mirror / manifest / 权限策略。
 
 ### Implementation Checklist
 
-待填写。
+- [x] 读取 Batch B prompt、任务包状态、Batch A plan、source registry 和当前 `pypto-architecture` 文件。
+- [x] 运行并汇报 PyPTOUX `git status --short`。
+- [x] 获取用户 preflight 决策。
+- [x] 检查本地 `pypto` mirror status、remote、branch、commit。
+- [x] 执行 `git fetch --prune`。
+- [x] 用户确认 hard sync 目标从 `origin/main` 改为 `origin/HEAD` / `origin/master`。
+- [x] 执行 `git reset --hard origin/HEAD`。
+- [x] 记录 final snapshot 日期、remote URL、branch、commit。
+- [x] 基于 synced snapshot 初步审计 `README.md`、`docs/`、`examples/`、`models/`、`python/pypto/`、`framework/src/` 和必要工具目录。
+- [x] 用户确认本文 plan，批准进入 `/goal`。
+- [x] 清理本地 mirror 中 untracked `.DS_Store` 与顶层 `docs/tools/` 缓存污染。
+- [x] 更新 `overview.md` 为“检索地图 + 架构摘要 + claim matrix”。
+- [x] 更新 `sources.md` 为主题 source / snapshot / boundary 记录。
+- [x] 更新 `drift.md`，记录旧 overview 与当前 source 的 drift / resolved 状态。
+- [x] 同步依赖旧 hint 的 `AGENTS.md`、`pypto-demo-data-filling` 和必要 source registry 文案。
+- [x] 更新任务包 checkpoint 文件。

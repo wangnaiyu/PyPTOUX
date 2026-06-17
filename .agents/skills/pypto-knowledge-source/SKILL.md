@@ -38,7 +38,7 @@ description: Use this skill when working inside the PyPTOUX repository and the t
 | `freshness` | 最新变化、是否已合入、当前版本是否变化 | 优先官方在线 / upstream 当前版本；本地镜像只作当前 checkout，不作最新断言。 |
 | `diagnostic` | 为什么报错、为什么慢、哪里异常 | 组合代码、官方文档、runtime artifact、sample dataset、issues / FAQ / troubleshooting。 |
 | `optimization` | 怎么调优、怎么改进、下一步怎么做 | 组合代码实现、CANN/Ascend 文档、runtime artifact 和经验材料；经验 claim 必须标注。 |
-| `workflow-research` | 用户如何完成某类任务 | 从 docs/tutorials、examples/models/tests、toolkit、runtime manifest、issues/FAQ、既有 UX/prototype notes 还原任务流。 |
+| `workflow-research` | 用户如何完成某类任务 | 从 `docs/zh/tutorials`、examples/models/tests、toolkit、runtime manifest、issues/FAQ、既有 UX/prototype notes 还原任务流。 |
 | `trend-research` | 技术变化如何影响 UX 和开发方式 | 比较 CANN/Ascend 官方材料、release notes、PyPTO/toolkit 代码文档、公开文章、社区讨论和必要 web discovery。 |
 | `painpoint-mining` | 用户痛点、诉求、FAQ、社区反馈 | 优先 issues / discussions / PR / FAQ / troubleshooting，外链只作 supporting claim。 |
 | `demo-design` | 针对主题或对话设计 demo | 先 research，再转成 demo narrative、数据需求、交互结构和 PTO design system 约束。 |

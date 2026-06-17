@@ -2,13 +2,23 @@
 
 ## Batch B Preflight（启动前必须确认）
 
-这些问题必须在执行 Batch B refresh / rewrite 之前先与用户确认：
+这些问题必须在执行 Batch B refresh / rewrite 之前先与用户确认。
 
-- 是否允许对 `pypto` 本地镜像执行 `git fetch` / `git pull`，还是只读取当前 checkout？
-- 本地 `pypto` 镜像是否可能存在需要保留的未提交改动？是否需要先检查并汇报？
-- `02-knowledge/00-shared/pypto-architecture/overview.md` 应偏“检索地图 / orientation hints”，还是保留一定“架构理解正文”？
-- snapshot 元数据记录到哪里：仅 `sources.md`，还是 `overview.md` 和 `sources.md` 都记录？
-- 如果本地镜像无法 refresh，是否允许用线上单点 freshness backup 辅助判断 drift？
+### 已确认
+
+- `pypto` 本地镜像定位为 read-only upstream mirror / agent 检索缓存，通常不在其中开发或保留本地修改。
+- refresh 策略：先检查本地 `pypto` mirror 的 `git status` 和 remote；允许执行 `git fetch --prune`；不使用普通 `git pull`；hard sync 前如发现 tracked files 有未提交修改，先暂停并汇报。
+- GitCode 上的 sync 目标是 `master` 而不是 `main`；本轮已允许使用 `origin/HEAD` / `origin/master` 作为 hard sync 目标。
+- 允许读取本地镜像状态并汇报。
+- `overview.md` 形态：检索地图 + 架构摘要，保留少量来源标注的架构理解正文。
+- snapshot 元数据记录到 `overview.md` 和 `sources.md`：前者用于快速判断可信度，后者保存完整 source/snapshot 细节。
+- refresh 失败时允许线上单点读取辅助判断 drift，但不做无界 web crawl。
+
+### Batch B Resolution
+
+- Batch B 已完成。
+- 本地 `pypto` mirror 已 hard sync 到 `origin/HEAD -> origin/master`，snapshot commit `91ea6d019b9e0d170934c6861ad63b89c63b9bf9`。
+- 本地 mirror 中 untracked `.DS_Store` 与顶层 `docs/tools/` 缓存污染已清理；后续读取以 tracked snapshot 为准。
 
 ## Batch A Resolution
 
