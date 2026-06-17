@@ -1,40 +1,52 @@
 # 待确认问题
 
+## Batch B Preflight（启动前必须确认）
+
+这些问题必须在执行 Batch B refresh / rewrite 之前先与用户确认：
+
+- 是否允许对 `pypto` 本地镜像执行 `git fetch` / `git pull`，还是只读取当前 checkout？
+- 本地 `pypto` 镜像是否可能存在需要保留的未提交改动？是否需要先检查并汇报？
+- `02-knowledge/00-shared/pypto-architecture/overview.md` 应偏“检索地图 / orientation hints”，还是保留一定“架构理解正文”？
+- snapshot 元数据记录到哪里：仅 `sources.md`，还是 `overview.md` 和 `sources.md` 都记录？
+- 如果本地镜像无法 refresh，是否允许用线上单点 freshness backup 辅助判断 drift？
+
+## Batch A Resolution
+
+Batch A 已通过以下默认策略解除本批次阻塞：
+
+- 已登记 source 默认采用“保守降权”：不直接 `deprecated` / `blocked`，而是用 `authority_scope`、`best_for`、`not_for` 和 `claim_policy` 限制误用。
+- `curated-external-links` 和 web discovery 只作 discovery/supporting，不作 factual source of truth。
+- `pypto-top-level-design-documents` 只在 design-intent scope 内 active；当前实现事实必须回 `pypto` 校验。
+- 私有仓、大体量仓库、运行数据和设计稿默认先按 `manifest` 或 `candidate` 登记，不把原始材料写入仓库。
+- Batch A 只制定 clone / mirror policy 和候选清单，不执行 clone / refresh。
+
 ## Source Governance
 
-- `pypto-tools` 本地镜像计划放在哪里？是否已经下载？
-- `pypto-tools` 是否允许本仓库记录文件结构、schema、截图或代码片段？
-- 已登记的 `github.com/hengliao1972/**` 中哪些仍然 active？哪些应降级为 candidate 或 deprecated？
-- `cann.csdn.net/**` 是否继续作为 official-community-material？是否需要限定只作 supporting source？
-- 是否存在应完全屏蔽的旧来源或误导性来源？
-- 哪些已登记 source 已经过时，需要从 `active` 降级为 `deprecated`？
-- 哪些 source 应完全 `blocked`，不允许 agent 主动检索或引用？
-- 是否有新的业务知识源需要加入 Batch A 的候选清单？
+- 是否存在用户明确要求 `deprecated` 的旧来源？
+- 是否存在用户明确要求 `blocked` 的来源？
+- `cann.csdn.net/**` 是否长期保留为 `official-community-material`，还是只作为普通 supporting source？
+- `github.com/hengliao1972/**` 中除 `pypto_top_level_design_documents` 之外是否还有应登记的 active / candidate source？
 
 ## Clone / Local Mirror Policy
 
-- `github.com/hengliao1972/**` 是否需要建立本地 mirror 供 agent 跨文件检索？
-- 如果建立本地 mirror，默认放在仓库外哪个位置？是否允许 refresh？
-- `yinyucheng0601/pto-design-system` 是否需要本地 mirror，还是只在 Batch D 设计同步机制时处理？
-- `gitcode.com/cann/pypto-tools` 是否已经有本地下载位置？是否允许 agent 读取？
-- 对私有仓或大仓库，是否统一采用 `manifest` 先登记、后确认路径和权限的方式？
+- 候选 mirror set 的默认本地根目录放在哪里？
+- `github.com/hengliao1972/pypto_top_level_design_documents` 是否需要建立本地 mirror 供 agent 跨文件检索？
+- `gitcode.com/cann/pto-isa`、`cannbot-skills`、`ops-transformer`、`pypto-tools` 是否允许 clone 到本地 mirror？
+- `gitcode.com/zhanghuixin/PTO-TestData` 是否允许 clone 到本地 mirror，还是只登记 manifest？
 - issue / discussion / PR / FAQ 类 source 是否需要本地导出快照，还是保持在线检索？
 
-## PyPTO Architecture
+## Batch C: Toolkit And Runtime Data
 
-- 刷新 `pypto` 本地镜像时，是否允许直接 pull / fetch？
-- 当前本地 `pypto` 镜像是否可能有未提交改动需要保留？
-- 是否希望 `pypto-architecture` 只做检索地图，还是也保留架构理解正文？
-
-## Toolkit And Runtime Data
-
+- `pypto-tools` 本地镜像计划放在哪里？是否已经下载？
+- `pypto-tools` 是否允许本仓库记录文件结构、schema、截图或代码片段？
 - pypto 算子运行数据是否允许进入本仓库？
 - 如果允许，进入仓库的是原始数据、抽样数据、脱敏数据，还是只进入 manifest？
 - 哪些运行数据可以标记为 `share-safe`？
+- `PTO-TestData` 的数据等级、权限和可外发边界是什么？
 - toolkit 设计稿源文件是否允许进入本仓库？
 - 如果设计稿不入仓，是否允许记录缩略图、截图或结构摘要？
 
-## Design System
+## Batch D: Design System
 
 - 从 `yinyucheng0601/pto-design-system` 更新时，是希望手动触发脚本、人工 copy，还是维护一个上游镜像？
 - `07-designsystem/` 是否只承载稳定投影，不承载 agent-facing preview 和实验 pattern？

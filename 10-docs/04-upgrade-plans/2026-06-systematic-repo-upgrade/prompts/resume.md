@@ -15,9 +15,16 @@
 - `decisions.md`
 - `open-questions.md`
 - `sources-to-refresh.md`
-- `batch-a-agentic-search-governance-plan.md`（如果当前状态仍处于 Batch A）
+- `batch-a-agentic-search-governance-plan.md`
+- `batch-b-pypto-architecture-refresh-plan.md`
 
 然后根据 `status.md` 的 `Current Focus` 和 `Next Step` 继续，不要从头重做。
+
+当前状态：
+- Batch 0 已完成。
+- Batch A: Agentic Search Governance 已完成。
+- Batch B prompt 和 plan shell 已准备。
+- 下一步是 Batch B: PyPTO Architecture Refresh 的 preflight 讨论。
 
 执行规则：
 - 开始前先确认 `git status --short`。
@@ -25,10 +32,11 @@
 - 如果要更新业务知识源，使用 `pypto-knowledge-source`。
 - 如果要处理 demo 真实素材，使用 `pypto-demo-data-filling`。
 - 如果要处理 PTO 视觉规范或前端原型，使用 `pto-design-system`。
-- 如果 Batch A 方案文件仍是 `pending` 或模板状态，先在 Plan 模式确认方案和 Definition of Done，不要直接修改 `.agents/skills/pypto-knowledge-source/`。
-- 如果 Batch A 方案已经确认，再用 `/goal` 按 `batch-a-agentic-search-governance-plan.md` 的 Definition of Done 执行。
+- Batch A 已把 `pypto-knowledge-source` 升级为 agentic search governance；后续 source 检索应按 Intent Mode / Output Mode / evidence strategy / claim verification 流程执行。
+- Batch B 需要刷新 `pypto` 本地镜像并更新 `02-knowledge/00-shared/pypto-architecture/`，但开始前必须先按 `prompts/batch-b-pypto-architecture-refresh.md` 与用户确认 preflight 问题。
+- `status.md` 中的 next batch gate 为 `discuss-first` 时，不要直接执行 `/goal` 或 refresh。
 - 不要猜测 session 何时结束；只在完成 batch、完成影响后续恢复的子任务、修改计划/决策/source 状态/开放问题、发现阻塞，或用户明确要求收尾时执行 checkpoint。
-- Checkpoint 时更新 `status.md`；如有新决策更新 `decisions.md`；如有阻塞更新 `open-questions.md`；如有 source 状态变化更新 `sources-to-refresh.md`；最后更新本 resume prompt。
+- Checkpoint 时更新 `status.md`；如有新决策更新 `decisions.md`；如有阻塞更新 `open-questions.md`；如有 source 状态变化更新 `sources-to-refresh.md`；完成任一 batch 后准备下一 batch prompt 和 plan shell；最后更新本 resume prompt。
 
 请先报告你读到的当前状态和建议的下一步，然后继续执行。
 ```

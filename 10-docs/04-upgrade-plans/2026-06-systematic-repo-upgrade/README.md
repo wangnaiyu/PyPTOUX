@@ -42,8 +42,10 @@
 - `open-questions.md`：等待用户判断或需要进一步确认的问题。
 - `sources-to-refresh.md`：外部源、优先级、刷新状态和处理策略。
 - `batch-a-agentic-search-governance-plan.md`：Batch A 在 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
+- `batch-b-pypto-architecture-refresh-plan.md`：Batch B 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `prompts/resume.md`：新 session 续作时优先使用的通用 prompt。
 - `prompts/batch-a-source-governance.md`：正式启动 Batch A 时使用的 prompt。
+- `prompts/batch-b-pypto-architecture-refresh.md`：正式启动 Batch B 时使用的 prompt。
 
 ## 5. 新 Session 如何继续
 
@@ -69,7 +71,7 @@
 
 - 不确定当前做到哪里：使用 `prompts/resume.md`。
 - 只是想恢复上下文、让 agent 判断下一步：使用 `prompts/resume.md`。
-- 已经明确要启动某个 batch：使用对应 batch prompt，例如 `prompts/batch-a-source-governance.md`。
+- 已经明确要启动某个 batch：使用对应 batch prompt，例如 `prompts/batch-a-source-governance.md` 或 `prompts/batch-b-pypto-architecture-refresh.md`。
 - 最稳做法：先使用 `prompts/resume.md`，等 agent 汇报当前状态后，再要求继续执行某个 batch prompt。
 
 也可以直接使用组合句：
@@ -106,14 +108,28 @@ Agent 不能自动判断用户何时会结束一个 session，因此本任务包
 - 发现新的阻塞、风险或需要用户判断的问题。
 - 用户明确说“本轮收尾”、“准备换 session”、“更新状态”、“到这里先停”。
 
-### 6.3 Checkpoint 动作
+### 6.3 Batch Handoff Gate
+
+完成任一 batch 后，必须为下一 batch 准备 handoff 信息，除非整个系统性升级已经完成：
+
+1. 确认下一 batch 是否已有 `prompts/batch-*.md`。
+2. 确认下一 batch 是否已有 `batch-*-plan.md`。
+3. 在 `status.md` 中更新：
+   - `next_batch_prompt`: `exists` / `missing`
+   - `next_batch_plan`: `exists` / `missing`
+   - `next_batch_gate`: `discuss-first` / `goal-ready` / `blocked`
+4. 如果下一 batch 需要用户先判断，必须在 `open-questions.md` 中新增或提升为 “启动前必须确认”。
+5. 如果缺少下一 batch prompt 或 plan shell，先补齐，不要只依赖通用 `prompts/resume.md`。
+
+### 6.4 Checkpoint 动作
 
 1. 更新 `status.md`。
 2. 如有新决策，更新 `decisions.md`。
 3. 如有新阻塞，更新 `open-questions.md`。
 4. 如有 source 状态变化，更新 `sources-to-refresh.md`。
-5. 更新 `prompts/resume.md`，让下一次 session 可以继续。
-6. 最终回答里简要说明本轮改了哪些文件、下一步是什么。
+5. 按 Batch Handoff Gate 准备下一 batch prompt 和 plan shell。
+6. 更新 `prompts/resume.md`，让下一次 session 可以继续。
+7. 最终回答里简要说明本轮改了哪些文件、下一步是什么。
 
 ## 7. 生命周期
 

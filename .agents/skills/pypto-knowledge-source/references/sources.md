@@ -1,20 +1,76 @@
-# Business Knowledge Sources | 业务知识源登记
+# Business Knowledge Sources | Agentic Source Registry
 
-这份文件是常用 business knowledge sources 的注册表（registry），也是 URL Domain Mapping 的唯一主登记。
+这份文件是 PyPTOUX 常用 business knowledge sources 的注册表（registry），也是 URL Domain Mapping 的唯一主登记。它记录 source instance 的能力、权限、可信边界、适用问题模式、claim policy 和 writeback policy；不要在其他 skill 中重复维护完整 source 表。
 
-## Source Selection Rule | 选择规则
+## 1. Governance Terms
 
-- 优先选择 scope 与用户问题最匹配的 source。
-- 每个问题类型至多 1 个 primary source；跨问题类型的 primary 不可比较权威性。
-- 跨问题类型时分别查对应 primary，回答时分别引用来源。
-- PyPTO 顶层设计、架构规划、方向把控、专题设计或 design decision 类问题，先把专家设计文档纳入候选，不因某个已知子主题（例如 runtime redesign）过窄而跳过。
-- CANN 官方文档默认从官网文档总入口选择当前最新版社区版；只有用户明确指定版本时，才使用特定版本链接。
-- A5 / Ascend 950 topic overlay：先按用户诉求选择 primary source，再用 `curated-external-links` 中 `a5-950` / `ascend-950` topic 的官方社区材料补充和交叉对比。
-- 有本地镜像的 source 才 refresh/search local mirror；在线只读 source 直接在线检索。
-- 如果本地 checkout 有未提交改动，不要直接替换，先征求确认。
-- `PyPTO` 相关问题，先按问题类型决定 source；只有路由到 `pypto` 且属于概念、教程、API 探索、排障、调性能或工具链类问题时，才参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 收敛目录级 hint。
+- `source instance`：具体来源，例如 `pypto`、`pypto-tools`、`PTO-TestData`。具体来源必须保持可追溯，不能因为共享治理类型而合并。
+- `source_type`：治理类型，例如 `code-source`、`runtime-artifact-source`、`external-discovery-source`。一个 source instance 可以有多个 `source_type`。
+- `authoritative`：source 对某类 claim 的权威等级。
+- `primary retrieval role`：本次问题中的首选检索角色；复杂问题可以有多个 primary retrieval roles。
+- `manifest` source：原始材料不一定进仓库；仓库只保存索引、位置、权限、数据等级、可引用范围和使用规则。
+- `deprecated`：可作历史背景或 drift 线索，默认不主动使用。
+- `blocked`：不允许主动访问、引用或写入结果。
 
-## URL Domain Mapping
+## 2. Source Schema
+
+每个 source instance 应尽量按以下 schema 维护：
+
+| Field | 含义 |
+| --- | --- |
+| `status` | `active` / `candidate` / `deprecated` / `blocked`。 |
+| `access_mode` | `online` / `local-mirror` / `manifest` / `user-provided` / `web-discovery`。 |
+| `source_type` | 可多值；复用治理类型和检索策略，但不合并 source instance。 |
+| `authority_scope` | 这个 source 对哪些 claim 有权威性。 |
+| `best_for` | 最适合回答的问题模式或材料类型。 |
+| `not_for` | 不应用于回答的 claim 或任务。 |
+| `question_modes` | 支持的 `Intent Mode`。 |
+| `output_modes` | 可支持的 `Output Mode`。 |
+| `freshness_policy` | 当前性、refresh、版本选择和 drift 处理规则。 |
+| `search_mode` | 本地 `rg`、在线单点读取、站内搜索、web discovery、manifest lookup 等。 |
+| `discovery_policy` | 是否可主动发现新材料，以及发现后如何登记。 |
+| `claim_policy` | claim 分层、校验要求、冲突处理和引用边界。 |
+| `writeback_policy` | 何时允许写回 registry / knowledge base / notes。 |
+| `orientation_hints` | 可帮助定位的目录或路径提示；不能限制探索范围。 |
+| `overwrite_guard` | 仅适用于 local mirror / local registry，防止覆盖未提交改动或外部原始材料。 |
+
+旧字段迁移：
+
+| Old Field / Rule | New Handling |
+| --- | --- |
+| `Role` | 拆成 `authority_scope` + `best_for`。 |
+| `Priority note` | 拆成 `best_for` / `not_for` / `claim_policy`。 |
+| `Search preference` | 改成 `search_mode`。 |
+| `Refresh rule` | 收敛为 `freshness_policy`。 |
+| `Search map` | 降级为 `orientation_hints`。 |
+| `Overwrite guard` | 只保留给 local mirror / local registry source。 |
+| 每个问题类型至多 1 个 primary source | 限制为简单 `lookup`；复杂 Intent Mode 允许多个 primary retrieval roles。 |
+
+## 3. Source Status
+
+- `active`：可被 agent 主动检索，但只能在自己的 `authority_scope` 内作为证据。
+- `candidate`：可能有用，但权限、freshness、范围或可靠性未确认；可登记、可讨论，不默认当事实依据。
+- `deprecated`：仍可作为历史背景、旧设计背景或 drift 线索，但默认不主动使用。
+- `blocked`：不可访问、不可引用、不可写入结果。
+- `discovery-pool`：不是事实源；只用于发现候选 source instance。
+
+## 4. Source Types
+
+| Source Type | 用途 | 可能包含 |
+| --- | --- | --- |
+| `code-source` | 代码事实、实现路径、API / schema / adapter 线索 | `pypto`、`pypto-tools`、`pto-isa`、`ops-transformer` |
+| `official-doc-source` | 官方口径、API、开发指南、工具链说明 | `pypto-official-docs`、`cann-docs-community-edition` |
+| `design-intent-source` | 架构意图、设计决策、方向规划 | `pypto-top-level-design-documents` |
+| `runtime-artifact-source` | 真实运行产物、性能 / 图 / 日志证据 | `pypto-sample-dataset`、pypto 算子运行数据、`PTO-TestData` |
+| `demo-evidence-source` | demo 真实性、素材选择、联动设计依据 | `pypto-sample-dataset`、`PTO-TestData`、pypto 算子运行数据、toolkit 设计稿源文件 |
+| `external-discovery-source` | 外部文章、帖子、社区材料和候选 source 发现 | `curated-external-links`、web discovery、CANN org repo discovery pool |
+| `user-feedback-source` | 痛点挖掘、诉求分析、UX 策略输入 | issues / discussions / PR / FAQ / troubleshooting |
+| `design-system-source` | 视觉规范、交互模式、设计系统同步 | `yinyucheng0601/pto-design-system`、toolkit 设计稿源文件 |
+| `toolkit-product-source` | Toolkit 能力、产品交互、demo 演进 | `pypto-tools`、toolkit 设计稿源文件 |
+| `agent-workflow-source` | agent skill、自动化、工具链 workflow 线索 | `cannbot-skills` |
+| `isa-source` | PTO ISA、硬件接口、指令语义 | `pto-isa` |
+
+## 5. URL Domain Mapping
 
 用户给出 URL 时，按以下映射识别 source 类型：
 
@@ -22,97 +78,375 @@
 | --- | --- |
 | `gitcode.com/cann/pypto/**` | `pypto` |
 | `pypto.gitcode.com/**` | `pypto-official-docs` |
-| `github.com/hengliao1972/**` | `pypto-top-level-design-documents` |
+| `github.com/hengliao1972/pypto_top_level_design_documents/**` | `pypto-top-level-design-documents` |
+| `github.com/hengliao1972/**` | `candidate external design-intent source` |
 | `hiascend.com/**` | `cann-docs-community-edition` |
 | `cann.csdn.net/**` | `curated-external-links (official-community-material)` |
 | `gitcode.com/cann/community/tree/master/events/meetup/slides/950/**` | `curated-external-links (official-community-material)` |
 | `gitcode.com/cann/community/tree/master/events/meetup/slides/950` | `curated-external-links (official-community-material)` |
+| `gitcode.com/cann/pto-isa/**` | `pto-isa` |
+| `gitcode.com/cann/cannbot-skills/**` | `cannbot-skills` |
+| `gitcode.com/cann/ops-transformer/**` | `ops-transformer` |
+| `gitcode.com/cann/pypto-tools/**` | `pypto-tools` |
+| `gitcode.com/zhanghuixin/PTO-TestData/**` | `PTO-TestData` |
+| `github.com/yinyucheng0601/pto-design-system/**` | `yinyucheng0601/pto-design-system` |
+| `gitcode.com/org/cann/repos/**` | `cann-org-repo-discovery-pool` |
 | `zhihu.com/**`、`zhuanlan.zhihu.com/**` | `curated-external-links` |
 | `mp.weixin.qq.com/**` | `curated-external-links` |
-| 其他 | `curated-external-links (unknown)` |
+| 其他 | `web-discovery / curated-external-links (unknown)` |
 
-未列 domain 视为 `curated-external-links`；先识别，再走对应 source 流程。`official-community-material` 可作为高可信公开材料入口，但仍不是长期 primary source；curated / unknown 外链必须抽 claim 并回 primary source 校验。
+未列 domain 视为 `web-discovery / curated-external-links (unknown)`；先识别，再按 claim 级别回 authoritative source 校验。`official-community-material` 可作为高可信公开材料入口，但仍不是长期 factual source of truth。
 
-## Registered Sources | 已登记来源
+## 6. Registered Source Instances
 
 ### pypto
 
-- Role | 角色：PyPTO 代码事实、字段名、运行行为、sample code 类问题的 primary source；PyPTO 文档源码 / API / tutorial 的 freshness 来源。
-- Remote | 远端：`https://gitcode.com/cann/pypto`
-- Local mirror | 本地镜像：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto`
-- Search map | 检索地图：
-  - 文档 / 教程 / 排障 / 工具 / 性能调优类：先经 `02-knowledge/00-shared/pypto-architecture/overview.md` 收敛目录级 hint，再进入本地镜像检索。
-  - 源码事实 / 字段名 / 错误码 / 函数签名 / Pass / CodeGen / 模块边界：跳过 `overview.md`，直接 `rg` 或定向目录检索。
-  - 用户给具体 URL / freshness 强敏感问题：走线上单点 fetch。
-  - 第一入口 + 第二入口两轮不命中：立即 fallback 全仓库 `rg`。
-  - 线上单点内容与本地不一致：记录 drift；confirmed freshness drift 可触发 refresh，但仍遵守 overwrite guard。
-- Refresh rule | 刷新规则：默认每个自然天最多 clone / refresh 一次 `pypto`；如果当天已经 refresh 过，后续检索直接复用当天的本地镜像。confirmed freshness drift 可突破每天一次限制触发 refresh，但本地镜像有未提交改动时仍需先询问用户。
-- Overwrite guard | 覆盖保护：如果当前本地镜像存在未提交改动，替换前先询问用户。
-- Snapshot caveat | 快照警示：`overview.md` 是阶段性快照，与本地镜像或线上仓库可能漂移。命中失败时优先考虑 drift，不要在 hint 路径上反复尝试。缺少快照日期 / commit 时，所有不命中只能记为 `suspected-drift`，不得断言 `confirmed-drift`。
-- Priority note | 优先级说明：
-  - 问题表述为“官网怎么说 / 官网展示 / 对外措辞” -> `pypto-official-docs`
-  - 问题表述为“文档怎么写 / 教程内容 / 文档源码最新” -> `pypto`
-  - 不确定 -> 默认 `pypto`；发现冲突时引用两边
-- Search preference | 检索偏好：本地检索优先用 `rg`；读大文件时只读取命中附近局部内容。线上仓库只做单点 freshness backup，不做探索性检索。
-
-### pypto-top-level-design-documents
-
-- Role | 角色：PyPTO 顶层设计、架构意图、方向规划、专题设计与设计决策类问题的 primary design source。
-- Remote | 远端：`https://github.com/hengliao1972/pypto_top_level_design_documents`
-- Local mirror | 本地镜像：默认无；需要时直接浏览在线文档。
-- Scope | 覆盖范围：`PyPTO / Simpler runtime redesign` 是该仓库当前重要内容之一；检索时不要因此排除更 general 的 PyPTO 顶层设计、serving、ISA、runtime、distributed、数据系统、feature proposal 等主题。
-- Search map | 检索地图：先看仓库根目录专题文档，再看 `pypto-runtime-arch-docs/`；runtime redesign 相关问题优先看 `pypto-runtime-arch-docs/00-index.md`、`01-introduction.md`、`02-logical-view.md`、`02-logical-view/`、`modules/*.md`、`08-design-decisions.md`、`09-open-questions.md`、`appendix-a-glossary.md`、`appendix-b-codebase-mapping.md`。
-- Refresh rule | 刷新规则：只读在线版本；检索时把 GitHub 仓库当前 `main` 分支视为当前版本。
-- Overwrite guard | 覆盖保护：不适用，因为默认没有本地镜像。
-- Priority note | 优先级说明：设计意图、架构目标、模块边界、未来方向以该专家设计文档优先；当前代码事实、字段名、文件名、可运行行为和上游 literal 以 `pypto` 仓库优先。
-- Search preference | 检索偏好：优先查根目录专题文档、architecture index、logical / development / process / physical / scenario views、module detailed designs、design decisions、open questions、glossary、codebase mapping，以及 top level design、serving、ISA、runtime、distributed、数据系统、feature proposal 等关键词。
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
+- `source_type`: `code-source`, `official-doc-source`
+- `remote`: `https://gitcode.com/cann/pypto`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto`
+- `authority_scope`: PyPTO 代码事实、字段名、文件路径、sample code、运行行为、上游 literal、文档源码、API / tutorial freshness。
+- `best_for`: `lookup`、`freshness`、`diagnostic`、`optimization`、`workflow-research`、`demo-material` 中需要当前代码或文档源码证据的问题。
+- `not_for`: 官网对外措辞、非 PyPTO CANN 通用概念、未校验的设计意图、外部经验 claim。
+- `question_modes`: `lookup`, `freshness`, `diagnostic`, `optimization`, `workflow-research`, `demo-material`
+- `output_modes`: `answer`, `research-brief`, `demo-brief`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: Batch A 不 refresh。默认每个自然天最多 clone / refresh 一次的规则保留给 Batch B；strong freshness 问题优先单点读取 upstream 或用户给定 URL。本地镜像只代表当前 checkout。
+- `search_mode`: 本地优先 `rg`；用户给具体 URL 或强 freshness 问题时在线单点读取。线上仓库不用于大范围探索性检索。
+- `discovery_policy`: 可从当前问题出发跨目录 `rg`；发现 drift 时记录，不在 Batch A 刷新。
+- `claim_policy`: factual claim 以源码、文档源码或可追溯文件为准；字段名、路径、trace key、文件名等 literal 必须保留原样。
+- `writeback_policy`: verified claim 可建议写回 `02-knowledge/`；drift 记录到对应 `drift.md` 或任务包。
+- `orientation_hints`: `02-knowledge/00-shared/pypto-architecture/overview.md` 仅作目录 hint，不能限制 why/how/design/UX/demo 类探索。
+- `overwrite_guard`: local mirror 有未提交改动时，不得覆盖；先确认。
 
 ### pypto-official-docs
 
-- Role | 角色：PyPTO 官网页面、官网 quick-start 编排、对外措辞类问题的 primary source。
-- Remote | 远端：`https://pypto.gitcode.com/tutorials/introduction/quick_start.html`
-- Local mirror | 本地镜像：默认无；需要时直接浏览在线文档。
-- Refresh rule | 刷新规则：在线只读；检索时把在线文档站点视为当前版本。
-- Overwrite guard | 覆盖保护：不适用，因为默认没有本地镜像。
-- Priority note | 优先级说明：用户明确要求官网口径、官网页面、对外发布文案、官网教程步骤，或给出官网 URL 时使用本 source。否则，PyPTO 文档源码、API / tutorial freshness 类问题以 `pypto` 仓库优先。
-- Search preference | 检索偏好：`quick-start`、tutorials、conceptual explanations、official usage guidance、对外措辞。
+- `status`: `active`
+- `access_mode`: `online`
+- `source_type`: `official-doc-source`
+- `remote`: `https://pypto.gitcode.com/tutorials/introduction/quick_start.html`
+- `authority_scope`: PyPTO 官网页面、quick-start 编排、官网教程步骤、对外发布措辞。
+- `best_for`: 用户问官网怎么说、官网展示、对外文案、官网 URL、教程入口。
+- `not_for`: 当前代码事实、字段名、文件路径、可运行行为、文档源码 freshness。
+- `question_modes`: `lookup`, `freshness`, `workflow-research`
+- `output_modes`: `answer`, `research-brief`, `knowledge-writeback`
+- `freshness_policy`: 在线只读；检索时把在线文档站点视为当前版本。
+- `search_mode`: 在线单点读取官网页面；不做无界 web crawl。
+- `discovery_policy`: 可从官网导航发现相关 tutorial / guide；高价值新入口可登记。
+- `claim_policy`: 官网 wording authoritative；若与 `pypto` 代码事实冲突，分开标注。
+- `writeback_policy`: 官网口径可进入 `02-knowledge/` sources 或 answer；不要复制大段官网内容。
+
+### pypto-top-level-design-documents
+
+- `status`: `active` within design-intent / `mirror-candidate`
+- `access_mode`: `online`
+- `source_type`: `design-intent-source`
+- `remote`: `https://github.com/hengliao1972/pypto_top_level_design_documents`
+- `authority_scope`: PyPTO 顶层设计、架构意图、方向规划、专题设计、设计决策背景。
+- `best_for`: `workflow-research`、`ux-strategy`、`trend-research`、架构方向和 design decision 类问题。
+- `not_for`: 当前实现事实、字段名、文件路径、运行行为、上游 literal；这些必须回 `pypto` 校验。
+- `question_modes`: `lookup`, `workflow-research`, `trend-research`, `ux-strategy`, `demo-design`
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `demo-brief`, `ux-design-spec`, `knowledge-writeback`
+- `freshness_policy`: 默认在线读取当前 GitHub 内容；是否建立 local mirror 待后续确认。
+- `search_mode`: 优先查根目录专题、architecture index、logical / development / process / physical / scenario views、module detailed designs、design decisions、open questions、glossary、codebase mapping。
+- `discovery_policy`: 不因当前已知 runtime redesign 子主题过窄而排除更 general 的 PyPTO 顶层设计主题。
+- `claim_policy`: design-intent claim 可由本 source 支撑；实现事实必须回 `pypto`。
+- `writeback_policy`: 可支持 UX / strategy / research writeback；若涉及当前代码行为，必须附校验来源。
+- `orientation_hints`: `pypto-runtime-arch-docs/00-index.md`、`01-introduction.md`、`02-logical-view.md`、`modules/*.md`、`08-design-decisions.md`、`09-open-questions.md`、`appendix-a-glossary.md`、`appendix-b-codebase-mapping.md`。
 
 ### cann-docs-community-edition
 
-- Role | 角色：非 PyPTO 专属的 CANN、昇腾硬件、Ascend C、算子开发、图开发、通信、工具、API、故障处理与软硬结合概念类问题的 primary source。
-- Remote | 远端：`https://www.hiascend.com/cann/document`
-- Current observed entry | 当前已观测入口：用户曾提供 `https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/900beta2/index/index.html` 作为 CANN Community Edition 9.0.0 beta2 文档入口；该链接只作为示例入口，不作为固定版本。
-- Local mirror | 本地镜像：默认无；需要时直接浏览在线文档。
-- Search map | 检索地图：进入官网文档总入口后选择“CANN社区版文档”，使用官网版本选择器，默认选择当前官网提供的最新版社区版文档；再按问题进入安装、应用开发、Ascend C / TBE / CCE / AscendNPU IR 算子开发、GE / DataFlow 图开发、HCCL / HIXL 通信、ATB / SiP / LLM DataDist、API、开发工具、故障处理、日志、环境变量、融合规则等栏目。
-- Refresh rule | 刷新规则：只读在线版本；检索时把官网当前最新版社区版文档视为当前版本。只有用户明确指定版本时，才使用特定版本链接。
-- Overwrite guard | 覆盖保护：不适用，因为默认没有本地镜像。
-- Priority note | 优先级说明：PyPTO 专属内容以 `pypto` 仓库优先；非 PyPTO 的 CANN 生态、昇腾芯片、硬件架构、Ascend C、算子开发、图开发、通信、工具、CANN API、软硬结合概念以 CANN 官方最新版社区版文档优先。
-- Search preference | 检索偏好：检索时保留图片、架构图、概念图、图解说明，不只读正文；优先使用官网页面目录、产品版本、文档栏目和图文并读的方式定位硬件架构、Ascend C、CANN API、图开发等信息。
+- `status`: `active`
+- `access_mode`: `online`
+- `source_type`: `official-doc-source`
+- `remote`: `https://www.hiascend.com/cann/document`
+- `observed_entry`: `https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/900beta2/index/index.html` 仅作曾观测示例，不作固定版本。
+- `authority_scope`: 非 PyPTO 专属的 CANN、Ascend 硬件、Ascend C、算子开发、图开发、通信、工具、API、故障处理与软硬结合概念。
+- `best_for`: `lookup`、`freshness`、`diagnostic`、`optimization`、`workflow-research`、`trend-research` 中需要 CANN/Ascend 官方口径的问题。
+- `not_for`: PyPTO 专属代码事实、PyPTO 文档源码、私有运行数据、未公开设计稿。
+- `question_modes`: `lookup`, `freshness`, `diagnostic`, `optimization`, `workflow-research`, `trend-research`, `ux-strategy`
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `knowledge-writeback`
+- `freshness_policy`: 默认选择官网当前最新版社区版文档；只有用户明确指定版本时才使用特定版本链接。
+- `search_mode`: 在线文档目录 + 版本选择器 + 栏目定位；需要保留图片、架构图、概念图和图解信息。
+- `discovery_policy`: 可从官网文档总入口发现相关栏目。
+- `claim_policy`: CANN/Ascend 官方 claim authoritative；涉及 PyPTO 封装行为时回 `pypto` 校验。
+- `writeback_policy`: 可进入 `02-knowledge/`；引用时记录版本入口或页面路径。
 
 ### pypto-sample-dataset
 
-- Role | 角色：PyPTO 真实 demo、样例数据、编译 / 运行产物、输入输出示意、可视化素材类问题的 primary sample-data source。
-- Remote | 远端：无默认远端；当前以本地数据目录为准。
-- Local mirror | 本地镜像：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据`
-- Current known structure | 当前已知结构：已确认存在 `three-view/` 数据集，内部包含 `code/`、`output_*/`、`program.json`、`merged_swimlane.json`、`topo.json`、`run.log` 等适合联动 demo 的真实产物。
-- Refresh rule | 刷新规则：默认直接使用当前本地数据目录；只有用户明确提供了新的同步方式或更新来源时，才改变这条规则。
-- Overwrite guard | 覆盖保护：不主动改写该目录内容；如果后续需要清理、替换或批量写入，先征求确认。
-- Priority note | 优先级说明：当任务涉及 demo 填充、样例结果展示、输入输出示例、真实数据形态、代码-图-性能联动时，优先把这份样例数据与 `pypto` 工程里的真实代码结合起来使用。
-- Search preference | 检索偏好：样例输入输出、算子运行结果、可视化演示素材、demo 填充值，以及与 `pypto` 示例代码相互印证的数据文件；优先关注 `code/`、`output_*/program.json`、`merged_swimlane.json`、`topo.json`、`run.log` 一类产物。
+- `status`: `active`
+- `access_mode`: `local-mirror`
+- `source_type`: `runtime-artifact-source`, `demo-evidence-source`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据`
+- `authority_scope`: PyPTO 真实 demo、样例数据、编译 / 运行产物、输入输出示意、可视化素材。
+- `best_for`: `demo-material`、`demo-design`、`workflow-research`、runtime artifact 佐证、代码-图-性能联动。
+- `not_for`: 通用 API 事实、官网对外措辞、未运行样例的推断。
+- `question_modes`: `lookup`, `workflow-research`, `demo-design`, `demo-material`, `ux-strategy`
+- `output_modes`: `answer`, `research-brief`, `demo-brief`, `ux-analysis`, `prototype-implementation-plan`, `knowledge-writeback`
+- `freshness_policy`: 默认直接使用当前本地数据目录；只有用户提供新同步方式或更新来源时才改变。
+- `search_mode`: 本地目录检索；优先关注 `code/`、`output_*/program.json`、`merged_swimlane.json`、`topo.json`、`run.log` 等产物。
+- `discovery_policy`: 可与 `pypto` 示例代码互相印证；新增数据集需登记数据等级和来源。
+- `claim_policy`: L1 数据可作真实运行证据；不得把 L2/L3 或推导材料伪装成 L1。
+- `writeback_policy`: demo 使用时同步记录数据等级、来源、可外发状态和生成规则。
+- `overwrite_guard`: 不主动改写该目录；清理、替换或批量写入前先确认。
 
 ### curated-external-links
 
-- Role | 角色：微信、知乎、博客、社区分享、专家解读、场景化总结的 supporting source；非 source of truth。
-- Local registry | 本地登记：`09-references/curated-external-links.md`
-- Schema 差异：本 source 无 remote / mirror；条目以人工录入为准。
-- Refresh rule | 刷新规则：不适用。发现性检索走平台站内搜索或 web search；已处理链接的验证日志回写到 local registry。
-- Overwrite guard | 覆盖保护：`09-references/` 对等共写；写入前注意未提交工作树锁。
-- Selection rule | 选择规则：见 [../SKILL.md](../SKILL.md) 的 Curated External Links 流程。
-- Priority note | 优先级说明：仅作为问题入口、claim 假设源、检索关键词与背景理解。任何 factual claim 必须由对应 primary source 校验后才能进入回答，不可作为事实直接回答用户。
-- Search preference | 检索偏好：先识别文章涉及的主题和概念，再按 claim 级别路由到 `pypto`、`pypto-official-docs`、`pypto-top-level-design-documents`、`cann-docs-community-edition` 或 `pypto-sample-dataset` 校验。
+- `status`: `active` as discovery/supporting
+- `access_mode`: `local-registry`, `web-discovery`
+- `source_type`: `external-discovery-source`
+- `local_registry`: `09-references/curated-external-links.md`
+- `authority_scope`: 外部文章、微信、知乎、博客、社区分享、专家解读、场景化总结的发现入口和 claim 假设源。
+- `best_for`: `trend-research`、`painpoint-mining`、`workflow-research`、`ux-strategy` 的背景材料、关键词和待验证 claim。
+- `not_for`: factual source of truth；不可直接作为字段、API、版本、运行行为的最终依据。
+- `question_modes`: `lookup`, `trend-research`, `painpoint-mining`, `workflow-research`, `ux-strategy`
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: local registry 条目以人工登记为准；带“最近 / 新 / 这周 / 这个月”的问题需 web discovery 或平台搜索。
+- `search_mode`: 用户问收藏链接时 grep local registry；用户问某平台是否讲过某主题时平台站内搜索或 web search。
+- `discovery_policy`: 高价值材料经 claim 校验后可建议写入 local registry；unknown URL 先抽 claim。
+- `claim_policy`: factual claim 必须回 authoritative source 校验；empirical / opinion 必须标注。
+- `writeback_policy`: 写入 `09-references/` 前注意未提交工作树锁。
 
-## Maintenance Rule | 维护规则
+## 7. Candidate / Manifest Sources
 
-- 新的常用业务来源，统一在这里新增 section。
-- 每个新 source 至少写清楚：role、remote 或 local registry、local mirror、refresh rule、overwrite guard。
+### pypto-tools
+
+- `status`: `candidate`
+- `access_mode`: `online`, `manifest`
+- `source_type`: `code-source`, `toolkit-product-source`, `demo-evidence-source`
+- `remote`: `https://gitcode.com/cann/pypto-tools`
+- `authority_scope`: 候选 PyPTO toolkit 代码、产品能力、adapter、demo workflow。
+- `best_for`: `workflow-research`、`demo-design`、`demo-material`、`ux-strategy` 中的 toolkit 能力和输入输出。
+- `not_for`: Batch A 中不得假设已可访问、已可 clone、或可外发原始材料。
+- `question_modes`: `lookup`, `workflow-research`, `demo-design`, `demo-material`, `ux-strategy`
+- `output_modes`: `research-brief`, `demo-brief`, `ux-analysis`, `prototype-implementation-plan`, `source-update`
+- `freshness_policy`: Batch C 决定 mirror、adapter 和 demo 使用策略。
+- `search_mode`: Batch A 只登记候选；如用户给 URL，可在线单点读取公开页面。
+- `discovery_policy`: 可作为 mirror candidate；不在 Batch A clone。
+- `claim_policy`: 未确认前只作 candidate claim；涉及真实 toolkit 行为需用户确认或后续 Batch C 校验。
+- `writeback_policy`: 可写入 source registry / task package，不写入原始私有材料。
+
+### pto-isa
+
+- `status`: `candidate`
+- `access_mode`: `online`, `manifest`
+- `source_type`: `code-source`, `isa-source`, `hardware-interface-source`
+- `remote`: `https://gitcode.com/cann/pto-isa`
+- `authority_scope`: 候选 PTO ISA、硬件接口、指令语义、A5/950 相关 technical claim。
+- `best_for`: `lookup`、`trend-research`、`ux-strategy` 中涉及 ISA / hardware interface 的问题。
+- `not_for`: PyPTO 当前实现事实，除非回 `pypto` 或相关代码校验。
+- `question_modes`: `lookup`, `trend-research`, `ux-strategy`, `demo-material`
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `source-update`
+- `freshness_policy`: 候选 source；是否 mirror 后续确认。
+- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
+- `discovery_policy`: 可升级为 mirror candidate。
+- `claim_policy`: ISA claim 需与官方 CANN/Ascend 或代码 source 对照。
+- `writeback_policy`: 可记录 source relevance，不写入未验证事实。
+
+### cannbot-skills
+
+- `status`: `candidate`
+- `access_mode`: `online`, `manifest`
+- `source_type`: `tooling-source`, `agent-workflow-source`
+- `remote`: `https://gitcode.com/cann/cannbot-skills`
+- `authority_scope`: 候选 agent skill、tooling workflow、自动化线索。
+- `best_for`: `workflow-research`、`ux-strategy` 中与 agent 辅助、工具链工作流有关的问题。
+- `not_for`: PyPTO / CANN factual source of truth。
+- `question_modes`: `workflow-research`, `trend-research`, `ux-strategy`
+- `output_modes`: `research-brief`, `ux-analysis`, `source-update`
+- `freshness_policy`: 候选 source；是否 mirror 后续确认。
+- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
+- `discovery_policy`: 可作 CANN org 相关 repo 的高相关候选。
+- `claim_policy`: 仅作 workflow / tooling 线索，factual claim 回 authoritative source。
+- `writeback_policy`: 可记录 candidate relevance。
+
+### ops-transformer
+
+- `status`: `candidate`
+- `access_mode`: `online`, `manifest`
+- `source_type`: `code-source`, `operator-workflow-source`
+- `remote`: `https://gitcode.com/cann/ops-transformer`
+- `authority_scope`: 候选 operator / workflow / tooling code source。
+- `best_for`: `workflow-research`、`demo-material`、`ux-strategy` 中与算子迁移、operator workflow 或 tooling 相关的问题。
+- `not_for`: PyPTO current behavior，除非经过相关代码和官方文档校验。
+- `question_modes`: `lookup`, `workflow-research`, `demo-material`, `ux-strategy`
+- `output_modes`: `answer`, `research-brief`, `demo-brief`, `source-update`
+- `freshness_policy`: 候选 source；是否 mirror 后续确认。
+- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
+- `discovery_policy`: 可作 mirror candidate。
+- `claim_policy`: factual claim 需回代码/官方 source 校验。
+- `writeback_policy`: 可记录 candidate relevance。
+
+### PTO-TestData
+
+- `status`: `candidate` / `manifest`
+- `access_mode`: `online`, `manifest`
+- `source_type`: `runtime-artifact-source`, `demo-evidence-source`
+- `remote`: `https://gitcode.com/zhanghuixin/PTO-TestData`
+- `authority_scope`: 候选测试数据、运行数据、demo evidence。
+- `best_for`: `demo-material`、`demo-design`、runtime artifact 对照。
+- `not_for`: 未确认数据等级前不得作为 share-safe L1 数据外发。
+- `question_modes`: `lookup`, `demo-material`, `demo-design`, `ux-strategy`
+- `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 候选 source；数据等级、权限和 mirror 路径后续确认。
+- `search_mode`: manifest lookup 或用户提供路径；不在 Batch A clone。
+- `discovery_policy`: 可升级为 runtime artifact / demo evidence source。
+- `claim_policy`: 必须记录数据等级、来源、可外发状态和生成规则。
+- `writeback_policy`: 不写入原始数据；只写 manifest / source relevance / 数据等级规则。
+
+### yinyucheng0601/pto-design-system
+
+- `status`: `candidate-active` / `mirror-candidate`
+- `access_mode`: `online`, `manifest`
+- `source_type`: `design-system-source`
+- `remote`: `https://github.com/yinyucheng0601/pto-design-system`
+- `authority_scope`: 候选上游 PTO design system、tokens、视觉规范、交互模式。
+- `best_for`: `design-system-application`、`ux-design-spec`、`prototype-implementation-plan`、`demo-design` 中涉及 PTO 风格和 design system 的问题。
+- `not_for`: Batch A 不决定 mirror、同步、变更报告或 `07-designsystem/` 投影策略。
+- `question_modes`: `demo-design`, `ux-strategy`, `workflow-research`
+- `output_modes`: `design-system-application`, `ux-design-spec`, `prototype-implementation-plan`, `source-update`
+- `freshness_policy`: Batch D 决定同步方式。
+- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
+- `discovery_policy`: 可作为 mirror candidate；正式设计系统应用仍先使用当前 `.agents/skills/pto-design-system`。
+- `claim_policy`: design system claim 需区分上游 source、当前 skill 投影和 `07-designsystem/` 稳定内容。
+- `writeback_policy`: Batch D 前只记录 source governance，不投影原始材料。
+
+### pypto-runtime-data
+
+- `status`: `candidate` / `manifest`
+- `access_mode`: `manifest`, `user-provided`
+- `source_type`: `runtime-artifact-source`, `demo-evidence-source`
+- `authority_scope`: 候选 pypto 算子运行数据、性能/日志/trace 证据。
+- `best_for`: `demo-material`、`demo-design`、`diagnostic`、`optimization`。
+- `not_for`: 未分级、未脱敏、未授权材料不得进入仓库或外发。
+- `question_modes`: `diagnostic`, `optimization`, `demo-material`, `demo-design`, `ux-strategy`
+- `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: Batch C 建立 intake、权限、数据等级和脱敏规则。
+- `search_mode`: manifest lookup / user-provided path。
+- `discovery_policy`: 新数据只登记 manifest，不写原始私有材料。
+- `claim_policy`: 必须标注 L1/L2/L3、可外发状态和来源摘要。
+- `writeback_policy`: 只写 manifest、摘要和规则，不写原始私有运行数据。
+
+### toolkit-design-files
+
+- `status`: `candidate` / `manifest`
+- `access_mode`: `manifest`, `user-provided`
+- `source_type`: `design-system-source`, `toolkit-product-source`, `demo-evidence-source`
+- `authority_scope`: 候选 toolkit 设计稿、产品交互、视觉/流程意图。
+- `best_for`: `ux-analysis`、`demo-design`、`design-system-application`、`ux-design-spec`。
+- `not_for`: 未授权设计稿原始文件、缩略图、截图或结构摘要不得写入仓库。
+- `question_modes`: `workflow-research`, `demo-design`, `ux-strategy`
+- `output_modes`: `ux-analysis`, `demo-brief`, `ux-design-spec`, `design-system-application`, `source-update`
+- `freshness_policy`: Batch C/D 确认 intake 与可引用边界。
+- `search_mode`: manifest lookup / user-provided path。
+- `discovery_policy`: 只登记 manifest 和权限摘要。
+- `claim_policy`: 明确可引用范围、可外发状态和与当前 design system 的关系。
+- `writeback_policy`: 不写原始私有设计稿。
+
+### user-feedback-sources
+
+- `status`: `candidate`
+- `access_mode`: `online`, `manifest`, `web-discovery`
+- `source_type`: `user-feedback-source`, `painpoint-evidence-source`
+- `authority_scope`: issues、discussions、PR、FAQ、troubleshooting 中的用户痛点、诉求、失败点和工作流断点。
+- `best_for`: `painpoint-mining`、`workflow-research`、`diagnostic`、`ux-strategy`。
+- `not_for`: API / code / version factual source of truth，除非回 authoritative source 校验。
+- `question_modes`: `diagnostic`, `workflow-research`, `trend-research`, `painpoint-mining`, `ux-strategy`
+- `output_modes`: `research-brief`, `ux-analysis`, `ux-design-spec`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 默认在线检索；如高频使用，再考虑导出快照或建立本地检索缓存。
+- `search_mode`: issue search、discussion search、FAQ / troubleshooting lookup、web discovery。
+- `discovery_policy`: 可按主题发现新反馈源；高价值反馈源经确认后登记。
+- `claim_policy`: 用户反馈可证明痛点存在，不证明技术事实正确；技术事实回 authoritative source。
+- `writeback_policy`: 可写入 UX analysis / painpoint notes；注意隐私和引用边界。
+
+### web-discovery
+
+- `status`: `candidate`
+- `access_mode`: `web-discovery`
+- `source_type`: `external-discovery-source`
+- `authority_scope`: 发现公开材料、趋势材料、社区讨论、supporting article 和潜在 source instance。
+- `best_for`: `trend-research`、`painpoint-mining`、`workflow-research`、`optimization`、`diagnostic`、`ux-strategy`。
+- `not_for`: source of truth；不得直接作为 factual claim 出口。
+- `question_modes`: `freshness`, `diagnostic`, `optimization`, `workflow-research`, `trend-research`, `painpoint-mining`, `ux-strategy`
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 对最新 / 最近 / 当前版本类问题必须注意发布时间、事件时间和 source 权威性。
+- `search_mode`: web search、站内搜索、公开页面单点读取。
+- `discovery_policy`: 高价值材料经确认后可进入 curated registry 或 source registry。
+- `claim_policy`: 先抽 claim，再回 authoritative source 校验；无法校验时标注 empirical / opinion / unverifiable。
+- `writeback_policy`: 只写链接、claim 摘要和验证状态，不复制长文。
+
+### cann-org-repo-discovery-pool
+
+- `status`: `discovery-pool`
+- `access_mode`: `web-discovery`
+- `source_type`: `external-discovery-source`, `candidate-source-pool`
+- `remote`: `https://gitcode.com/org/cann/repos`
+- `authority_scope`: CANN org 下潜在相关仓库的发现入口。
+- `best_for`: 根据既有项目材料、问题相关度和使用频率筛选候选仓库。
+- `not_for`: 单一事实源；不可把整个 org repos 当作 authoritative source。
+- `question_modes`: `workflow-research`, `trend-research`, `demo-material`, `ux-strategy`, `source-update`
+- `output_modes`: `research-brief`, `source-update`
+- `freshness_policy`: 在线发现；高相关 repo 经确认后单独登记 source instance。
+- `search_mode`: org repo 列表 / web discovery；Batch A 不 clone。
+- `discovery_policy`: 高频或高相关 repo 可升级为 mirror candidate。
+- `claim_policy`: repo pool 本身不承载 factual claim；claim 必须落到具体 source instance。
+- `writeback_policy`: 只写候选 repo、相关理由和验证状态。
+
+## 8. Clone / Local Mirror Policy
+
+Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refresh。
+
+- 高频、结构化、可检索、需要跨文件理解的 source，倾向建立 local mirror。
+- 私有仓、大体量仓库、运行数据、设计稿源文件默认先走 `manifest` + 用户确认路径 / 权限。
+- 只偶尔查、在线结构稳定的 source 保持在线检索。
+- supporting article / 社区帖子默认不 clone，只登记链接、claim 和验证状态。
+- issues / discussions / PR / FAQ 类 source 先保持在线检索；如高频用于 painpoint-mining，再考虑导出快照或 mirror。
+- `pypto` 本体 refresh 归 Batch B。
+- `pypto-tools` 的本地路径、mirror、adapter 和 demo 使用策略归 Batch C。
+- `yinyucheng0601/pto-design-system` 的 mirror、同步和 `07-designsystem/` 投影策略归 Batch D。
+
+明确候选 mirror set：
+
+- `https://gitcode.com/cann/pypto`
+- `https://gitcode.com/cann/pto-isa`
+- `https://gitcode.com/cann/cannbot-skills`
+- `https://gitcode.com/cann/ops-transformer`
+- `https://gitcode.com/cann/pypto-tools`
+- `https://gitcode.com/zhanghuixin/PTO-TestData`
+- `https://github.com/hengliao1972/pypto_top_level_design_documents`
+- `https://github.com/yinyucheng0601/pto-design-system`
+
+## 9. Maintenance Rule
+
+- 新的常用业务来源统一在这里新增 source instance。
+- 每个新 source 至少写清楚 `status`、`access_mode`、`source_type`、`authority_scope`、`best_for`、`not_for`、`question_modes`、`output_modes`、`freshness_policy`、`search_mode`、`discovery_policy`、`claim_policy` 和 `writeback_policy`。
 - URL Domain Mapping 只在本文件维护；其他文件引用本节，不重复维护完整表。
+- 不要为了合并 `source_type` 而合并 source instance；具体来源、路径、权限、状态和 claim policy 必须保持可追溯。
+
+### Source Registry Change Protocol
+
+当 agent 删除、降级、升级、重命名或新增 source instance / source type / URL pattern 时，必须主动执行以下动作：
+
+1. 先判断变更类型：
+   - source instance 变更：新增、删除、重命名、`active` / `candidate` / `deprecated` / `blocked` 状态变化。
+   - source type 变更：新增、删除、改名、语义收窄或扩展。
+   - URL pattern 变更：新增、删除、改写匹配范围或调整匹配顺序。
+2. 更新本文件对应位置：
+   - source instance 变更时，同步更新 registry section、URL Domain Mapping、clone / mirror policy、candidate / manifest 说明。
+   - source type 变更时，同步更新 Source Types 表，并检查所有引用该 type 的 source instance。
+   - URL pattern 变更时，确保更具体的 pattern 排在更宽泛 pattern 前面，避免被宽泛规则吞掉。
+3. 全仓检索旧标识和旧 URL：
+   - 用 `rg` 搜索旧 source id、旧 source type、旧 URL pattern、旧 remote URL。
+   - 检查命中的 `.agents/skills/`、`10-docs/04-upgrade-plans/`、`02-knowledge/`、`09-references/` 和 `10-docs/03-indexes/` 是否需要同步。
+4. 处理替代关系：
+   - 删除 source instance 时，优先降级为 `deprecated` 并写明替代 source；只有用户明确要求或来源不可用 / 不可信时才设为 `blocked`。
+   - 降级 source 时，写清楚哪些 claim 不再允许由它支撑，以及应该回到哪个 authoritative source 校验。
+   - 升级 candidate source 时，补齐权限、freshness、claim policy、writeback policy 和 mirror / manifest 边界。
+5. 同步任务包或长期记录：
+   - 若当前存在 active upgrade plan，同步更新 `sources-to-refresh.md`；如涉及新决策，更新 `decisions.md`；如仍需用户判断，更新 `open-questions.md`。
+   - 若变更影响长期内容路由或协作边界，再更新对应 `10-docs/01-conventions/` 或 `10-docs/03-indexes/`。
+6. 运行最小验证：
+   - 确认新增 / 修改的 source instance 具备 schema 必填字段。
+   - 确认旧 source id / source type / URL pattern 没有无意残留。
+   - 确认 URL pattern 没有把更具体的 source 映射遮蔽掉。
+   - 确认没有把 supporting / discovery source 提升成 factual source of truth，除非 `claim_policy` 明确允许且有用户确认。
