@@ -4,8 +4,8 @@
 
 ## 1. Governance Terms
 
-- `source instance`：具体来源，例如 `pypto`、`pypto-tools`、`PTO-TestData`。具体来源必须保持可追溯，不能因为共享治理类型而合并。
-- `source_type`：治理类型，例如 `code-source`、`runtime-artifact-source`、`external-discovery-source`。一个 source instance 可以有多个 `source_type`。
+- `source instance`：具体来源，例如 `pypto`、`pypto-tools`、`pypto-testdata`。具体来源必须保持可追溯，不能因为共享治理类型而合并。
+- `source_type`：治理类型，例如 `code-source`、`pypto-data-source`、`external-discovery-source`。一个 source instance 可以有多个 `source_type`。
 - `authoritative`：source 对某类 claim 的权威等级。
 - `primary retrieval role`：本次问题中的首选检索角色；复杂问题可以有多个 primary retrieval roles。
 - `manifest` source：原始材料不一定进仓库；仓库只保存索引、位置、权限、数据等级、可引用范围和使用规则。
@@ -61,8 +61,8 @@
 | `code-source` | 代码事实、实现路径、API / schema / adapter 线索 | `pypto`、`pypto-tools`、`pto-isa`、`ops-transformer` |
 | `official-doc-source` | 官方口径、API、开发指南、工具链说明 | `pypto-official-docs`、`cann-docs-community-edition` |
 | `design-intent-source` | 架构意图、设计决策、方向规划 | `pypto-top-level-design-documents` |
-| `runtime-artifact-source` | 真实运行产物、性能 / 图 / 日志证据 | `pypto-sample-dataset`、pypto 算子运行数据、`PTO-TestData` |
-| `demo-evidence-source` | demo 真实性、素材选择、联动设计依据 | `pypto-sample-dataset`、`PTO-TestData`、pypto 算子运行数据、toolkit 设计稿源文件 |
+| `pypto-data-source` | PyPTO 样例、测试数据、编译 / 运行产物、性能 / 图 / 日志证据 | `pypto-sample-dataset`、`pypto-testdata` |
+| `demo-evidence-source` | demo 真实性、素材选择、联动设计依据 | `pypto-sample-dataset`、`pypto-testdata`、toolkit 设计稿源文件 |
 | `external-discovery-source` | 外部文章、帖子、社区材料和候选 source 发现 | `curated-external-links`、web discovery、CANN org repo discovery pool |
 | `user-feedback-source` | 痛点挖掘、诉求分析、UX 策略输入 | issues / discussions / PR / FAQ / troubleshooting |
 | `design-system-source` | 视觉规范、交互模式、设计系统同步 | `yinyucheng0601/pto-design-system`、toolkit 设计稿源文件 |
@@ -88,7 +88,7 @@
 | `gitcode.com/cann/cannbot-skills/**` | `cannbot-skills` |
 | `gitcode.com/cann/ops-transformer/**` | `ops-transformer` |
 | `gitcode.com/cann/pypto-tools/**` | `pypto-tools` |
-| `gitcode.com/zhanghuixin/PTO-TestData/**` | `PTO-TestData` |
+| `gitcode.com/zhanghuixin/PTO-TestData/**` | `pypto-testdata` |
 | `github.com/yinyucheng0601/pto-design-system/**` | `yinyucheng0601/pto-design-system` |
 | `gitcode.com/org/cann/repos/**` | `cann-org-repo-discovery-pool` |
 | `zhihu.com/**`、`zhuanlan.zhihu.com/**` | `curated-external-links` |
@@ -176,18 +176,18 @@
 
 - `status`: `active`
 - `access_mode`: `local-mirror`
-- `source_type`: `runtime-artifact-source`, `demo-evidence-source`
+- `source_type`: `pypto-data-source`, `demo-evidence-source`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据`
-- `authority_scope`: PyPTO 真实 demo、样例数据、编译 / 运行产物、输入输出示意、可视化素材。
-- `best_for`: `demo-material`、`demo-design`、`workflow-research`、runtime artifact 佐证、代码-图-性能联动。
+- `authority_scope`: PyPTO 真实 demo、样例数据、测试数据、编译 / 运行产物、输入输出示意、可视化素材。
+- `best_for`: `demo-material`、`demo-design`、`workflow-research`、PyPTO data 佐证、代码-图-性能联动。
 - `not_for`: 通用 API 事实、官网对外措辞、未运行样例的推断。
 - `question_modes`: `lookup`, `workflow-research`, `demo-design`, `demo-material`, `ux-strategy`
 - `output_modes`: `answer`, `research-brief`, `demo-brief`, `ux-analysis`, `prototype-implementation-plan`, `knowledge-writeback`
-- `freshness_policy`: 默认直接使用当前本地数据目录；只有用户提供新同步方式或更新来源时才改变。
+- `freshness_policy`: 默认直接使用当前本地数据目录；后续用户放入该目录的 PyPTO 相关样例数据继续归入本 source instance。只有用户提供新同步方式或更新来源时才改变。
 - `search_mode`: 本地目录检索；优先关注 `code/`、`output_*/program.json`、`merged_swimlane.json`、`topo.json`、`run.log` 等产物。
-- `discovery_policy`: 可与 `pypto` 示例代码互相印证；新增数据集需登记数据等级和来源。
-- `claim_policy`: L1 数据可作真实运行证据；不得把 L2/L3 或推导材料伪装成 L1。
-- `writeback_policy`: demo 使用时同步记录数据等级、来源、可外发状态和生成规则。
+- `discovery_policy`: 可与 `pypto` 示例代码互相印证；新增数据集需登记数据等级、来源、可外发状态和生成 / 获取规则。
+- `claim_policy`: 原始数据等级按真实来源登记为 L1；L1 可作真实运行证据，但默认不等于 `share-safe`。只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 L2 的数据，才可标记为 `share-safe`。不得把 L2/L3 或推导材料伪装成 L1。
+- `writeback_policy`: PyPTOUX 仓库可在 `02-knowledge/00-shared/pypto-data/` 记录 manifest、摘要、数据等级、schema、来源和生成 / 获取规则；允许写入抽样或脱敏后的数据。demo 使用时同步记录数据等级、来源、可外发状态和生成规则。
 - `overwrite_guard`: 不主动改写该目录；清理、替换或批量写入前先确认。
 
 ### curated-external-links
@@ -211,20 +211,22 @@
 
 ### pypto-tools
 
-- `status`: `candidate`
-- `access_mode`: `online`, `manifest`
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
 - `source_type`: `code-source`, `toolkit-product-source`, `demo-evidence-source`
 - `remote`: `https://gitcode.com/cann/pypto-tools`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`
+- `snapshot`: branch `master`, commit `5a4fae5cb574276cedb01880f649011d7f09ca61`, commit date `2026-06-24T14:11:17+08:00`
 - `authority_scope`: 候选 PyPTO toolkit 代码、产品能力、adapter、demo workflow。
 - `best_for`: `workflow-research`、`demo-design`、`demo-material`、`ux-strategy` 中的 toolkit 能力和输入输出。
-- `not_for`: Batch A 中不得假设已可访问、已可 clone、或可外发原始材料。
+- `not_for`: 不得把未对照本地 mirror、`pypto` 文档/源码或用户提供证据的 toolkit 行为写成事实。
 - `question_modes`: `lookup`, `workflow-research`, `demo-design`, `demo-material`, `ux-strategy`
 - `output_modes`: `research-brief`, `demo-brief`, `ux-analysis`, `prototype-implementation-plan`, `source-update`
-- `freshness_policy`: Batch C 决定 mirror、adapter 和 demo 使用策略。
-- `search_mode`: Batch A 只登记候选；如用户给 URL，可在线单点读取公开页面。
-- `discovery_policy`: 可作为 mirror candidate；不在 Batch A clone。
-- `claim_policy`: 未确认前只作 candidate claim；涉及真实 toolkit 行为需用户确认或后续 Batch C 校验。
-- `writeback_policy`: 可写入 source registry / task package，不写入原始私有材料。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。
+- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
+- `discovery_policy`: 可作为 mirror candidate；本仓库允许记录文件结构、schema、截图和少量代码片段，但不得写入未经授权的大段源码或原始私有材料。
+- `claim_policy`: 结构、schema、截图和代码片段可在标注来源后支持 toolkit 能力说明；涉及真实 toolkit 行为需以 `pypto-tools` mirror、`pypto` 文档/源码或用户提供证据校验。
+- `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/pypto-toolkit/` 和任务包；代码片段保持最小必要，避免复制大段源码。
 
 ### pto-isa
 
@@ -277,22 +279,25 @@
 - `claim_policy`: factual claim 需回代码/官方 source 校验。
 - `writeback_policy`: 可记录 candidate relevance。
 
-### PTO-TestData
+### pypto-testdata
 
-- `status`: `candidate` / `manifest`
-- `access_mode`: `online`, `manifest`
-- `source_type`: `runtime-artifact-source`, `demo-evidence-source`
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
+- `source_type`: `pypto-data-source`, `demo-evidence-source`
 - `remote`: `https://gitcode.com/zhanghuixin/PTO-TestData`
-- `authority_scope`: 候选测试数据、运行数据、demo evidence。
-- `best_for`: `demo-material`、`demo-design`、runtime artifact 对照。
-- `not_for`: 未确认数据等级前不得作为 share-safe L1 数据外发。
+- `display_name`: `PTO-TestData`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`
+- `snapshot`: branch `main`, commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`, commit date `2026-06-17T16:16:59+08:00`
+- `authority_scope`: 候选 PyPTO 测试数据、样例数据、运行产物和 demo evidence。
+- `best_for`: `demo-material`、`demo-design`、PyPTO data source 对照。
+- `not_for`: 原始 L1 数据不得默认作为 `share-safe` 外发；未抽样、未脱敏、未写明边界的数据不得进入对外 demo。
 - `question_modes`: `lookup`, `demo-material`, `demo-design`, `ux-strategy`
 - `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 候选 source；数据等级、权限和 mirror 路径后续确认。
-- `search_mode`: manifest lookup 或用户提供路径；不在 Batch A clone。
-- `discovery_policy`: 可升级为 runtime artifact / demo evidence source。
-- `claim_policy`: 必须记录数据等级、来源、可外发状态和生成规则。
-- `writeback_policy`: 不写入原始数据；只写 manifest / source relevance / 数据等级规则。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。
+- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
+- `discovery_policy`: 可升级为 PyPTO data / demo evidence source。
+- `claim_policy`: 数据等级为 L1；权限和可外发边界同 `pypto-sample-dataset`。只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 L2 的数据，才可标记为 `share-safe`。
+- `writeback_policy`: PyPTOUX 仓库可在 `02-knowledge/00-shared/pypto-data/` 记录 manifest、摘要、数据等级、schema、来源和生成 / 获取规则；允许写入抽样或脱敏后的数据，不写入原始全量数据。
 
 ### yinyucheng0601/pto-design-system
 
@@ -311,37 +316,22 @@
 - `claim_policy`: design system claim 需区分上游 source、当前 skill 投影和 `07-designsystem/` 稳定内容。
 - `writeback_policy`: Batch D 前只记录 source governance，不投影原始材料。
 
-### pypto-runtime-data
-
-- `status`: `candidate` / `manifest`
-- `access_mode`: `manifest`, `user-provided`
-- `source_type`: `runtime-artifact-source`, `demo-evidence-source`
-- `authority_scope`: 候选 pypto 算子运行数据、性能/日志/trace 证据。
-- `best_for`: `demo-material`、`demo-design`、`diagnostic`、`optimization`。
-- `not_for`: 未分级、未脱敏、未授权材料不得进入仓库或外发。
-- `question_modes`: `diagnostic`, `optimization`, `demo-material`, `demo-design`, `ux-strategy`
-- `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: Batch C 建立 intake、权限、数据等级和脱敏规则。
-- `search_mode`: manifest lookup / user-provided path。
-- `discovery_policy`: 新数据只登记 manifest，不写原始私有材料。
-- `claim_policy`: 必须标注 L1/L2/L3、可外发状态和来源摘要。
-- `writeback_policy`: 只写 manifest、摘要和规则，不写原始私有运行数据。
-
 ### toolkit-design-files
 
 - `status`: `candidate` / `manifest`
 - `access_mode`: `manifest`, `user-provided`
 - `source_type`: `design-system-source`, `toolkit-product-source`, `demo-evidence-source`
+- `local_storage`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件`
 - `authority_scope`: 候选 toolkit 设计稿、产品交互、视觉/流程意图。
 - `best_for`: `ux-analysis`、`demo-design`、`design-system-application`、`ux-design-spec`。
-- `not_for`: 未授权设计稿原始文件、缩略图、截图或结构摘要不得写入仓库。
+- `not_for`: 原始设计稿文件不得进入 PyPTOUX 仓库。
 - `question_modes`: `workflow-research`, `demo-design`, `ux-strategy`
 - `output_modes`: `ux-analysis`, `demo-brief`, `ux-design-spec`, `design-system-application`, `source-update`
-- `freshness_policy`: Batch C/D 确认 intake 与可引用边界。
+- `freshness_policy`: 用户已确认本地存放地址；具体文件 snapshot、版本和来源仍需在 manifest 中登记。
 - `search_mode`: manifest lookup / user-provided path。
-- `discovery_policy`: 只登记 manifest 和权限摘要。
-- `claim_policy`: 明确可引用范围、可外发状态和与当前 design system 的关系。
-- `writeback_policy`: 不写原始私有设计稿。
+- `discovery_policy`: 只登记 manifest、权限摘要、缩略图 / 截图 / 结构摘要。
+- `claim_policy`: 可记录缩略图、截图和结构摘要；必须明确可引用范围、可外发状态和与当前 design system 的关系。
+- `writeback_policy`: 不写原始设计稿；可写 manifest、缩略图、截图、结构摘要和来源说明。
 
 ### user-feedback-sources
 
@@ -397,7 +387,7 @@
 Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refresh。
 
 - 高频、结构化、可检索、需要跨文件理解的 source，倾向建立 local mirror。
-- 私有仓、大体量仓库、运行数据、设计稿源文件默认先走 `manifest` + 用户确认路径 / 权限。
+- 私有仓、大体量仓库、未归入已登记 source 的数据材料、设计稿源文件默认先走 `manifest` + 用户确认路径 / 权限。
 - 只偶尔查、在线结构稳定的 source 保持在线检索。
 - supporting article / 社区帖子默认不 clone，只登记链接、claim 和验证状态。
 - issues / discussions / PR / FAQ 类 source 先保持在线检索；如高频用于 painpoint-mining，再考虑导出快照或 mirror。

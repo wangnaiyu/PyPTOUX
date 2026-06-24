@@ -22,15 +22,14 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 | `pypto-top-level-design-documents` | `active` within design-intent / `mirror-candidate` | 保守降权：设计意图 active，当前实现事实必须回 `pypto` 校验 | 是否建 local mirror 待用户确认 |
 | `cann-docs-community-edition` | `active` | 保持非 PyPTO CANN / Ascend / API / 工具链官方来源 | 默认在线最新版；用户指定版本时按指定版本 |
 | `curated-external-links` | `active` as discovery/supporting | 明确为 discovery/supporting source，不作 factual source of truth | 高价值新材料经校验后写回 registry |
-| `pypto-sample-dataset` | `active` | 保持 runtime artifact / demo evidence source；强调数据等级和可外发边界 | Batch C 与新增 runtime data 规则整合 |
-| `pypto-tools` | `candidate` | 登记为 `code-source` / `toolkit-product-source` / `demo-evidence-source` | Batch C 决定 mirror、adapter 和 demo 使用策略 |
+| `pypto-sample-dataset` | `active` | 保持 PyPTO data / demo evidence source；后续用户放入 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据` 的 PyPTO 样例、测试或运行产物继续归入本 source | 已确认 writeback 到 `02-knowledge/00-shared/pypto-data/`：manifest / 摘要 / 数据等级 / schema；允许抽样或脱敏数据入仓；原始 L1 不默认 share-safe |
+| `pypto-tools` | `active` / `local-mirror` | 登记为 `code-source` / `toolkit-product-source` / `demo-evidence-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools` | 已 clone；branch `master`；commit `5a4fae5cb574276cedb01880f649011d7f09ca61`；允许本仓库记录文件结构、schema、截图和少量代码片段 |
 | `pto-isa` | `candidate` | 新增候选 `code-source` / `isa-source` / `hardware-interface-source` | 后续确认是否 mirror |
 | `cannbot-skills` | `candidate` | 新增候选 `tooling-source` / `agent-workflow-source` | 后续按相关度确认是否 mirror |
 | `ops-transformer` | `candidate` | 新增候选 `code-source` / `operator-workflow-source` | 后续按相关度确认是否 mirror |
-| `PTO-TestData` | `candidate` / `manifest` | 新增候选 runtime/test/demo evidence source | Batch C 确认数据等级、权限、mirror 或 manifest |
+| `pypto-testdata` | `active` / `local-mirror` | 新增 PyPTO data / demo evidence source，display name 为 `PTO-TestData`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData` | 已 clone；branch `main`；commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`；数据等级 L1，权限和可外发边界同 `pypto-sample-dataset`；writeback 到 `02-knowledge/00-shared/pypto-data/` |
 | `yinyucheng0601/pto-design-system` | `candidate-active` / `mirror-candidate` | 保留为 design-system source；Batch A 不同步上游 | Batch D 决定 mirror、同步和 `07-designsystem/` 投影 |
-| pypto 算子运行数据 | `candidate` / `manifest` | 保留为 runtime artifact / demo evidence source | Batch C 建立 intake、权限、脱敏和数据等级 |
-| pypto toolkit 设计稿源文件 | `candidate` / `manifest` | 保留为 design-system / toolkit-product / demo-evidence source | Batch C/D 确认可引用边界 |
+| pypto toolkit 设计稿源文件 | `candidate` / `manifest` | 保留为 design-system / toolkit-product / demo-evidence source；raw files local storage: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件` | 原始设计稿不入仓；允许缩略图 / 截图 / 结构摘要 |
 | issues / discussions / PR / FAQ / troubleshooting | `candidate` | 登记为 user feedback / painpoint evidence source | 后续按主题在线检索；高频再考虑快照或 mirror |
 | web discovery | `candidate` | 登记为 discovery mechanism，不作 source of truth | 发现高价值材料后再进入 curated registry 或 source registry |
 | `gitcode.com/org/cann/repos` | `discovery-pool` | 新增 CANN org repo discovery pool | 后续按相关度筛选具体 source instance |
@@ -39,7 +38,7 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 
 - Batch A 只制定 clone / local mirror 判断规则，不执行 clone / pull / fetch / refresh。
 - 高频、结构化、可检索、需要跨文件理解的 source，倾向建立本地 mirror。
-- 私有仓、大仓库、运行数据和设计稿，先按 `manifest` 登记，再由用户确认路径、权限和可引用范围。
+- 私有仓、大仓库、未归入已登记 source 的数据材料和设计稿，先按 `manifest` 登记，再由用户确认路径、权限和可引用范围。
 - 偶尔查询且在线结构稳定的 source，可保持在线检索。
 - supporting article / 社区帖子默认不 clone，只登记链接、claim 和验证状态。
 - issues / discussions / PR / FAQ 类 source 先保持在线检索；如高频用于 painpoint-mining，再考虑导出快照或 mirror。
@@ -61,5 +60,5 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 ## 下一步
 
 - Batch B：已刷新 `pypto` 本地镜像并更新 `02-knowledge/00-shared/pypto-architecture/`。
-- Batch C：确认 `pypto-tools`、运行数据、`PTO-TestData` 和 toolkit 设计稿的 mirror / manifest / demo 使用策略。
+- Batch C：已确认 `pypto-tools`、`pypto-sample-dataset`、`pypto-testdata` 和 toolkit 设计稿的 mirror / manifest / demo 使用策略；Toolkit 规则回写到 `pypto-toolkit`，PyPTO data 规则回写到 `pypto-data`。
 - Batch D：确认 `yinyucheng0601/pto-design-system` 的同步方式和 `07-designsystem/` 投影边界。

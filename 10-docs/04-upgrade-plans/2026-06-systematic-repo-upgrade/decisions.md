@@ -107,3 +107,33 @@
 - 决策：按已确认的 `batch-b-pypto-architecture-refresh-plan.md` 完成 Batch B，刷新 `pypto-architecture`，同步依赖旧 architecture hint 的规则/skills，并准备 Batch C handoff。
 - 原因：`pypto` 本地 mirror 已 hard sync 到当前 GitCode `master`，旧 architecture map 中的 snapshot、文档路径和工具路径已经漂移。
 - 影响：`02-knowledge/00-shared/pypto-architecture/overview.md` 现在只作为 `orientation_hints`；`sources.md` 记录 snapshot 和 source boundary；`drift.md` 记录本轮已吸收 drift；下一步进入 Batch C preflight。
+
+## 2026-06-23 Batch C PyPTO data source taxonomy
+
+- 决策：保留 `pypto-sample-dataset` 作为本地 active source instance；后续用户放入 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据` 的 PyPTO 相关样例、测试或运行产物继续归入本 source。
+- 决策：新增 `pypto-testdata` 作为 candidate / manifest source instance，remote 指向 `https://gitcode.com/zhanghuixin/PTO-TestData`，display name 为 `PTO-TestData`。
+- 决策：将 source type `runtime-artifact-source` 重命名为 `pypto-data-source`；`pypto-sample-dataset` 和 `pypto-testdata` 都属于 `pypto-data-source`，并可同时属于 `demo-evidence-source`。
+- 决策：移除泛化 source instance `pypto-runtime-data`，不再把“pypto 算子运行数据”作为独立 source lane。
+- 原因：`pypto-runtime-data` 与 `pypto-sample-dataset` 的本地 intake 定位重复，容易让 agent 在新增数据材料时误判登记入口；`pypto-data-source` 更贴近本项目对样例、测试和运行产物的统一治理语义。
+- 影响：Batch C 后续只围绕 `pypto-sample-dataset`、`pypto-testdata`、`pypto-tools` 和 toolkit design files 继续确认权限、数据等级、manifest、mirror 和 demo 引用规则。
+
+## 2026-06-24 Batch C source governance 完成
+
+- 决策：`pypto-tools` planned mirror root 为 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`；Batch C preflight 当时未下载或 clone；PyPTOUX 允许记录其文件结构、schema、截图和少量代码片段。
+- 决策：`pypto-sample-dataset` 可写回 manifest、摘要、数据等级和 schema；允许抽样或脱敏后的数据进入 PyPTOUX。
+- 决策：只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 L2 的数据，才可标记为 `share-safe`。
+- 决策：`pypto-testdata` 允许 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`；数据等级为 L1，权限和可外发边界同 `pypto-sample-dataset`。
+- 决策：toolkit 设计稿原始文件不进入 PyPTOUX；本地存放地址为 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件`；允许记录缩略图、截图和结构摘要。
+- 决策：`02-knowledge/00-shared/pypto-toolkit/` 使用 canonical files `overview.md`、`sources.md`、`manifest.md`，且只保留 Toolkit、`pypto-tools` 和 toolkit design inputs。
+- 决策：新增 `02-knowledge/00-shared/pypto-data/`，使用 canonical files `overview.md`、`sources.md`、`manifest.md`，承接 `pypto-sample-dataset`、`pypto-testdata`、PyPTO 数据等级和 `share-safe` 规则。
+- 原因：Batch C 需要让后续 demo 能引用 Toolkit 能力和 PyPTO data sources，同时避免原始私有材料误入仓库。
+- 影响：Batch C 治理结论已回写到 source registry、`pypto-toolkit`、`pypto-data`、`pypto-demo-data-filling` 和任务包 checkpoint；下一步进入 Batch D preflight，不自动 clone 外部仓库。
+
+## 2026-06-24 Batch C mirrors cloned
+
+- 决策：按用户要求 clone `pypto-tools` 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`。
+- 决策：按用户要求 clone `pypto-testdata` / `PTO-TestData` 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`。
+- Snapshot：`pypto-tools` branch `master`，commit `5a4fae5cb574276cedb01880f649011d7f09ca61`，commit date `2026-06-24T14:11:17+08:00`。
+- Snapshot：`PTO-TestData` branch `main`，commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`，commit date `2026-06-17T16:16:59+08:00`。
+- 原因：用户已确认 GitCode SSH key，并要求将两个 source clone 到本地 mirror。
+- 影响：source registry、`pypto-toolkit` 和 `pypto-data` 已从 planned / candidate mirror 更新为 active local mirror；后续 refresh 需单独记录 snapshot。

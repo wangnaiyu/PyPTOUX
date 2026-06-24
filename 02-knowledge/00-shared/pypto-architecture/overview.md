@@ -116,7 +116,7 @@ pypto/
 | 查控制流、符号化、动态 shape | `docs/zh/api/controlflow/`、`docs/zh/api/symbolic/` | `examples/02_intermediate/controlflow/` | 路径命中失败时回 `rg` |
 | 结果不对、编译失败、运行失败 | `docs/zh/tutorials/debug/` | `docs/zh/trouble_shooting/` | 先按现象，再按组件专题 |
 | 性能不好、想看瓶颈 | `docs/zh/tutorials/debug/performance.md` | `docs/zh/tools/swimlane_graph/` | 性能工具和运行产物需另回 runtime artifact |
-| 看控制流图 / 计算图 / 泳道图 / 三栏联动 | `docs/zh/tools/` | `tools/` | toolkit / runtime data 的 mirror、manifest 与权限策略另行治理 |
+| 看控制流图 / 计算图 / 泳道图 / 三栏联动 | `docs/zh/tools/` | `tools/` | toolkit / PyPTO data sources 的 mirror、manifest 与权限策略另行治理 |
 | 看真实复杂模型实现 | `models/` | `examples/03_advanced/` | 优先选当前问题相关模型目录 |
 | 看框架内部机制 | `python/pypto/`、`framework/src/` | `docs/zh/tutorials/` | 源码事实优先；教程帮助建立阅读心智 |
 
@@ -156,7 +156,7 @@ pypto/
 
 ## 6. 已知限制与后续
 
-- 本文只覆盖 `pypto` 本体的 architecture orientation，不处理 `pypto-tools` mirror / adapter / demo 策略；这些内容由 toolkit / runtime data source governance 另行处理。
-- 本文不纳入 runtime data、`PTO-TestData` 或 toolkit 设计稿 intake；这些仍按 manifest / candidate source 处理。
+- 本文只覆盖 `pypto` 本体的 architecture orientation，不处理 `pypto-tools` mirror / adapter / demo 策略；这些内容由 toolkit / PyPTO data source governance 另行处理。
+- 本文不纳入 `pypto-sample-dataset`、`pypto-testdata` 或 toolkit 设计稿 intake；这些仍按对应 source governance 处理。
 - 若后续发现 `pypto` remote、目录结构或工具链文档再次变化，先记录到 `drift.md`，再更新本文。
 - 更完整的 source snapshot、引用边界和 drift 记录见本目录的 `sources.md` 与 `drift.md`。

@@ -30,7 +30,7 @@
 | Swimlane Profiler | `02-knowledge/02-swimlane-profiler/` `04-uxdesign/02-swimlane-profiler/` `05-prototypes/02-swimlane-profiler/` |
 | Ascend Hardware Architecture | `02-knowledge/00-shared/ascend-a5-950-hardware/` `04-uxdesign/03-ascend-hardware-architecture/` `05-prototypes/03-ascend-hardware-architecture/` |
 | Operator Doc Assistant | `05-prototypes/04-operator-doc-assistant/` |
-| PyPTO Studio | `02-knowledge/00-shared/pypto-architecture/` `02-knowledge/00-shared/pypto-toolkit/` `05-prototypes/05-pypto-studio/` |
+| PyPTO Studio | `02-knowledge/00-shared/pypto-architecture/` `02-knowledge/00-shared/pypto-toolkit/` `02-knowledge/00-shared/pypto-data/` `05-prototypes/05-pypto-studio/` |
 | A5 PMU Visualization | `02-knowledge/00-shared/ascend-a5-950-hardware/` `04-uxdesign/04-a5-pmu-visualization/` `05-prototypes/06-a5-pmu-visualization/` |
 
 ## Shared Buckets

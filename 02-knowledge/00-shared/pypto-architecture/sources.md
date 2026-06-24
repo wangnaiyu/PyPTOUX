@@ -79,4 +79,4 @@
 - 每次刷新 `overview.md` 时，同时更新本文件的 snapshot 表。
 - 如果发现旧 overview 与当前 snapshot 不一致，记录到 `drift.md`；修订 overview 后把对应 drift 标为 `resolved`。
 - 不在本文登记全局 source schema；新增 source instance 或 source type 时更新 `.agents/skills/pypto-knowledge-source/references/sources.md`。
-- 不把私有运行数据、`pypto-tools`、`PTO-TestData` 或 toolkit 设计稿源文件放入本目录；这些由 toolkit/runtime data 和 design-system source governance 另行处理。
+- 不把外部数据材料、`pypto-tools`、`pypto-testdata` 或 toolkit 设计稿源文件放入本目录；这些由 toolkit / PyPTO data source 和 design-system source governance 另行处理。

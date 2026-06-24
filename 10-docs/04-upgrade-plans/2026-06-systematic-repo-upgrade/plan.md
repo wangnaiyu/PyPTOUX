@@ -27,7 +27,7 @@
 - 更新 `.agents/skills/pypto-knowledge-source/references/sources.md`
 - 设计 `Intent Mode` 与 `Output Mode`
 - 重构 source schema，描述 source 的能力、权限、可信边界、适用问题模式、claim policy 和 writeback policy
-- 明确 `pypto-tools`、运行数据、设计稿源文件、issues / discussions / PR / FAQ、web discovery 等 source 类型
+- 明确 `pypto-tools`、PyPTO data sources、设计稿源文件、issues / discussions / PR / FAQ、web discovery 等 source 类型
 - 审计已登记 source 的 `active / candidate / deprecated / blocked` 状态
 - 制定 clone / local mirror policy，但不默认执行 clone
 
@@ -59,13 +59,14 @@
 
 ## Batch C: Toolkit And Runtime Data Strategy
 
-目标：把官方 `pypto-tools`、算子运行数据、toolkit 设计稿纳入 demo 资产策略。
+目标：把官方 `pypto-tools`、PyPTO data sources、toolkit 设计稿纳入 demo 资产策略。
 
 范围：
 
 - 判断 `pypto-tools` 是否作为外部 primary source、本地镜像或 adapter source
-- 更新 `02-knowledge/00-shared/pypto-toolkit/`
-- 建立运行数据和设计稿 intake manifest
+- 更新 `02-knowledge/00-shared/pypto-toolkit/`，只承接 Toolkit、`pypto-tools` 和 toolkit design inputs
+- 建立 `02-knowledge/00-shared/pypto-data/`，承接 PyPTO data sources、数据等级和 `share-safe` 规则
+- 建立 toolkit 设计稿 intake manifest
 - 明确数据等级、权限、脱敏、可外发状态和 demo 引用规则
 - 更新 `pypto-demo-data-filling`
 
