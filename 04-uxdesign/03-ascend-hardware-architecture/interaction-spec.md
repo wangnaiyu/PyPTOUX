@@ -11,7 +11,7 @@
 1. A5 / Ascend 950 总览：`02-knowledge/00-shared/ascend-a5-950-hardware/overview.md`
 2. A5 / Ascend 950 详细影响报告：`02-knowledge/00-shared/ascend-a5-950-hardware/impact-report.md`
 3. 通用 AI Core 主路径：`02-knowledge/00-shared/ascend-aicore-hardware/overview.md`
-4. PyPTO Toolkit 与样例字段：本地 `pypto` 镜像、`pypto-toolkit`、`pypto-sample-datasets` 相关知识主题
+4. PyPTO Toolkit 与样例字段：本地 `pypto` 镜像、`pypto-toolkit`、`pypto-data` 相关知识主题
 5. 历史草稿：`01-inbox/ascend-hardware-architecture-notes.md` 仅作历史参考，不作为当前事实源
 
 可信度分层：

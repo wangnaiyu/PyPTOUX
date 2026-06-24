@@ -11,6 +11,21 @@ Toolkit source manifest 见 [../pypto-toolkit/manifest.md](../pypto-toolkit/mani
 | `pypto-sample-dataset` | PyPTO data source / demo evidence | `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据` | local active source | 原始数据按来源登记为 L1 | manifest、摘要、数据等级、schema、抽样或脱敏数据 | 仅抽样 / 脱敏后，或按 schema 编造并标记为 L2 |
 | `pypto-testdata` | PyPTO data source / demo evidence | `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`; remote: `https://gitcode.com/zhanghuixin/PTO-TestData` | active mirror; branch `main`; commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15` | L1 | manifest、摘要、数据等级、schema、抽样或脱敏数据 | 同 `pypto-sample-dataset` |
 
+## Data Role Rules
+
+同一个文件需要同时判断 source 可追溯性和数据角色：
+
+| 数据角色 | 含义 | 默认等级 |
+| --- | --- | --- |
+| `runtime-observed` | 来自真实编译 / 运行产物或真实测试运行结果 | L1 |
+| `testdata-artifact` | 来自已登记测试数据仓库，可作为工具能力或 schema 证据 | L1，除非文件自身声明为构造 |
+| `synthetic-testcase` | 为验证转换规则、边界条件或约束而构造的数据 | L2 |
+| `fixture / schema example` | 工具内置演示或 schema 示例 | L2，除非另有真实运行来源 |
+| `schema-generated` | 按已知 schema 生成的数据 | L2 |
+| `placeholder` | 早期布局占位 | L3 |
+
+`PTO-TestData/mix/fake_testcase` 默认按 `synthetic-testcase` 处理：source 文件可追溯，但内容不写成真实业务运行结果。
+
 ## Data Level Rules
 
 - `L1`: 真实数据，直接来自上游仓库、本地样例、测试数据或真实编译 / 运行产物。
@@ -32,6 +47,7 @@ Toolkit source manifest 见 [../pypto-toolkit/manifest.md](../pypto-toolkit/mani
 - local path 或 remote URL
 - owner / provider
 - data level
+- data role
 - raw / sampled / desensitized / schema-generated
 - schema source
 - allowed repository writeback

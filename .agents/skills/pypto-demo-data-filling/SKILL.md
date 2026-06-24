@@ -23,8 +23,8 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 
 - 先读 [../../../AGENTS.md](../../../AGENTS.md)，确认项目级 demo 规则。
 - 可读 [../../../02-knowledge/00-shared/pypto-architecture/overview.md](../../../02-knowledge/00-shared/pypto-architecture/overview.md) 作为 `orientation_hints` 缩小检索范围；不要用它替代当前 `pypto` snapshot 或样例数据事实。
-- 再读 [../../../02-knowledge/00-shared/pypto-sample-datasets/overview.md](../../../02-knowledge/00-shared/pypto-sample-datasets/overview.md)，确认当前有哪些已整理好的样例数据集。
-- 如果需要把代码、计算图、泳道图精确对齐，再读 [../../../02-knowledge/00-shared/pypto-sample-datasets/sources.md](../../../02-knowledge/00-shared/pypto-sample-datasets/sources.md)，优先复用已经确认过的映射入口。
+- 再读 [../../../02-knowledge/00-shared/pypto-data/overview.md](../../../02-knowledge/00-shared/pypto-data/overview.md)，确认当前数据治理、schema / rules 和 dataset / scenario 索引。
+- 如果需要把代码、计算图、泳道图精确对齐，再读 [../../../02-knowledge/00-shared/pypto-data/datasets/three-view.md](../../../02-knowledge/00-shared/pypto-data/datasets/three-view.md) 和 [../../../02-knowledge/00-shared/pypto-data/schemas/dyn-topo.md](../../../02-knowledge/00-shared/pypto-data/schemas/dyn-topo.md)，优先复用已经确认过的映射入口。
 - PyPTO data source 权限边界见 [../../../02-knowledge/00-shared/pypto-data/manifest.md](../../../02-knowledge/00-shared/pypto-data/manifest.md)；Toolkit 来源边界见 [../../../02-knowledge/00-shared/pypto-toolkit/manifest.md](../../../02-knowledge/00-shared/pypto-toolkit/manifest.md)。不要把原始 L1 数据默认当成 `share-safe`。
 - 需要更快决定 demo 面板和素材映射时，读 [references/demo-patterns.md](references/demo-patterns.md)。
 
@@ -41,7 +41,7 @@ description: Use this skill when working inside the PyPTOUX repository and you n
    - `examples/` 找官方推荐写法
    - `models/` 找更接近真实业务的实现
    - `python/pypto/`、`framework/src/` 找前端机制和底层编译链路
-3. 用 `pypto-sample-datasets/overview.md` 选择最合适的数据集，优先复用已确认可用的数据集。
+3. 用 `pypto-data/overview.md` 和 `pypto-data/datasets/*.md` 选择最合适的数据集，优先复用已确认可用的数据集。
 4. 先明确当前 demo 想走哪条关联链，再选素材：
    - 代码标签联动 -> 优先找 `SetSemanticLabel(...)` 或 `pypto.set_semantic_label(...)`
    - 图到任务的跳转 -> 优先找 `program.json` + `dyn_topo.txt`

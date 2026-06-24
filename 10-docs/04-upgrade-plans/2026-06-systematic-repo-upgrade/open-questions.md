@@ -41,13 +41,15 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 
 - 候选 mirror set 的默认本地根目录放在哪里？
 - `github.com/hengliao1972/pypto_top_level_design_documents` 是否需要建立本地 mirror 供 agent 跨文件检索？
-- `gitcode.com/cann/pto-isa`、`cannbot-skills`、`ops-transformer` 是否允许 clone 到本地 mirror？
 - issue / discussion / PR / FAQ 类 source 是否需要本地导出快照，还是保持在线检索？
 
 ### 已确认
 
 - `pypto-tools` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`；snapshot branch `master`，commit `5a4fae5cb574276cedb01880f649011d7f09ca61`。
 - `pypto-testdata` / `PTO-TestData` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`；snapshot branch `main`，commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`。
+- `pto-isa` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-isa`；snapshot branch `master`，commit `4bd9a4d5175c9fce28f83560a982c5877fb6c685`。
+- `ops-transformer` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/ops-transformer`；snapshot branch `master`，commit `0c372f8d537c6cfa7bd0ffb165c6701f8ddb79a9`。
+- `cannbot-skills` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`；snapshot branch `master`，commit `bba4e1823e0b366c14b38a5186c987b5703c1f66`。
 
 ## Batch C: Toolkit And Runtime Data
 

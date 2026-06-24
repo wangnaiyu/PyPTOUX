@@ -1,6 +1,6 @@
 # PyPTO Toolkit
 
-本文用于沉淀 PyPTO Toolkit 的能力地图、`pypto-tools` source governance 和 toolkit 设计输入边界。它不是 `pypto-tools` 的代码镜像，也不保存原始设计稿。
+本文用于沉淀 PyPTO Toolkit 的产品能力地图、`pypto-tools` source governance、demo 交互探索基准和 toolkit 设计输入边界。它不是 `pypto-tools` 的代码镜像，也不保存原始设计稿。
 
 PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `share-safe` 规则已拆到 [../pypto-data/overview.md](../pypto-data/overview.md)。
 
@@ -12,6 +12,7 @@ PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `sha
 | last_updated | `2026-06-24` |
 | source_registry | `.agents/skills/pypto-knowledge-source/references/sources.md` |
 | canonical_files | `overview.md`, `sources.md`, `manifest.md` |
+| product_maps | `feature-map.md`, `linkage-mechanism.md` |
 
 使用规则：
 
@@ -19,6 +20,7 @@ PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `sha
 - `pypto-tools` mirror 已 clone；本仓库可记录文件结构、schema、截图和少量代码片段。
 - toolkit 设计稿原始文件不进入本仓库；本仓库可记录缩略图、截图和结构摘要。
 - 与 PyPTO 样例数据或测试数据相关的内容统一查 `02-knowledge/00-shared/pypto-data/`。
+- 本主题面向产品理解和 demo 探索，不追求成为 VS Code 插件开发手册；源码结构只沉淀到足以支持交互设计和 demo 取材的程度。
 
 ## 1. Toolkit 是什么
 
@@ -95,7 +97,70 @@ PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `sha
 
 前提是代码里使用 `pypto.set_semantic_label(...)` 或对应 C++ 侧语义标签接口，并生成 `program.json` 与 `merged_swimlane.json`。这两个产物的 demo 数据等级和可外发边界以 `pypto-data` 规则为准。
 
-## 3. Source Governance
+更细的联动机制见 [linkage-mechanism.md](linkage-mechanism.md)。
+
+### 扩展能力
+
+`pypto-tools` 源码与 README 还显示 Toolkit 已覆盖若干主链路之外的扩展能力：
+
+- 历史运行结果侧边栏：扫描、展示和搜索运行结果。
+- 精度报告 / OpCheck：读取精度比对 CSV，支持从异常记录跳回计算图。
+- 内存可视化：读取 `_OoO_Memory_Trace.json`，展示内存图、事件轴和事件列表。
+- `perf_swimlane.json` 转换：将 task 记录、依赖、AICPU 调度和 name map 转成 Chrome Trace 风格的 `traceEvents`。
+- AICPU / pypto3.0 / Mix 泳道图：作为泳道图视图的扩展展示模式。
+- 欢迎引导：以内置 fixture 带用户走过控制流、计算图、泳道图和三栏联动。
+
+完整产品能力入口见 [feature-map.md](feature-map.md)。
+
+## 3. 运行结果模型
+
+`pypto-tools` 把一次 PyPTO 执行结果组织成可再次打开的历史运行结果。这个模型适合作为 demo 的一等知识沉淀，因为它把“用户看什么”和“工具怎么找到材料”连接起来。
+
+### 运行目录
+
+运行结果目录通常形如 `rundata_YYYYMMDDHHMMSS`，Toolkit 会从目录名解析执行时间，并用 `runtype + 执行时间` 生成历史记录标题。
+
+每个运行结果通过 `rundata.json` 或引导样例中的 `rundata_boot_steps.json` 描述关键路径：
+
+| 字段 | 含义 | Toolkit 使用方式 |
+| --- | --- | --- |
+| `runtype` | 运行类型，例如 simulation / on-chip | 参与历史记录标题 |
+| `pto_src_file` | 源码路径 | 三栏联动和源码入口 |
+| `program_file` | 控制流 / program 文件路径 | 控制流视图与计算图关联 |
+| `compute_graph_path` | 计算图目录 | 扫描 `Pass_*` 目录和计算图文件 |
+| `swim_graph_path` | 泳道图文件路径 | 打开泳道图 |
+| `flow_verify_path` | 精度校验路径 | 发现 OpCheck / 精度报告入口 |
+
+### 目录树
+
+Toolkit 会把运行结果整理成三类可点击材料：
+
+- 控制流文件：来自 `program_file`。
+- 泳道图文件：来自 `swim_graph_path`。
+- 计算图目录：来自 `compute_graph_path`，下钻到 `Pass_<index>_<name>/After_...json`。
+
+计算图文件名会被解析出 `pathName`、`computeType`、`leafProgramId` 和 `leafHash`。这些字段对“从泳道图跳回计算图”“定位 leaf function”“按 Pass 阶段解释编译过程”很有价值。
+
+### Demo 启发
+
+后续做 PyPTOUX demo 时，可以优先模拟这个运行结果模型，而不是只把单个 JSON 文件扔给界面：
+
+1. 先让用户看到一次运行的历史记录。
+2. 再从历史记录展开控制流、计算图、泳道图、精度报告。
+3. 最后在三栏联动里把源码行、semantic label、计算节点和性能事件连起来。
+
+## 4. Fixture 与数据归属
+
+`src/boot-mock-data/` 是 `pypto-tools` 内置欢迎引导样例，当前建议标记为 `toolkit fixture / schema example`。
+
+归属规则：
+
+- 在 `pypto-toolkit` 中记录它的存在、用途、字段结构和对交互设计的启发。
+- 不把它直接当成 `pypto-sample-dataset` 的 L1 真实运行数据。
+- 如果后续需要把其中的 `program.json`、`merged_swimlane.json` 或源码片段抽取成 demo 数据，应在 `02-knowledge/00-shared/pypto-data/` 另行登记来源、数据等级、可外发状态和生成 / 抽取规则。
+- 对外展示时应说明它是 Toolkit 内置 fixture，而不是新的真实 benchmark 或用户运行产物。
+
+## 5. Source Governance
 
 ### pypto-tools
 
@@ -116,7 +181,7 @@ PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `sha
 
 设计稿用于 Toolkit 产品交互、信息架构、视觉意图和 demo 设计输入。原始设计稿不放入 PyPTOUX。
 
-## 4. 快速上手路径
+## 6. 快速上手路径
 
 `docs/tools/introduction/快速入门.md` 给出了一条实用的最短路径：
 
@@ -134,14 +199,15 @@ PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `sha
 
 这些产物是否能进入仓库或标记为 `share-safe`，不在本目录判断，统一按 `02-knowledge/00-shared/pypto-data/manifest.md`。
 
-## 5. 查询 Toolkit 文档时的推荐路径
+## 7. 查询 Toolkit 文档时的推荐路径
 
 1. 先看 `docs/tools/introduction/简介.md` 和 `快速入门.md`
 2. 如果是“看什么图、怎么操作”，进入对应的 `control_flow/`、`computation_graph/`、`swimlane_graph/`
 3. 如果是“怎么把代码、图和性能关联起来”，看 `three_column/三栏联动视图.md`
 4. 如果是插件问题和已知限制，查 `others/其他功能.md` 和 `faq/已知问题.md`
+5. 如果是 `pypto-tools` 源码侧能力入口，查本目录 [feature-map.md](feature-map.md)
 
-## 6. 与调试调优文档的关系
+## 8. 与调试调优文档的关系
 
 Toolkit 更偏“可视化观察和交互操作”，而 `docs/tutorials/debug/` 更偏“调试方法论和性能策略”。
 

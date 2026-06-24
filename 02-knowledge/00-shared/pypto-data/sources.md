@@ -4,6 +4,15 @@
 
 Toolkit 产品能力和 `pypto-tools` 来源见 [../pypto-toolkit/sources.md](../pypto-toolkit/sources.md)。
 
+## Internal Knowledge Files
+
+| 文件 | 用途 |
+| --- | --- |
+| [overview.md](overview.md) | PyPTO data 总入口、信息架构和选择路径 |
+| [manifest.md](manifest.md) | source、数据等级、data role、`share-safe` 和写回边界 |
+| `schemas/*.md` | artifact / schema family 规则 |
+| `datasets/*.md` | dataset / scenario 索引 |
+
 ## Primary Sources
 
 | Source id | 类型 | 链接或定位 | 状态 | 用途 |
@@ -12,6 +21,8 @@ Toolkit 产品能力和 `pypto-tools` 来源见 [../pypto-toolkit/sources.md](..
 | `pypto-testdata` | local mirror / PyPTO data source | `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`；remote: `https://gitcode.com/zhanghuixin/PTO-TestData` | active; branch `main`; commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15` | 测试数据、样例数据、运行产物、demo evidence |
 | 本仓库资料 | `overview.md` | 本目录 | active | PyPTO data source 治理摘要 |
 | 本仓库资料 | `manifest.md` | 本目录 | active | source intake、数据等级、可外发和写回规则 |
+| 本仓库资料 | `schemas/*.md` | 本目录 | active | artifact / schema family 说明 |
+| 本仓库资料 | `datasets/*.md` | 本目录 | active | dataset / scenario 索引 |
 
 ## Writeback Policy
 
@@ -29,3 +40,4 @@ Toolkit 产品能力和 `pypto-tools` 来源见 [../pypto-toolkit/sources.md](..
 - 本轮已 clone `pypto-testdata`，clone 后 mirror status 为 `## main...origin/main`。
 - 本轮没有把原始外部数据写入 PyPTOUX。
 - 新增 PyPTO data material 时，优先登记到已确认的具体 source instance；不使用泛化数据 lane。
+- 原 `pypto-sample-datasets` 和 `pypto-computation-graph-nodes` 已迁入本主题；后续引用统一指向 `pypto-data/datasets/*` 和 `pypto-data/schemas/*`。

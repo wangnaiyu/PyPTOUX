@@ -1,8 +1,8 @@
-# PyPTO 计算图节点显示参数
+# Computation Graph Node Display Parameters
 
 本文记录 `PyPTO Toolkit` 官方计算图中四类 Graph 的节点类型和节点信息显示参数，作为后续 demo、报告和说明材料中绘制 graph 节点时的信息基准。
 
-本文只约束“显示哪些信息”，不约束节点的呈现方式。
+本文只约束“显示哪些信息”，不约束节点呈现方式。
 
 ## 1. 适用范围
 
@@ -25,8 +25,6 @@
 
 ### 2.1 `Incast/Outcast`
 
-`Incast/Outcast` 是数据源 / 数据结果节点。官方显示参数包括：
-
 | 参数 | 说明 |
 | --- | --- |
 | 节点名称 | 计算图的 `Incast/Outcast` 节点名称，在节点标题中展示。 |
@@ -42,8 +40,6 @@
 
 ### 2.2 `Tensor`
 
-`Tensor` 是数据节点。官方显示参数包括：
-
 | 参数 | 说明 |
 | --- | --- |
 | 节点名称 | 计算图的 `Tensor` 节点名称，在节点标题中展示。 |
@@ -58,8 +54,6 @@
 | `datatype` | 数据类型。 |
 
 ### 2.3 `Operation`
-
-`Operation` 是操作节点。官方显示参数包括：
 
 | 参数 | 说明 |
 | --- | --- |
@@ -102,13 +96,7 @@
 
 显示参数沿用本文第 2 节。`Block Graph` 是 `Tile Graph` 切分后形成的子图，每个子图对应一个 `Block Graph`。
 
-在真实样例中，`Block Graph` 的 `Operation` 常见 `opcode` 包括：
-
-- 数据搬运：`COPY_IN`、`COPY_OUT`
-- 计算：`EXP`、`DIV`、`A_MULACC_B`
-- 同步 / 阶段控制：`PHASE1`、`PHASE2`、`SYNC_SRC`、`SYNC_DST`、`BAR.V`
-
-这些 `opcode` 可作为说明材料中的补充字段，但不替代官方节点参数表。
+真实样例中的 `Operation` 常见 `opcode` 包括 `COPY_IN`、`COPY_OUT`、`EXP`、`DIV`、`A_MULACC_B`、`PHASE1`、`PHASE2`、`SYNC_SRC`、`SYNC_DST`、`BAR.V`。这些 `opcode` 可作为说明材料中的补充字段，但不替代官方节点参数表。
 
 ### 3.4 `Execute Graph`
 
@@ -128,20 +116,7 @@
 | `InCast` | 输入 `Tensor` 的 `Magic ID` 列表。 |
 | `OutCast` | 输出 `Tensor` 的 `Magic ID` 列表。 |
 
-官方文档说明 `CALL` 节点带有 `fx` 标识，用于表示对 `Block Graph` 的一次调用，并支持双击查看对应 `Block Graph` 子图信息。本文只把 `fx` 记录为识别标记，不把它扩展为呈现规范。
-
-真实样例 JSON 中，`CALL` 还常见以下可追溯字段：
-
-- `opcode: "CALL"`
-- `opmagic`
-- `semantic_label`
-- `calleehash`
-- `ioperands`
-- `ooperands`
-- `latency`
-- `tile`
-
-这些字段可用于 demo 下钻、报告解释和跨产物追溯；若与官方显示参数冲突，优先按官方显示参数组织默认节点信息。
+真实样例 JSON 中，`CALL` 还常见 `opcode: "CALL"`、`opmagic`、`semantic_label`、`calleehash`、`ioperands`、`ooperands`、`latency`、`tile`。这些字段可用于 demo 下钻、报告解释和跨产物追溯。
 
 ## 4. 使用规则
 

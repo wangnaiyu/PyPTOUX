@@ -78,6 +78,12 @@
 - 原因：`pypto` refresh、toolkit/runtime data、design system sync 分别有独立权限和边界，必须按后续 batch 处理。
 - 影响：下一步进入 Batch B：刷新 `pypto` 本地镜像并更新 `02-knowledge/00-shared/pypto-architecture/`。
 
+## 2026-06-24 建立 pto-isa / ops-transformer / cannbot-skills 本地 mirror
+
+- 决策：允许并完成 `pto-isa`、`ops-transformer`、`cannbot-skills` clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/`，并分别建立 `02-knowledge/00-shared/pto-isa/`、`02-knowledge/00-shared/ops-transformer/`、`02-knowledge/00-shared/cannbot-skills/`。
+- 原因：`pto-isa` 需要跨文件检索 ISA / Tile Lib / A5 后端事实；`ops-transformer` 需要支撑 operator workflow 和算子迁移研究；`cannbot-skills` 需要作为 agent-workflow source 支撑技能治理和 CANNBot 工作流借鉴。
+- 影响：source registry 已将三者升级为 `active` / `local-mirror`；后续 refresh / fetch 需要记录 snapshot。`cannbot-skills` 仍不作为 PyPTO / CANN factual source。
+
 ## 2026-06-17 建立 Batch Handoff Gate
 
 - 决策：完成任一 batch 后，必须准备下一 batch 的 prompt 和 plan shell，并在 `status.md` 记录 `next_batch_prompt`、`next_batch_plan` 和 `next_batch_gate`。
