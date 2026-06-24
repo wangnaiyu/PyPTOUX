@@ -30,7 +30,7 @@
 1. 更新 `02-knowledge/00-shared/pypto-architecture`，使其反映当前 `pypto` 仓库状态，并同步依赖它的 skills。
 2. 建立 `.agents/skills/pto-design-system` 从上游 `yinyucheng0601/pto-design-system` 手动更新的方式，并判断 `07-designsystem/` 应吸收哪些稳定内容。
 3. 将私有 `pypto-tools` 仓库纳入 source governance，服务后续 demo 演进。
-4. 建立 pypto 算子运行数据和 toolkit 设计稿源文件的 intake、分级、脱敏、引用规则。
+4. 建立 `02-knowledge/00-shared/pypto-data/` 承接 PyPTO data sources 的 intake、分级、脱敏、引用规则，并让 `pypto-toolkit` 只保留 Toolkit / `pypto-tools` / toolkit 设计输入。
 5. 优化 `pypto-knowledge-source`，让 Codex / Claude 更稳定地主动查询已登记外部来源。
 6. 更新新增、过时、降级或屏蔽的知识源及相关项目规则。
 
@@ -44,10 +44,12 @@
 - `batch-a-agentic-search-governance-plan.md`：Batch A 在 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `batch-b-pypto-architecture-refresh-plan.md`：Batch B 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `batch-c-toolkit-runtime-data-strategy-plan.md`：Batch C 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
+- `batch-d-design-system-sync-strategy-plan.md`：Batch D 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `prompts/resume.md`：新 session 续作时优先使用的通用 prompt。
 - `prompts/batch-a-source-governance.md`：正式启动 Batch A 时使用的 prompt。
 - `prompts/batch-b-pypto-architecture-refresh.md`：正式启动 Batch B 时使用的 prompt。
 - `prompts/batch-c-toolkit-runtime-data-strategy.md`：正式启动 Batch C 时使用的 prompt。
+- `prompts/batch-d-design-system-sync-strategy.md`：正式启动 Batch D 时使用的 prompt。
 
 ## 5. 新 Session 如何继续
 
@@ -75,6 +77,7 @@
 - 只是想恢复上下文、让 agent 判断下一步：使用 `prompts/resume.md`。
 - 已经明确要启动某个 batch：使用对应 batch prompt，例如 `prompts/batch-a-source-governance.md` 或 `prompts/batch-b-pypto-architecture-refresh.md`。
 - Batch C 使用 `prompts/batch-c-toolkit-runtime-data-strategy.md`。
+- Batch D 使用 `prompts/batch-d-design-system-sync-strategy.md`。
 - 最稳做法：先使用 `prompts/resume.md`，等 agent 汇报当前状态后，再要求继续执行某个 batch prompt。
 
 也可以直接使用组合句：

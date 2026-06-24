@@ -27,7 +27,7 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 - 已登记 source 默认采用“保守降权”：不直接 `deprecated` / `blocked`，而是用 `authority_scope`、`best_for`、`not_for` 和 `claim_policy` 限制误用。
 - `curated-external-links` 和 web discovery 只作 discovery/supporting，不作 factual source of truth。
 - `pypto-top-level-design-documents` 只在 design-intent scope 内 active；当前实现事实必须回 `pypto` 校验。
-- 私有仓、大体量仓库、运行数据和设计稿默认先按 `manifest` 或 `candidate` 登记，不把原始材料写入仓库。
+- 私有仓、大体量仓库、未归入已登记 source 的数据材料和设计稿默认先按 `manifest` 或 `candidate` 登记，不把原始材料写入仓库。
 - Batch A 只制定 clone / mirror policy 和候选清单，不执行 clone / refresh。
 
 ## Source Governance
@@ -41,20 +41,36 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 
 - 候选 mirror set 的默认本地根目录放在哪里？
 - `github.com/hengliao1972/pypto_top_level_design_documents` 是否需要建立本地 mirror 供 agent 跨文件检索？
-- `gitcode.com/cann/pto-isa`、`cannbot-skills`、`ops-transformer`、`pypto-tools` 是否允许 clone 到本地 mirror？
-- `gitcode.com/zhanghuixin/PTO-TestData` 是否允许 clone 到本地 mirror，还是只登记 manifest？
+- `gitcode.com/cann/pto-isa`、`cannbot-skills`、`ops-transformer` 是否允许 clone 到本地 mirror？
 - issue / discussion / PR / FAQ 类 source 是否需要本地导出快照，还是保持在线检索？
+
+### 已确认
+
+- `pypto-tools` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`；snapshot branch `master`，commit `5a4fae5cb574276cedb01880f649011d7f09ca61`。
+- `pypto-testdata` / `PTO-TestData` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`；snapshot branch `main`，commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`。
 
 ## Batch C: Toolkit And Runtime Data
 
-- `pypto-tools` 本地镜像计划放在哪里？是否已经下载？
-- `pypto-tools` 是否允许本仓库记录文件结构、schema、截图或代码片段？
-- pypto 算子运行数据是否允许进入本仓库？
-- 如果允许，进入仓库的是原始数据、抽样数据、脱敏数据，还是只进入 manifest？
-- 哪些运行数据可以标记为 `share-safe`？
-- `PTO-TestData` 的数据等级、权限和可外发边界是什么？
-- toolkit 设计稿源文件是否允许进入本仓库？
-- 如果设计稿不入仓，是否允许记录缩略图、截图或结构摘要？
+### 已确认
+
+- 保留 source instance `pypto-sample-dataset`，本地路径为 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据`；后续用户放入该目录的 PyPTO 相关样例、测试或运行产物继续归入本 source。
+- 新增 source instance `pypto-testdata`，remote 指向 `https://gitcode.com/zhanghuixin/PTO-TestData`，display name 为 `PTO-TestData`。
+- source type `runtime-artifact-source` 重命名为 `pypto-data-source`。
+- `pypto-sample-dataset` 和 `pypto-testdata` 都属于 `pypto-data-source`，并可同时属于 `demo-evidence-source`。
+- 移除 source instance `pypto-runtime-data`；新增 PyPTO 数据材料应归入 `pypto-sample-dataset`、`pypto-testdata` 或后续明确的新 source instance，不再使用泛化的运行数据 source instance。
+- `pypto-tools` planned local mirror root is `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`; it has not been downloaded or cloned.
+- PyPTOUX may record `pypto-tools` file structure, schema, screenshots and small code snippets.
+- `pypto-sample-dataset` may write back manifest, summaries, data levels and schema; sampled or desensitized data may enter PyPTOUX.
+- Only sampled / desensitized data or schema-generated L2 data can be marked `share-safe`.
+- `pypto-testdata` may be cloned to `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`; its data level is L1 and its permission / external boundary follows `pypto-sample-dataset`.
+- Toolkit design raw files must not enter PyPTOUX; local storage is `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件`; thumbnails, screenshots and structure summaries are allowed.
+- `02-knowledge/00-shared/pypto-toolkit/` should use canonical files `overview.md`, `sources.md`, and `manifest.md`, scoped to Toolkit、`pypto-tools` and toolkit design inputs.
+- `02-knowledge/00-shared/pypto-data/` should use canonical files `overview.md`, `sources.md`, and `manifest.md`, scoped to PyPTO sample/test data, compile/runtime artifacts, data levels and `share-safe` rules.
+
+### 待确认
+
+- 若后续要 refresh `pypto-tools` 或 `pypto-testdata`，是否立即执行外部目录写入和网络访问？
+- 具体截图、缩略图、抽样数据或脱敏数据写入仓库前，逐项确认是否可标记 `share-safe`。
 
 ## Batch D: Design System
 

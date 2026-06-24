@@ -8,7 +8,7 @@
 任务包位置：
 `10-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/`
 
-本次 Batch C 的目标是把 `pypto-tools`、pypto 算子运行数据、`PTO-TestData` 和 toolkit 设计稿源文件纳入 source governance，服务后续 demo 演进，并明确 mirror、manifest、权限、数据等级、脱敏、可外发状态和 demo 引用规则。
+本次 Batch C 的目标是把 `pypto-tools`、`pypto-sample-dataset`、`pypto-testdata` 和 toolkit 设计稿源文件纳入 source governance，服务后续 demo 演进，并明确 mirror、manifest、权限、数据等级、脱敏、可外发状态和 demo 引用规则。
 
 请先阅读：
 - `10-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/README.md`
@@ -37,16 +37,16 @@
 
 1. `pypto-tools` 本地镜像计划放在哪里？是否已经下载？
 2. `pypto-tools` 是否允许本仓库记录文件结构、schema、截图或代码片段？
-3. pypto 算子运行数据是否允许进入本仓库？如果允许，是原始数据、抽样数据、脱敏数据，还是只进入 manifest？
-4. 哪些运行数据可以标记为 `share-safe`？
-5. `PTO-TestData` 是否允许 clone 到本地 mirror，还是只登记 manifest？它的数据等级、权限和可外发边界是什么？
+3. `pypto-sample-dataset` 的仓库写回边界是什么：只记录 manifest / 摘要 / 数据等级，还是允许抽样或脱敏后的数据进入本仓库？
+4. `pypto-sample-dataset` 中哪些数据集可以标记为 `share-safe`？
+5. `pypto-testdata` 是否允许 clone 到本地 mirror，还是只登记 manifest？它的数据等级、权限和可外发边界是什么？
 6. toolkit 设计稿源文件是否允许进入本仓库？如果设计稿不入仓，是否允许记录缩略图、截图或结构摘要？
-7. `02-knowledge/00-shared/pypto-toolkit/` 应建立哪些 canonical files，例如 `overview.md`、`sources.md`、`manifest.md`？
+7. `02-knowledge/00-shared/pypto-toolkit/` 与 `02-knowledge/00-shared/pypto-data/` 应如何拆分？两者是否都建立 canonical files，例如 `overview.md`、`sources.md`、`manifest.md`？
 
 ## 执行边界
 
-- 不要默认 clone / pull / fetch `pypto-tools`、`PTO-TestData` 或其他候选 source；先确认 preflight。
-- 不要写入未经授权的私有运行数据、测试数据或设计稿原始文件。
+- 不要默认 clone / pull / fetch `pypto-tools`、`pypto-testdata` 或其他候选 source；先确认 preflight。
+- 不要写入未经授权的数据材料、测试数据或设计稿原始文件。
 - 不要开始 Batch D：`yinyucheng0601/pto-design-system` 同步和 `07-designsystem/` 投影不在本 batch 执行。
 - 不要做 demo build、prototype build 或 design system sync。
 - 不要把 `L2` / `L3` 数据伪装成 `L1`。
@@ -55,10 +55,10 @@
 
 确认 preflight 后，先更新 `batch-c-toolkit-runtime-data-strategy-plan.md`，写入：
 
-- 当前 toolkit/runtime data source audit 结论
+- 当前 toolkit / PyPTO data source audit 结论
 - `pypto-tools` mirror / manifest 策略
-- runtime data / `PTO-TestData` / design files 的数据等级和引用边界
-- `02-knowledge/00-shared/pypto-toolkit/` 信息架构
+- `pypto-sample-dataset` / `pypto-testdata` / design files 的数据等级和引用边界
+- `02-knowledge/00-shared/pypto-toolkit/` 与 `02-knowledge/00-shared/pypto-data/` 信息架构
 - `pypto-demo-data-filling` 更新范围
 - source registry 和 `sources-to-refresh.md` 更新规则
 - 需要用户判断的问题
@@ -74,7 +74,7 @@
 
 - 修改了哪些文件
 - `pypto-tools` 如何登记或引用
-- runtime data / `PTO-TestData` / toolkit design files 的数据等级和权限边界如何记录
+- `pypto-sample-dataset` / `pypto-testdata` / toolkit design files 的数据等级和权限边界如何记录
 - `pypto-demo-data-filling` 如何变化
 - 哪些问题留给 Batch D
 - 下一步是否进入 Batch D

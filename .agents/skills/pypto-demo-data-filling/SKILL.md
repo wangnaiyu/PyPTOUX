@@ -25,6 +25,7 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 - 可读 [../../../02-knowledge/00-shared/pypto-architecture/overview.md](../../../02-knowledge/00-shared/pypto-architecture/overview.md) 作为 `orientation_hints` 缩小检索范围；不要用它替代当前 `pypto` snapshot 或样例数据事实。
 - 再读 [../../../02-knowledge/00-shared/pypto-sample-datasets/overview.md](../../../02-knowledge/00-shared/pypto-sample-datasets/overview.md)，确认当前有哪些已整理好的样例数据集。
 - 如果需要把代码、计算图、泳道图精确对齐，再读 [../../../02-knowledge/00-shared/pypto-sample-datasets/sources.md](../../../02-knowledge/00-shared/pypto-sample-datasets/sources.md)，优先复用已经确认过的映射入口。
+- PyPTO data source 权限边界见 [../../../02-knowledge/00-shared/pypto-data/manifest.md](../../../02-knowledge/00-shared/pypto-data/manifest.md)；Toolkit 来源边界见 [../../../02-knowledge/00-shared/pypto-toolkit/manifest.md](../../../02-knowledge/00-shared/pypto-toolkit/manifest.md)。不要把原始 L1 数据默认当成 `share-safe`。
 - 需要更快决定 demo 面板和素材映射时，读 [references/demo-patterns.md](references/demo-patterns.md)。
 
 ## 核心流程 | Core Workflow
@@ -67,6 +68,8 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 - 优先准备 `L1`：真实文件、真实路径、真实字段名、真实运行产物。
 - 真实数据缺失但 schema、字段定义或业务规则明确时，可准备 `L2`。
 - `L2` 必须注明来源依据或推导规则，不得伪装成 `L1`。
+- `share-safe` 只能用于抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 `L2` 的数据；原始 L1 数据不能默认标记为 `share-safe`。
+- PyPTOUX 仓库可以保存 manifest、摘要、数据等级、schema、来源规则，以及抽样 / 脱敏后的数据；不要写入原始全量外部数据。
 - 本 skill 不直接为纯视觉探索制造 `L3`；`L3` 属于前端探索阶段的临时占位。
 - 不要自行扩展不存在的上游字段、节点类型或运行阶段。
 

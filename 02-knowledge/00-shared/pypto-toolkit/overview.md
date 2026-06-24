@@ -1,8 +1,28 @@
-# PyPTO Toolkit 初步理解
+# PyPTO Toolkit
+
+本文用于沉淀 PyPTO Toolkit 的能力地图、`pypto-tools` source governance 和 toolkit 设计输入边界。它不是 `pypto-tools` 的代码镜像，也不保存原始设计稿。
+
+PyPTO 样例数据、测试数据、编译 / 运行产物、数据等级与 `share-safe` 规则已拆到 [../pypto-data/overview.md](../pypto-data/overview.md)。
+
+## 0. Snapshot 与使用边界
+
+| 字段 | 值 |
+| --- | --- |
+| intended_use | Toolkit / pypto-tools orientation |
+| last_updated | `2026-06-24` |
+| source_registry | `.agents/skills/pypto-knowledge-source/references/sources.md` |
+| canonical_files | `overview.md`, `sources.md`, `manifest.md` |
+
+使用规则：
+
+- Toolkit 当前实现事实必须回 `pypto`、`pypto-tools` mirror 或用户提供的可追溯材料校验。
+- `pypto-tools` mirror 已 clone；本仓库可记录文件结构、schema、截图和少量代码片段。
+- toolkit 设计稿原始文件不进入本仓库；本仓库可记录缩略图、截图和结构摘要。
+- 与 PyPTO 样例数据或测试数据相关的内容统一查 `02-knowledge/00-shared/pypto-data/`。
 
 ## 1. Toolkit 是什么
 
-根据 `docs/tools/introduction/简介.md`，PyPTO Toolkit 是一套面向 PyPTO 框架全流程的辅助工具，重点不在“写算子”，而在“看清楚算子是如何被表达、编译、执行和调优的”。
+根据 `pypto` 文档中的 `docs/tools/introduction/简介.md`，PyPTO Toolkit 是面向 PyPTO 框架全流程的辅助工具，重点不在“写算子”，而在“看清楚算子如何被表达、编译、执行和调优”。
 
 它的定位可以概括为：
 
@@ -12,8 +32,6 @@
 - 降低调试调优门槛
 
 ## 2. 主要功能和特性
-
-当前文档里最核心的四项能力是：
 
 ### 控制流图
 
@@ -75,26 +93,32 @@
 
 - `docs/tools/three_column/三栏联动视图.md`
 
-前提是代码里要使用 `pypto.set_semantic_label(...)` 设置语义标签，并生成 `program.json` 与 `merged_swimlane.json`。
+前提是代码里使用 `pypto.set_semantic_label(...)` 或对应 C++ 侧语义标签接口，并生成 `program.json` 与 `merged_swimlane.json`。这两个产物的 demo 数据等级和可外发边界以 `pypto-data` 规则为准。
 
-## 3. 它解决什么问题
+## 3. Source Governance
 
-如果只从“实际开发”角度看，Toolkit 主要解决三类问题：
+### pypto-tools
 
-- 看懂代码表达和图结构是否一致
-- 看懂编译后的图被怎样切分、组织和执行
-- 看懂性能瓶颈到底落在图结构、任务依赖还是调度耗时上
+- source id: `pypto-tools`
+- remote: `https://gitcode.com/cann/pypto-tools`
+- local mirror: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`
+- current snapshot: branch `master`, commit `5a4fae5cb574276cedb01880f649011d7f09ca61`, commit date `2026-06-24T14:11:17+08:00`
+- repository writeback: 可记录文件结构、schema、截图和少量代码片段
 
-所以它特别适合这几类场景：
+`pypto-tools` 用于补足 Toolkit 产品能力、adapter、工程结构和 demo workflow 的证据。clone 或 refresh 时需要记录 snapshot，不在本目录存放完整源码。
 
-- 新人建立 PyPTO 心智模型
-- 调试图结构异常、子图切分异常
-- 性能调优时观察泳道与气泡
-- 做代码到图到性能的跨层追踪
+### toolkit-design-files
+
+- source id: `toolkit-design-files`
+- local storage: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件`
+- raw files in PyPTOUX: not allowed
+- allowed writeback: 缩略图、截图、结构摘要、manifest、来源说明
+
+设计稿用于 Toolkit 产品交互、信息架构、视觉意图和 demo 设计输入。原始设计稿不放入 PyPTOUX。
 
 ## 4. 快速上手路径
 
-`docs/tools/introduction/快速入门.md` 给出了一条非常实用的最短路径：
+`docs/tools/introduction/快速入门.md` 给出了一条实用的最短路径：
 
 1. 运行一个 PyPTO 样例，例如 softmax
 2. 在输出目录找到 `program.json`
@@ -108,29 +132,16 @@
 - `program.json`：Execute Graph 和 Block Graph 的汇总信息
 - `merged_swimlane.json`：泳道图性能数据
 
-## 5. 查询 Toolkit 文档时的推荐路径
+这些产物是否能进入仓库或标记为 `share-safe`，不在本目录判断，统一按 `02-knowledge/00-shared/pypto-data/manifest.md`。
 
-后续如果是 Toolkit 相关问题，我会按下面顺序找：
+## 5. 查询 Toolkit 文档时的推荐路径
 
 1. 先看 `docs/tools/introduction/简介.md` 和 `快速入门.md`
 2. 如果是“看什么图、怎么操作”，进入对应的 `control_flow/`、`computation_graph/`、`swimlane_graph/`
 3. 如果是“怎么把代码、图和性能关联起来”，看 `three_column/三栏联动视图.md`
 4. 如果是插件问题和已知限制，查 `others/其他功能.md` 和 `faq/已知问题.md`
 
-## 6. Toolkit 文档速查
-
-建议优先记住这些入口：
-
-- `docs/tools/index.md`
-- `docs/tools/introduction/简介.md`
-- `docs/tools/introduction/快速入门.md`
-- `docs/tools/computation_graph/index.md`
-- `docs/tools/swimlane_graph/index.md`
-- `docs/tools/control_flow/index.md`
-- `docs/tools/three_column/三栏联动视图.md`
-- `docs/tools/faq/已知问题.md`
-
-## 7. 与调试调优文档的关系
+## 6. 与调试调优文档的关系
 
 Toolkit 更偏“可视化观察和交互操作”，而 `docs/tutorials/debug/` 更偏“调试方法论和性能策略”。
 
@@ -138,4 +149,4 @@ Toolkit 更偏“可视化观察和交互操作”，而 `docs/tutorials/debug/`
 
 - 先在 `tutorials/debug/` 里明确排查思路
 - 再用 Toolkit 观察计算图、泳道图和联动视图
-- 最后回到 `examples/` 或源码里调整写法、TileShape、loop 或配置
+- 最后回到 `examples/`、`models/`、源码或数据 manifest 里调整写法、TileShape、loop 或配置
