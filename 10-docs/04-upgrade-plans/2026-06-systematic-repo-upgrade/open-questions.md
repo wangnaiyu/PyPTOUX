@@ -76,9 +76,24 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 
 ## Batch D: Design System
 
-- 从 `yinyucheng0601/pto-design-system` 更新时，是希望手动触发脚本、人工 copy，还是维护一个上游镜像？
-- `07-designsystem/` 是否只承载稳定投影，不承载 agent-facing preview 和实验 pattern？
-- `.agents/skills/pto-design-system` 是否继续作为 agent 使用的主入口？
+### 已确认
+
+- 允许采用 `yinyucheng0601/pto-design-system` 本地 mirror + 手动触发 sync / audit + diff / change report 策略。
+- 允许在 `/goal` 阶段 clone `yinyucheng0601/pto-design-system` 到推荐 mirror path `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`。
+- `07-designsystem/` 只承载稳定投影，不承载 agent-facing preview、实验 pattern 或上游全量 mirror。
+- `07-designsystem/` 的人类阅读入口倾向采用更可视化的静态 HTML portal；Markdown 和投影源码仍保留，用于搜索、diff、审计和 implementation contract。
+- `.agents/skills/pto-design-system` 继续作为 agent 使用的主入口。
+- 每次设计系统同步需要生成 diff / change report。
+- 本轮先确认和更新 plan，暂不落地同步脚本。
+- 首次投影除了更新文档层，也复制 token CSS 或 approved pattern code。
+- 首次投影 pattern code 时，复制全部当前已注册 approved patterns。
+- Batch D `/goal` 执行顺序：先 clone / inspect 上游设计系统到本地 mirror，再系统性更新 `.agents/skills/pto-design-system`（如需更新），最后投影 `07-designsystem/`。
+- Batch D 已执行完成：上游 mirror 已 clone，source registry 已更新，`.agents/skills/pto-design-system` 已同步上游稳定 bundle，`07-designsystem/` 已建立 HTML portal、token CSS、UI CSS、全部 approved pattern projection 和 source sync / change report 规则。
+
+### 待确认
+
+- 无 Batch D 阻塞项。
+- 后续是否在 Batch E 或单独 batch 中补 `06-tools/` sync / audit 脚本，可在 Batch E 中判断。
 
 ## Collaboration
 

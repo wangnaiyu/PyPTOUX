@@ -20,9 +20,8 @@ Every preview must show:
 
 Preferred order:
 
-1. The current prototype module, usually `05-prototypes/<topic>/experiments/<variant>/component-preview.html` or the relevant `app/src` preview route.
-2. `.agents/skills/pto-design-system/design-system-preview.html` only when the approved pattern should become shared system UI.
-3. If the pattern becomes part of the long-lived product design system, mirror the decision into the relevant `07-designsystem/` guidance or component area.
+1. `/Users/yin/pto/<module>/component-preview.html`
+2. `/Users/yin/pto/design-system-preview.html` when the pattern should become shared system UI
 
 ## Approval rule
 
