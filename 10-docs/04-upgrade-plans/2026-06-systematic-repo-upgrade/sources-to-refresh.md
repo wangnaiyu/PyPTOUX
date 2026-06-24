@@ -24,9 +24,9 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 | `curated-external-links` | `active` as discovery/supporting | 明确为 discovery/supporting source，不作 factual source of truth | 高价值新材料经校验后写回 registry |
 | `pypto-sample-dataset` | `active` | 保持 PyPTO data / demo evidence source；后续用户放入 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据` 的 PyPTO 样例、测试或运行产物继续归入本 source | 已确认 writeback 到 `02-knowledge/00-shared/pypto-data/`：manifest / 摘要 / 数据等级 / schema；允许抽样或脱敏数据入仓；原始 L1 不默认 share-safe |
 | `pypto-tools` | `active` / `local-mirror` | 登记为 `code-source` / `toolkit-product-source` / `demo-evidence-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools` | 已 clone；branch `master`；commit `5a4fae5cb574276cedb01880f649011d7f09ca61`；允许本仓库记录文件结构、schema、截图和少量代码片段 |
-| `pto-isa` | `candidate` | 新增候选 `code-source` / `isa-source` / `hardware-interface-source` | 后续确认是否 mirror |
-| `cannbot-skills` | `candidate` | 新增候选 `tooling-source` / `agent-workflow-source` | 后续按相关度确认是否 mirror |
-| `ops-transformer` | `candidate` | 新增候选 `code-source` / `operator-workflow-source` | 后续按相关度确认是否 mirror |
+| `pto-isa` | `active` / `local-mirror` | 升级为 `code-source` / `isa-source` / `hardware-interface-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-isa`；knowledge map: `02-knowledge/00-shared/pto-isa/` | 已 clone；branch `master`；commit `4bd9a4d5175c9fce28f83560a982c5877fb6c685`；后续 refresh 需记录 snapshot |
+| `cannbot-skills` | `active` / `local-mirror` | 升级为 `tooling-source` / `agent-workflow-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`；knowledge map: `02-knowledge/00-shared/cannbot-skills/` | 已 clone；branch `master`；commit `bba4e1823e0b366c14b38a5186c987b5703c1f66`；仅作 workflow / tooling 线索 |
+| `ops-transformer` | `active` / `local-mirror` | 升级为 `code-source` / `operator-workflow-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/ops-transformer`；knowledge map: `02-knowledge/00-shared/ops-transformer/` | 已 clone；branch `master`；commit `0c372f8d537c6cfa7bd0ffb165c6701f8ddb79a9`；版本 claim 需回配套 CANN tag / release |
 | `pypto-testdata` | `active` / `local-mirror` | 新增 PyPTO data / demo evidence source，display name 为 `PTO-TestData`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData` | 已 clone；branch `main`；commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`；数据等级 L1，权限和可外发边界同 `pypto-sample-dataset`；writeback 到 `02-knowledge/00-shared/pypto-data/` |
 | `yinyucheng0601/pto-design-system` | `candidate-active` / `mirror-candidate` | 保留为 design-system source；Batch A 不同步上游 | Batch D 决定 mirror、同步和 `07-designsystem/` 投影 |
 | pypto toolkit 设计稿源文件 | `candidate` / `manifest` | 保留为 design-system / toolkit-product / demo-evidence source；raw files local storage: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件` | 原始设计稿不入仓；允许缩略图 / 截图 / 结构摘要 |
@@ -46,7 +46,7 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 - `pypto-tools` 的本地路径、mirror、adapter 和 demo 使用策略归 Batch C。
 - `yinyucheng0601/pto-design-system` 的本地 mirror、同步和投影策略归 Batch D。
 
-明确候选 mirror set：
+明确 mirror tracking set（包含已落地 mirror 与仍待确认的 mirror-candidate）：
 
 - `https://gitcode.com/cann/pypto`
 - `https://gitcode.com/cann/pto-isa`

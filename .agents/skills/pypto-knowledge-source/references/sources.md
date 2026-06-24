@@ -230,54 +230,63 @@
 
 ### pto-isa
 
-- `status`: `candidate`
-- `access_mode`: `online`, `manifest`
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
 - `source_type`: `code-source`, `isa-source`, `hardware-interface-source`
 - `remote`: `https://gitcode.com/cann/pto-isa`
-- `authority_scope`: 候选 PTO ISA、硬件接口、指令语义、A5/950 相关 technical claim。
-- `best_for`: `lookup`、`trend-research`、`ux-strategy` 中涉及 ISA / hardware interface 的问题。
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-isa`
+- `snapshot`: branch `master`, commit `4bd9a4d5175c9fce28f83560a982c5877fb6c685`, commit date `2026-06-24T17:15:57+08:00`
+- `knowledge_map`: `02-knowledge/00-shared/pto-isa/`
+- `authority_scope`: PTO ISA、Tile Library、硬件接口、指令语义、C++ intrinsic API、CPU / NPU / CostModel / communication 后端实现路径和 A5/950 相关 technical claim。
+- `best_for`: `lookup`、`trend-research`、`ux-strategy`、`demo-material` 中涉及 ISA / hardware interface / Tile 编程模型的问题。
 - `not_for`: PyPTO 当前实现事实，除非回 `pypto` 或相关代码校验。
 - `question_modes`: `lookup`, `trend-research`, `ux-strategy`, `demo-material`
-- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `source-update`
-- `freshness_policy`: 候选 source；是否 mirror 后续确认。
-- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
-- `discovery_policy`: 可升级为 mirror candidate。
-- `claim_policy`: ISA claim 需与官方 CANN/Ascend 或代码 source 对照。
-- `writeback_policy`: 可记录 source relevance，不写入未验证事实。
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `demo-brief`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
+- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
+- `discovery_policy`: 可从当前问题出发跨 docs / include / kernels / tests 检索；发现高价值专题可写回 `02-knowledge/00-shared/pto-isa/`。
+- `claim_policy`: ISA claim 以当前 snapshot 的文档、头文件或测试为准；A5/950 硬件 claim 需与官方 CANN/Ascend 或代码 source 对照；PyPTO 当前行为仍回 `pypto`。
+- `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/pto-isa/` 和任务包；不复制大段源码或完整 ISA 表。
 
 ### cannbot-skills
 
-- `status`: `candidate`
-- `access_mode`: `online`, `manifest`
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
 - `source_type`: `tooling-source`, `agent-workflow-source`
 - `remote`: `https://gitcode.com/cann/cannbot-skills`
-- `authority_scope`: 候选 agent skill、tooling workflow、自动化线索。
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`
+- `snapshot`: branch `master`, commit `bba4e1823e0b366c14b38a5186c987b5703c1f66`, commit date `2026-06-24T15:51:30+08:00`
+- `knowledge_map`: `02-knowledge/00-shared/cannbot-skills/`
+- `authority_scope`: agent skill taxonomy、tooling workflow、prompt pattern、skill governance、GitCode issue / PR workflow 和自动化线索。
 - `best_for`: `workflow-research`、`ux-strategy` 中与 agent 辅助、工具链工作流有关的问题。
 - `not_for`: PyPTO / CANN factual source of truth。
 - `question_modes`: `workflow-research`, `trend-research`, `ux-strategy`
-- `output_modes`: `research-brief`, `ux-analysis`, `source-update`
-- `freshness_policy`: 候选 source；是否 mirror 后续确认。
-- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
-- `discovery_policy`: 可作 CANN org 相关 repo 的高相关候选。
-- `claim_policy`: 仅作 workflow / tooling 线索，factual claim 回 authoritative source。
-- `writeback_policy`: 可记录 candidate relevance。
+- `output_modes`: `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
+- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
+- `discovery_policy`: 可作为 CANN agent / skill workflow 的高相关 source；不将 skill 文案中的技术 claim 直接提升为事实。
+- `claim_policy`: 仅作 workflow / tooling / skill governance 线索；API、硬件、性能、PyPTO 行为等 factual claim 回 authoritative source。
+- `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/cannbot-skills/` 和任务包；不复制全量 skills。
 
 ### ops-transformer
 
-- `status`: `candidate`
-- `access_mode`: `online`, `manifest`
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
 - `source_type`: `code-source`, `operator-workflow-source`
 - `remote`: `https://gitcode.com/cann/ops-transformer`
-- `authority_scope`: 候选 operator / workflow / tooling code source。
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/ops-transformer`
+- `snapshot`: branch `master`, commit `0c372f8d537c6cfa7bd0ffb165c6701f8ddb79a9`, commit date `2026-06-24T17:44:26+08:00`
+- `knowledge_map`: `02-knowledge/00-shared/ops-transformer/`
+- `authority_scope`: 当前 checkout 的 transformer 类算子仓库结构、算子目录、标准算子工程 workflow、调用方式、tooling code source 和可追溯代码路径。
 - `best_for`: `workflow-research`、`demo-material`、`ux-strategy` 中与算子迁移、operator workflow 或 tooling 相关的问题。
 - `not_for`: PyPTO current behavior，除非经过相关代码和官方文档校验。
 - `question_modes`: `lookup`, `workflow-research`, `demo-material`, `ux-strategy`
-- `output_modes`: `answer`, `research-brief`, `demo-brief`, `source-update`
-- `freshness_policy`: 候选 source；是否 mirror 后续确认。
-- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
-- `discovery_policy`: 可作 mirror candidate。
-- `claim_policy`: factual claim 需回代码/官方 source 校验。
-- `writeback_policy`: 可记录 candidate relevance。
+- `output_modes`: `answer`, `research-brief`, `demo-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。README 提醒源码会跟随 CANN 软件版本发布，使用 `master` 可能存在版本不匹配风险；强版本问题必须选配套 tag / release。
+- `search_mode`: 优先本地 `rg`；需要 freshness 或版本配套时再在线单点读取、checkout tag 或 refresh mirror。
+- `discovery_policy`: 可从当前问题出发跨 docs / op directories / examples / torch_extension 检索；发现高价值算子 workflow 可写回 `02-knowledge/00-shared/ops-transformer/`。
+- `claim_policy`: factual claim 需回当前代码、配套 tag、CANN/Ascend 官方文档或具体算子目录校验；PyPTO 当前行为仍回 `pypto`。
+- `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/ops-transformer/` 和任务包；不复制全量算子列表或大段源码。
 
 ### pypto-testdata
 
@@ -395,7 +404,7 @@ Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refres
 - `pypto-tools` 的本地路径、mirror、adapter 和 demo 使用策略归 Batch C。
 - `yinyucheng0601/pto-design-system` 的 mirror、同步和 `07-designsystem/` 投影策略归 Batch D。
 
-明确候选 mirror set：
+明确 mirror tracking set（包含已落地 mirror 与仍待确认的 mirror-candidate）：
 
 - `https://gitcode.com/cann/pypto`
 - `https://gitcode.com/cann/pto-isa`

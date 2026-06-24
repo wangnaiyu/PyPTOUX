@@ -4,10 +4,11 @@
 
 - `02-knowledge/00-shared/pypto-architecture`
 - `02-knowledge/00-shared/common-glossary`
-- `02-knowledge/00-shared/pypto-sample-datasets`
 - `02-knowledge/00-shared/pypto-data`
 - `02-knowledge/00-shared/pypto-toolkit`
-- `02-knowledge/00-shared/pypto-computation-graph-nodes`
+- `02-knowledge/00-shared/pto-isa`
+- `02-knowledge/00-shared/ops-transformer`
+- `02-knowledge/00-shared/cannbot-skills`
 - `02-knowledge/00-shared/ascend-aicore-hardware`
 - `02-knowledge/00-shared/ascend-a5-950-hardware`
 

@@ -134,7 +134,7 @@
 - 不要把 `L2` / `L3` 数据伪装成 `L1` 真实运行结果
 - 做 demo 展示、sample-data 或原型实现时，不要改写上游 literal（字段名、文件名、trace key 等）
 - 优先保证“可追溯 + 自洽”，再追求“好看”
-- 如果用到样例数据，优先查看 `02-knowledge/00-shared/pypto-sample-datasets/overview.md`
+- 如果用到样例数据或数据 schema，优先查看 `02-knowledge/00-shared/pypto-data/overview.md`
 - 更完整的规则见 `10-docs/01-conventions/dual-agent-collaboration.md`
 
 ### 5.5 Git / GitHub

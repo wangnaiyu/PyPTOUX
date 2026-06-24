@@ -8,7 +8,10 @@
 | --- | --- |
 | PyPTO 架构、编译链路、术语、业务机制 | `02-knowledge/` |
 | 通用业务框架、通用流程、公共概念 | `02-knowledge/00-shared/` |
-| Graph 节点显示参数、Tensor Graph / Tile Graph / Block Graph / Execute Graph 节点 | `02-knowledge/00-shared/pypto-computation-graph-nodes/` |
+| PTO ISA、Tile 编程、PTO 指令、通信 ISA、CostModel | `02-knowledge/00-shared/pto-isa/` |
+| CANN transformer 算子、operator workflow、算子迁移、aclnn / torch extension 调用 | `02-knowledge/00-shared/ops-transformer/` |
+| CANNBot skills、agent workflow、skill governance、GitCode issue / PR workflow | `02-knowledge/00-shared/cannbot-skills/` |
+| Graph 节点显示参数、Tensor Graph / Tile Graph / Block Graph / Execute Graph 节点 | `02-knowledge/00-shared/pypto-data/schemas/computation-graph-nodes.md` |
 | A5、Ascend 950、950PR、950DT、950 硬件流 | `02-knowledge/00-shared/ascend-a5-950-hardware/` |
 | 竞品、案例、灵感、模式对照 | `03-insights/` |
 | 通用交互模式、IDE 模式、可视化策略 | `04-uxdesign/00-shared/` 或 `03-insights/00-shared/` |
@@ -32,6 +35,9 @@
 | Operator Doc Assistant | `05-prototypes/04-operator-doc-assistant/` |
 | PyPTO Studio | `02-knowledge/00-shared/pypto-architecture/` `02-knowledge/00-shared/pypto-toolkit/` `02-knowledge/00-shared/pypto-data/` `05-prototypes/05-pypto-studio/` |
 | A5 PMU Visualization | `02-knowledge/00-shared/ascend-a5-950-hardware/` `04-uxdesign/04-a5-pmu-visualization/` `05-prototypes/06-a5-pmu-visualization/` |
+| PTO ISA / Tile Lib | `02-knowledge/00-shared/pto-isa/` |
+| Operator Workflow | `02-knowledge/00-shared/ops-transformer/` |
+| CANNBot Agent Workflow | `02-knowledge/00-shared/cannbot-skills/` |
 
 ## Shared Buckets
 
