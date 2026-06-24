@@ -143,3 +143,29 @@
 - Snapshot：`PTO-TestData` branch `main`，commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`，commit date `2026-06-17T16:16:59+08:00`。
 - 原因：用户已确认 GitCode SSH key，并要求将两个 source clone 到本地 mirror。
 - 影响：source registry、`pypto-toolkit` 和 `pypto-data` 已从 planned / candidate mirror 更新为 active local mirror；后续 refresh 需单独记录 snapshot。
+
+## 2026-06-24 Batch D preflight 策略确认
+
+- 决策：整体采用 `yinyucheng0601/pto-design-system` 本地 mirror + 手动触发 sync / audit + diff / change report 的策略。
+- 决策：允许在 `/goal` 阶段 clone `yinyucheng0601/pto-design-system` 到推荐 mirror path `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`。
+- 决策：`07-designsystem/` 作为 stable human-facing projection，只承载稳定投影，不承载 agent-facing preview、实验 pattern 或上游全量 mirror。
+- 决策：`07-designsystem/` 的人类阅读入口倾向采用更可视化的静态 HTML portal；Markdown 和投影源码仍保留，用于搜索、diff、审计和 implementation contract。
+- 决策：`.agents/skills/pto-design-system` 继续作为 agent-facing 主入口，承载可执行 tokens、CSS、patterns、preview gate 和 agent workflow。
+- 决策：允许投影到 `07-designsystem/` 的内容包括 tokens 摘要、token CSS、CSS contract、approved pattern specs、approved pattern code、usage docs、preview gate 规则、source sync / change report 规则、稳定截图或缩略图、`index.html` 和 changelog；上游全量源码、实验 preview、未批准 pattern 和大量原始资产默认不投影。
+- 决策：每次设计系统同步需要生成 diff / change report。
+- 决策：本轮先确认和更新 plan，暂不落地同步脚本；首次投影除了更新文档层，也复制 token CSS 或 approved pattern code。
+- 决策：首次投影 pattern code 时，复制全部当前已注册 approved patterns。
+- 决策：Batch D `/goal` 执行顺序为：先 clone / inspect 上游 `yinyucheng0601/pto-design-system` 到本地 mirror，再系统性更新 `.agents/skills/pto-design-system`（如需更新），最后投影 `07-designsystem/`。
+- 原因：Batch D 需要让上游设计系统可审计地进入 PyPTOUX，同时保持 agent 执行入口与人类稳定设计系统目录的边界清晰。
+- 影响：`batch-d-design-system-sync-strategy-plan.md` 已进入 draft-ready-for-user-confirmation；正式修改 source registry、PTO skill 和 `07-designsystem/` 前仍需用户确认 plan。
+
+## 2026-06-24 Batch D 执行完成
+
+- 决策：clone `yinyucheng0601/pto-design-system` 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`。
+- Snapshot：branch `main`，commit `e26a85628658fa2894aba52e95e335cf60f8dfdc`，commit date `2026-06-16T17:35:58+08:00`。
+- 决策：以该 snapshot 更新 `.agents/skills/pto-design-system` 的 agent-facing bundle，吸收 Workflow C、pattern-first rules、retrofit container audit、新增 approved patterns、assets、scripts 和 generated token artifacts；同时保留 PyPTOUX project integration 说明。
+- 决策：`07-designsystem/` 首次投影采用静态 `index.html` portal + Markdown / CSS / pattern code 共存方式。
+- 决策：首次投影复制 token CSS、UI CSS 和全部当前已注册 approved pattern code，并生成 pattern `overview.md`。
+- 决策：本轮不落地同步脚本，只写 source sync 规则、change report template 和实际 change report。
+- 原因：先让上游设计系统成为可检索、可审计的 source，再让 agent-facing skill 获得最新执行规则，最后为人类审阅提供稳定投影。
+- 影响：source registry 已将 `yinyucheng0601/pto-design-system` 更新为 `active` / `local-mirror`；`07-designsystem/` 已具备 human-facing portal、token / UI / pattern projection 和 source sync governance；下一步进入 Batch E rule consolidation。

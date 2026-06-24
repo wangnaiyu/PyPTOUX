@@ -3,8 +3,8 @@
 ## Current Status
 
 - 状态：`active`
-- 当前批次：`Ready for Batch D: Design System Sync Strategy`
-- 当前 focus：Batch C 已完成 source governance、`pypto-toolkit` / `pypto-data` 回写；下一步先讨论 Batch D preflight，不直接 clone / mirror / 投影设计系统。
+- 当前批次：`Ready for Batch E: Rule Consolidation`
+- 当前 focus：Batch D 已完成上游 mirror、PTO skill 更新、`07-designsystem/` HTML portal + stable projection 和 source sync governance；下一步启动 Batch E，把 Batch A-D 稳定规则回写到正式项目规则和最终报告。
 - next_batch_prompt: `exists`
 - next_batch_plan: `exists`
 - next_batch_gate: `discuss-first`
@@ -18,11 +18,20 @@
 | Batch A: Agentic Search Governance | `complete` | 已更新 `pypto-knowledge-source`、source registry、source 状态和 checkpoint |
 | Batch B: PyPTO Architecture Refresh | `complete` | 已 refresh `pypto` mirror，更新 architecture 文档和依赖旧 hint 的规则 |
 | Batch C: Toolkit And Runtime Data Strategy | `complete` | 已确认 `pypto-tools`、`pypto-sample-dataset`、`pypto-testdata` 和 toolkit design files 的治理边界，并更新 `pypto-toolkit` / `pypto-data` |
-| Batch D: Design System Sync Strategy | `pending` | 可在 Batch A 后并行规划，但建议在 Batch C 边界明确后执行 |
+| Batch D: Design System Sync Strategy | `complete` | 已 clone 上游 design system mirror，更新 PTO skill，并投影 `07-designsystem/` |
 | Batch E: Rule Consolidation | `pending` | 最后回写正式规则和索引 |
 
 ## Done This Session
 
+- 2026-06-24：启动 Batch D，运行 `git status --short`，确认 PyPTOUX 工作树无输出；读取 Batch D prompt、任务包、`AGENTS.md`、PTO design system skill、preview gate、source registry 和现有 `07-designsystem/` 骨架。
+- 2026-06-24：用户整体确认 Batch D preflight：允许 `yinyucheng0601/pto-design-system` 本地 mirror + 手动触发 sync / audit + diff / change report；允许 `/goal` 阶段实际 clone 到推荐 mirror path；`07-designsystem/` 作为 stable projection；`.agents/skills/pto-design-system` 继续作为 agent 主入口；本轮暂不落地同步脚本；首次投影除了文档层，也复制 token CSS 或 approved pattern code。
+- 2026-06-24：用户确认首次投影 pattern code 时复制全部当前已注册 approved patterns；Batch D `/goal` 执行顺序为先 clone / inspect 上游设计系统，再系统性更新 `.agents/skills/pto-design-system`（如需更新），最后投影 `07-designsystem/`。
+- 2026-06-24：更新 `batch-d-design-system-sync-strategy-plan.md`，写入 audit findings、source strategy、skill / `07-designsystem` 边界、HTML portal + stable projection 信息架构、仍需用户确认项和 `/goal` checklist。
+- 2026-06-24：更新 `decisions.md` 和 `open-questions.md`，记录 Batch D preflight 已确认策略与剩余 plan 确认问题。
+- 2026-06-24：执行 Batch D：clone `yinyucheng0601/pto-design-system` 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`，snapshot branch `main`，commit `e26a85628658fa2894aba52e95e335cf60f8dfdc`，commit date `2026-06-16T17:35:58+08:00`。
+- 2026-06-24：以 upstream snapshot 更新 `.agents/skills/pto-design-system/`，吸收 Workflow C、pattern-first guidance、retrofit container audit、new approved patterns、assets、scripts、generated token artifacts，并补 PyPTOUX project integration 说明。
+- 2026-06-24：投影 `07-designsystem/`：新增 `index.html` human-facing portal、`styles/design-system-docs.css`、token CSS、UI CSS、全部 registered approved pattern code、pattern overviews、source sync / change report / preview gate / changelog 文档。
+- 2026-06-24：更新 source registry、`sources-to-refresh.md`、`10-docs/03-indexes/designsystem.md`，并新增 Batch E plan shell 和 prompt。
 - 2026-06-24：确认 Batch C 剩余 preflight：`pypto-tools` planned mirror root、可记录结构/schema/截图/代码片段；`pypto-sample-dataset` writeback 边界；`pypto-testdata` clone 许可、planned mirror root、L1 数据等级；toolkit 设计稿不入仓但可记录缩略图/截图/结构摘要；`pypto-toolkit` canonical files。
 - 2026-06-24：更新 source registry 中 `pypto-tools`、`pypto-sample-dataset`、`pypto-testdata`、`toolkit-design-files` 的 access、claim 和 writeback policy。
 - 2026-06-24：更新 `.agents/skills/pypto-demo-data-filling/SKILL.md`，明确原始 L1 不默认 `share-safe`，只有抽样/脱敏或 schema-generated L2 可标记 `share-safe`。
@@ -80,17 +89,16 @@
 
 ## Next Step
 
-启动 Batch D: Design System Sync Strategy 的 preflight 讨论。
+启动 Batch E: Rule Consolidation 的 preflight 讨论。
 
 建议动作：
 
-1. 读取 `README.md`、`status.md`、`decisions.md`、`open-questions.md`、`sources-to-refresh.md`、`batch-d-design-system-sync-strategy-plan.md` 和 `prompts/batch-d-design-system-sync-strategy.md`。
-2. 使用 `prompts/batch-d-design-system-sync-strategy.md` 启动 Batch D。
-3. 先与用户确认 Batch D preflight 问题：`yinyucheng0601/pto-design-system` mirror / copy / script 策略、`07-designsystem/` 投影范围、`.agents/skills/pto-design-system` 边界和 change report 规则。
-4. 将确认后的方案写入 `batch-d-design-system-sync-strategy-plan.md`。
-5. 确认无阻塞后，再用 `/goal` 按 Batch D plan 的 Definition of Done 修改正式文件。
+1. 读取 `README.md`、`status.md`、`decisions.md`、`open-questions.md`、`sources-to-refresh.md`、Batch A-D plan 和 `batch-e-rule-consolidation-plan.md`。
+2. 使用 `prompts/batch-e-rule-consolidation.md` 启动 Batch E。
+3. 先与用户确认 Batch E 是否将 Batch A-D 稳定结论全部毕业到正式规则、`AGENTS.md` 的摘要粒度，以及 `final-report.md` 的详细程度。
+4. 确认后再回写正式规则、索引和最终报告。
 
 ## Risks
 
 - `pypto-tools` 和 `pypto-testdata` 已 clone；如后续要 refresh，需要单独授权外部目录写入和网络访问，并记录 snapshot。
-- `yinyucheng0601/pto-design-system` 的 mirror、同步和 `07-designsystem/` 投影策略留给 Batch D；不要直接 clone、复制上游设计系统或改 `07-designsystem/`。
+- Batch D 已更新 `.agents/skills/pto-design-system/` 和 `07-designsystem/`；Batch E 需要注意不要重复扩写，只把稳定规则提炼回正式入口和 final report。

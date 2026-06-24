@@ -310,20 +310,22 @@
 
 ### yinyucheng0601/pto-design-system
 
-- `status`: `candidate-active` / `mirror-candidate`
-- `access_mode`: `online`, `manifest`
+- `status`: `active` / `local-mirror`
+- `access_mode`: `local-mirror`, `online`
 - `source_type`: `design-system-source`
 - `remote`: `https://github.com/yinyucheng0601/pto-design-system`
-- `authority_scope`: 候选上游 PTO design system、tokens、视觉规范、交互模式。
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`
+- `snapshot`: branch `main`, commit `e26a85628658fa2894aba52e95e335cf60f8dfdc`, commit date `2026-06-16T17:35:58+08:00`
+- `authority_scope`: 上游 PTO design system、tokens、视觉规范、交互模式、approved patterns、agent-facing skill bundle。
 - `best_for`: `design-system-application`、`ux-design-spec`、`prototype-implementation-plan`、`demo-design` 中涉及 PTO 风格和 design system 的问题。
-- `not_for`: Batch A 不决定 mirror、同步、变更报告或 `07-designsystem/` 投影策略。
+- `not_for`: 不得把上游仓库全量盲目复制进 PyPTOUX；未批准 experimental preview 不得进入 `07-designsystem/` 稳定投影。
 - `question_modes`: `demo-design`, `ux-strategy`, `workflow-research`
 - `output_modes`: `design-system-application`, `ux-design-spec`, `prototype-implementation-plan`, `source-update`
-- `freshness_policy`: Batch D 决定同步方式。
-- `search_mode`: 在线单点读取或 manifest lookup；不在 Batch A clone。
-- `discovery_policy`: 可作为 mirror candidate；正式设计系统应用仍先使用当前 `.agents/skills/pto-design-system`。
-- `claim_policy`: design system claim 需区分上游 source、当前 skill 投影和 `07-designsystem/` 稳定内容。
-- `writeback_policy`: Batch D 前只记录 source governance，不投影原始材料。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 sync 采用手动触发 mirror inspect / audit / change report，不做后台自动同步。
+- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
+- `discovery_policy`: 先 clone / inspect 上游 mirror，再系统性更新 `.agents/skills/pto-design-system`（如需），最后投影 `07-designsystem/`。
+- `claim_policy`: design system claim 需区分上游 source、agent-facing skill bundle 和 `07-designsystem/` stable projection。实现用 token / pattern code 以当前 skill 或上游 mirror 文件为准；人类审阅以 `07-designsystem/` 投影为入口。
+- `writeback_policy`: 允许将 token CSS、UI CSS contract、approved pattern specs/code、usage docs、preview gate 规则、source sync / change report 规则、stable HTML portal 和 changelog 写入 PyPTOUX；不写入上游全量 mirror、未批准 experimental preview 或大量原始资产。
 
 ### toolkit-design-files
 

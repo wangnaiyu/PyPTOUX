@@ -28,7 +28,7 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 | `cannbot-skills` | `active` / `local-mirror` | 升级为 `tooling-source` / `agent-workflow-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`；knowledge map: `02-knowledge/00-shared/cannbot-skills/` | 已 clone；branch `master`；commit `bba4e1823e0b366c14b38a5186c987b5703c1f66`；仅作 workflow / tooling 线索 |
 | `ops-transformer` | `active` / `local-mirror` | 升级为 `code-source` / `operator-workflow-source`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/ops-transformer`；knowledge map: `02-knowledge/00-shared/ops-transformer/` | 已 clone；branch `master`；commit `0c372f8d537c6cfa7bd0ffb165c6701f8ddb79a9`；版本 claim 需回配套 CANN tag / release |
 | `pypto-testdata` | `active` / `local-mirror` | 新增 PyPTO data / demo evidence source，display name 为 `PTO-TestData`；local mirror path: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData` | 已 clone；branch `main`；commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`；数据等级 L1，权限和可外发边界同 `pypto-sample-dataset`；writeback 到 `02-knowledge/00-shared/pypto-data/` |
-| `yinyucheng0601/pto-design-system` | `candidate-active` / `mirror-candidate` | 保留为 design-system source；Batch A 不同步上游 | Batch D 决定 mirror、同步和 `07-designsystem/` 投影 |
+| `yinyucheng0601/pto-design-system` | `active` / `local-mirror` | Batch D 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`，snapshot branch `main`，commit `e26a85628658fa2894aba52e95e335cf60f8dfdc`；已更新 `.agents/skills/pto-design-system` 并投影 `07-designsystem/` | 后续 sync 采用手动触发 mirror inspect / audit / change report；本轮未落地同步脚本 |
 | pypto toolkit 设计稿源文件 | `candidate` / `manifest` | 保留为 design-system / toolkit-product / demo-evidence source；raw files local storage: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件` | 原始设计稿不入仓；允许缩略图 / 截图 / 结构摘要 |
 | issues / discussions / PR / FAQ / troubleshooting | `candidate` | 登记为 user feedback / painpoint evidence source | 后续按主题在线检索；高频再考虑快照或 mirror |
 | web discovery | `candidate` | 登记为 discovery mechanism，不作 source of truth | 发现高价值材料后再进入 curated registry 或 source registry |
@@ -44,7 +44,7 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 - issues / discussions / PR / FAQ 类 source 先保持在线检索；如高频用于 painpoint-mining，再考虑导出快照或 mirror。
 - `pypto` 本体 refresh 归 Batch B。
 - `pypto-tools` 的本地路径、mirror、adapter 和 demo 使用策略归 Batch C。
-- `yinyucheng0601/pto-design-system` 的本地 mirror、同步和投影策略归 Batch D。
+- `yinyucheng0601/pto-design-system` 的本地 mirror、同步和投影策略已由 Batch D 建立；后续 refresh 需记录 snapshot 和 change report。
 
 明确 mirror tracking set（包含已落地 mirror 与仍待确认的 mirror-candidate）：
 
@@ -61,4 +61,5 @@ Batch A 已将 source governance 回写到 `.agents/skills/pypto-knowledge-sourc
 
 - Batch B：已刷新 `pypto` 本地镜像并更新 `02-knowledge/00-shared/pypto-architecture/`。
 - Batch C：已确认 `pypto-tools`、`pypto-sample-dataset`、`pypto-testdata` 和 toolkit 设计稿的 mirror / manifest / demo 使用策略；Toolkit 规则回写到 `pypto-toolkit`，PyPTO data 规则回写到 `pypto-data`。
-- Batch D：确认 `yinyucheng0601/pto-design-system` 的同步方式和 `07-designsystem/` 投影边界。
+- Batch D：已确认并执行 `yinyucheng0601/pto-design-system` 的同步方式和 `07-designsystem/` 投影边界。
+- Batch E：将 Batch A-D 的稳定规则回写到正式项目规则和最终报告。

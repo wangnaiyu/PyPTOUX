@@ -82,10 +82,10 @@ Use the body font stack (`--font-sans`) by default. Use `--font-mono` only for c
 | Class | When to use |
 |---|---|
 | `.btn` | Secondary / entry action — *open, load, import, browse, select*. Default subtle surface. |
-| `.btn.btn-solid` | Primary / commit — *run, apply, generate, execute*. High contrast (white fill, dark text). |
-| `.btn.btn-ghost` | Tertiary / icon-only. Transparent until hover. |
-| `.btn.btn-icon` | Square icon button. Combine with `.btn-ghost` for toolbar icons. |
-| `.btn.btn-sm` / `.btn.btn-lg` / `.btn.btn-compact` | Size modifiers. |
+| `.btn .btn-solid` | Primary / commit — *run, apply, generate, execute*. High contrast (white fill, dark text). |
+| `.btn .btn-ghost` | Tertiary / icon-only. Transparent until hover. |
+| `.btn .btn-icon` | Square icon button. Combine with `.btn-ghost` for toolbar icons. |
+| `.btn .btn-sm` / `.btn-lg` / `.btn-compact` | Size modifiers. |
 | `.btn.is-selected` | Toggle / filter selected state. |
 
 Do **not** create new `.xxx-btn`, `.cta`, `.action-button` classes. Map everything to the four roles above.
@@ -103,11 +103,21 @@ Do not use `.btn-solid` or white selected buttons for tabs. Reserve white fill f
 
 ### Panels & cards
 
+- `.workbench-frame`, `.workbench-frame-split`, `.workbench-pane` — structural split-pane classes for `workbench-shell`; visual fills belong to the consuming pattern
+- `.workbench-pane-body-fill` — inner gray body fill for canvas or dense inspector content
 - `.panel-shell` — outermost panel container with header / body
 - `.panel-shell.panel-shell-quiet` — main workbench section surface; neutral fill, no visual border
 - `.panel-shell-header`, `.panel-shell-title`, `.panel-shell-meta`, `.panel-shell-close`
 - `.panel-shell-body`
 - `.card-demo`, `.card-demo-header`, `.card-demo-title`, `.card-demo-description`, `.card-demo-content`, `.card-demo-footer` — content card primitives
+
+When retrofitting an existing demo, remove legacy card frames that do not exist in these shared classes. Do not keep old full borders, left highlight rails, inset-left shadows, or pseudo-element side bars by changing their colors to PTO tokens.
+
+### Pattern boundaries
+
+- `workbench-shell` — resize kernel only. Use `PtoWorkbenchShell.initResizablePanes`, `createSplitGutter`, or `initNestedResizablePanes`; ratio sizes divide the space left after fixed gutters. Do not use it for page chrome, pane fill, pane titles, or canvas controls.
+- `ide-frame` — PTO IDE framework shell. Use `.pto-ide-frame*` classes, `data-host="standalone"` or `data-host="vscode-webview"`, and `PtoIdeFrame.init`; product pages fill the slots. The host window defaults to 4:3 and standalone explorer starts at 300px via `data-pixel-sizes`. Page bg is one gray step lighter than the IDE window; top chrome is transparent and borderless with window open/close controls. Preview tabs live inside the preview/editor pane, not in a separate top chrome band. Playback uses `floating-playback-control` through `data-ide-floating-playback`; do not recreate a footer playback bar. Do not put business sample data, placeholder tab names, placeholder code rows, or default textual slot content in the pattern and do not override `.pto-workbench-shell__*` internals.
+- `vscode.css` — maps VS Code `--vscode-*` variables and hides standalone chrome in webviews.
 
 ### Navigation
 
@@ -119,11 +129,19 @@ Do not use `.btn-solid` or white selected buttons for tabs. Reserve white fill f
 ### Inspector / details
 
 - `.detail-header`, `.detail-body`, `.detail-close`, `.detail-connections`, `.detail-conn-chip`
+- `.inspector-rail` — scroll body for right-side detail rails; uses quiet padding and no card gap
+- `.inspector-section`, `.inspector-section-head`, `.inspector-section-title`, `.inspector-section-kicker` — continuous detail sections separated by `--border-subtle`
+- `.inspector-soft-card` — emphasized content inside a section, no full border, neutral soft surface
+- `.inspector-soft-card.is-info` / `.is-warning` / `.is-danger` / `.is-success` — status emphasis via tinted fill, not a border
+
+Use inspector sections for dense right rails. Do not wrap every metric row in a bordered card; prefer section dividers, neutral row surfaces, and one soft emphasized block for the current conclusion or next action.
 
 ### Toggles & control flow blocks (specialized)
 
 - Control-flow viewer: `.cf-panel`, `.cf-node`, `.cf-toggle-btn`, `.cf-reopen-btn`, etc.
 - Color panel: `.color-panel`
+- Floating playback controls: use `patterns/floating-playback-control/pattern.css` and `pattern.js`; consume `.pto-floating-playback*` classes or `window.PtoFloatingPlaybackControl.createControl()`, then call `init()` and `initScrubberHover()`. Do not recreate the floating shell, range thumb, collapse sync, or scrubber hover locally.
+- Glass surfaces: add `data-liquid-glass` only to floating auxiliary overlays, not page sections, cards, dense tables, or primary content panels. `scripts/liquid-glass.js` owns support flags only; CSS must keep native `backdrop-filter` blur visible before adding static highlight styling. Do not add cursor-following glow.
 
 For full class index, grep `css/style.css` or open `design-system-preview.html`.
 
@@ -161,10 +179,10 @@ These are allowed to use hard-coded colors **outside** the semantic palette, bec
 
 - Color maps (heatmaps, density)
 - Graph node semantic accents
-- Swimlane event colors
+- Swimlane event colors: use `PtoSwimlaneTaskPattern.createTaskColormap()` for task categories, engine lanes, stitches, and subgraphs
 - Stitch / dependency colors
 
-Document the choice and keep the values in module-local CSS, not in the global tokens.
+Document the choice. Reusable swimlane color rules belong in the shared pattern colormap; one-off data encodings stay module-local and must not become global UI tokens. Task identity fallback colors use the categorical palette in `patterns/swimlane-task/pattern.js`, not raw `hash % 360` hue mapping.
 
 ---
 
