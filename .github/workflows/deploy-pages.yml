@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 12-pages/**
+      - 11-pages/**
       - 05-prototypes/**
       - .github/workflows/deploy-pages.yml
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p _site
-          cp -R 12-pages/. _site/
+          cp -R 11-pages/. _site/
           cp -R 05-prototypes _site/05-prototypes
           touch _site/.nojekyll
 

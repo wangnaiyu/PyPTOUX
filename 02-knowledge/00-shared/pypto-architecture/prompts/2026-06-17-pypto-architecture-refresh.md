@@ -40,4 +40,4 @@ refresh 策略：
 
 ## Provenance
 
-对应升级任务包 `10-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/` 的 Batch B。
+对应升级任务包 `09-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/` 的 Batch B。

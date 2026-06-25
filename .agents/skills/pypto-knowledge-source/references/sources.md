@@ -195,7 +195,7 @@
 - `status`: `active` as discovery/supporting
 - `access_mode`: `local-registry`, `web-discovery`
 - `source_type`: `external-discovery-source`
-- `local_registry`: `09-references/curated-external-links.md`
+- `local_registry`: `08-references/curated-external-links.md`
 - `authority_scope`: 外部文章、微信、知乎、博客、社区分享、专家解读、场景化总结的发现入口和 claim 假设源。
 - `best_for`: `trend-research`、`painpoint-mining`、`workflow-research`、`ux-strategy` 的背景材料、关键词和待验证 claim。
 - `not_for`: factual source of truth；不可直接作为字段、API、版本、运行行为的最终依据。
@@ -205,7 +205,7 @@
 - `search_mode`: 用户问收藏链接时 grep local registry；用户问某平台是否讲过某主题时平台站内搜索或 web search。
 - `discovery_policy`: 高价值材料经 claim 校验后可建议写入 local registry；unknown URL 先抽 claim。
 - `claim_policy`: factual claim 必须回 authoritative source 校验；empirical / opinion 必须标注。
-- `writeback_policy`: 写入 `09-references/` 前注意未提交工作树锁。
+- `writeback_policy`: 写入 `08-references/` 前注意未提交工作树锁。
 
 ## 7. Candidate / Manifest Sources
 
@@ -318,14 +318,14 @@
 - `snapshot`: branch `main`, commit `e26a85628658fa2894aba52e95e335cf60f8dfdc`, commit date `2026-06-16T17:35:58+08:00`
 - `authority_scope`: 上游 PTO design system、tokens、视觉规范、交互模式、approved patterns、agent-facing skill bundle。
 - `best_for`: `design-system-application`、`ux-design-spec`、`prototype-implementation-plan`、`demo-design` 中涉及 PTO 风格和 design system 的问题。
-- `not_for`: 不得把上游仓库全量盲目复制进 PyPTOUX；未批准 experimental preview 不得进入 `07-designsystem/` 稳定投影。
+- `not_for`: 不得把上游仓库全量盲目复制进 PyPTOUX；未批准 experimental preview 不得进入 `.agents/skills/pto-design-system/` 稳定 bundle。
 - `question_modes`: `demo-design`, `ux-strategy`, `workflow-research`
 - `output_modes`: `design-system-application`, `ux-design-spec`, `prototype-implementation-plan`, `source-update`
 - `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 sync 采用手动触发 mirror inspect / audit / change report，不做后台自动同步。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
-- `discovery_policy`: 先 clone / inspect 上游 mirror，再系统性更新 `.agents/skills/pto-design-system`（如需），最后投影 `07-designsystem/`。
-- `claim_policy`: design system claim 需区分上游 source、agent-facing skill bundle 和 `07-designsystem/` stable projection。实现用 token / pattern code 以当前 skill 或上游 mirror 文件为准；人类审阅以 `07-designsystem/` 投影为入口。
-- `writeback_policy`: 允许将 token CSS、UI CSS contract、approved pattern specs/code、usage docs、preview gate 规则、source sync / change report 规则、stable HTML portal 和 changelog 写入 PyPTOUX；不写入上游全量 mirror、未批准 experimental preview 或大量原始资产。
+- `discovery_policy`: 先 clone / inspect 上游 mirror，再系统性更新 `.agents/skills/pto-design-system`（如需）。
+- `claim_policy`: design system claim 需区分上游 source 与 agent-facing skill bundle。实现用 token / pattern code 以当前 skill 或上游 mirror 文件为准；人类审阅以 `.agents/skills/pto-design-system/design-system-preview.html` 和 skill references 为入口。
+- `writeback_policy`: 允许将 token CSS、UI CSS contract、approved pattern specs/code、usage docs、preview gate 规则和稳定 preview 写入 `.agents/skills/pto-design-system/`；不写入上游全量 mirror、未批准 experimental preview 或大量原始资产。
 
 ### toolkit-design-files
 
@@ -404,7 +404,7 @@ Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refres
 - issues / discussions / PR / FAQ 类 source 先保持在线检索；如高频用于 painpoint-mining，再考虑导出快照或 mirror。
 - `pypto` 本体 refresh 归 Batch B。
 - `pypto-tools` 的本地路径、mirror、adapter 和 demo 使用策略归 Batch C。
-- `yinyucheng0601/pto-design-system` 的 mirror、同步和 `07-designsystem/` 投影策略归 Batch D。
+- `yinyucheng0601/pto-design-system` 的 mirror 与 `.agents/skills/pto-design-system/` 同步策略归 Batch D。
 
 明确 mirror tracking set（包含已落地 mirror 与仍待确认的 mirror-candidate）：
 
@@ -438,14 +438,14 @@ Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refres
    - URL pattern 变更时，确保更具体的 pattern 排在更宽泛 pattern 前面，避免被宽泛规则吞掉。
 3. 全仓检索旧标识和旧 URL：
    - 用 `rg` 搜索旧 source id、旧 source type、旧 URL pattern、旧 remote URL。
-   - 检查命中的 `.agents/skills/`、`10-docs/04-upgrade-plans/`、`02-knowledge/`、`09-references/` 和 `10-docs/03-indexes/` 是否需要同步。
+   - 检查命中的 `.agents/skills/`、`09-docs/04-upgrade-plans/`、`02-knowledge/`、`08-references/` 和 `09-docs/03-indexes/` 是否需要同步。
 4. 处理替代关系：
    - 删除 source instance 时，优先降级为 `deprecated` 并写明替代 source；只有用户明确要求或来源不可用 / 不可信时才设为 `blocked`。
    - 降级 source 时，写清楚哪些 claim 不再允许由它支撑，以及应该回到哪个 authoritative source 校验。
    - 升级 candidate source 时，补齐权限、freshness、claim policy、writeback policy 和 mirror / manifest 边界。
 5. 同步任务包或长期记录：
    - 若当前存在 active upgrade plan，同步更新 `sources-to-refresh.md`；如涉及新决策，更新 `decisions.md`；如仍需用户判断，更新 `open-questions.md`。
-   - 若变更影响长期内容路由或协作边界，再更新对应 `10-docs/01-conventions/` 或 `10-docs/03-indexes/`。
+   - 若变更影响长期内容路由或协作边界，再更新对应 `09-docs/01-conventions/` 或 `09-docs/03-indexes/`。
 6. 运行最小验证：
    - 确认新增 / 修改的 source instance 具备 schema 必填字段。
    - 确认旧 source id / source type / URL pattern 没有无意残留。

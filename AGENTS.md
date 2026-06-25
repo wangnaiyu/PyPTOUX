@@ -34,7 +34,7 @@
 - 路径：`.agents/skills/pyptoux-content-router/SKILL.md`
 - 用途：决定新内容该放哪里、用什么稳定文件名、如何更新索引
 - 适用场景：
-  - 新建 `02-knowledge/`、`03-insights/`、`04-uxdesign/`、`05-prototypes/`、`06-tools/`、`07-designsystem/` 内容
+  - 新建 `02-knowledge/`、`03-insights/`、`04-uxdesign/`、`05-prototypes/`、`06-tools/`、`.agents/skills/pto-design-system/` 内容
   - 重组文档目录
   - 判断新增 topic 是否应该放进 `00-shared/`
 
@@ -97,7 +97,7 @@
 - `.md`、`.html` 都可以作为正式文档 / 报告的阅读格式；路由先看内容意图，不单凭文件扩展名判断归属
 - Codex 新建或更新 `02-knowledge/`、`03-insights/`、`04-uxdesign/` 下某主题的正式输出时，默认同步维护该主题下的 `prompts/` 与 `notes/`；`prompts/` 保存可再次执行、可复现当次输出效果的复合 prompt，而不是用户原始 prompt 逐字稿
 - 各主题下 `notes/story-YYYY-MM-DD.md` 用于记录用户场景、体验脚本、叙事脚本或 demo story；`04-uxdesign/` 与 `05-prototypes/` 下尤其适用，owner 仍按所在目录规则执行
-- 新增 topic 或 shared framework 时，记得同步更新 `10-docs/03-indexes/`
+- 新增 topic 或 shared framework 时，记得同步更新 `09-docs/03-indexes/`
 
 ### 5.2 `PyPTO` 业务知识检索
 
@@ -135,7 +135,7 @@
 - 做 demo 展示、sample-data 或原型实现时，不要改写上游 literal（字段名、文件名、trace key 等）
 - 优先保证“可追溯 + 自洽”，再追求“好看”
 - 如果用到样例数据或数据 schema，优先查看 `02-knowledge/00-shared/pypto-data/overview.md`
-- 更完整的规则见 `10-docs/01-conventions/dual-agent-collaboration.md`
+- 更完整的规则见 `09-docs/01-conventions/dual-agent-collaboration.md`
 
 ### 5.5 Git / GitHub
 
@@ -154,7 +154,7 @@
 - `05-prototypes/<topic>/notes/sample-data.md` 是 Codex + Claude 共享文件；Codex 把关数据真实性与等级，Claude 可按 demo 叙事调整，影响事实或 L2 推导时必须标记待 Codex review
 - `share-safe` 原型如果使用 `L2`，必须在原型可见位置披露数据等级、来源摘要与生成规则摘要；`L3` 不可标记为 `share-safe`
 - 未提交工作树锁全局适用：即便目录 owner 允许，也不要覆盖别人尚未 commit / merge 的改动
-- `10-docs/03-indexes/` 的索引同步由 Codex 主责；触发边界与例外见 `10-docs/01-conventions/dual-agent-collaboration.md`
+- `09-docs/03-indexes/` 的索引同步由 Codex 主责；触发边界与例外见 `09-docs/01-conventions/dual-agent-collaboration.md`
 - 出现跨边界争议时，先看目录 owner，再看决策 owner；事实、结构、契约、构建归 Codex，视觉、交互、前端呈现归 Claude；若仍无法收敛，由用户最终仲裁
 
 ## 6. 相关入口文件
@@ -164,6 +164,6 @@
 - `.agents/skills/pypto-knowledge-source/SKILL.md`
 - `.agents/skills/pypto-demo-data-filling/SKILL.md`
 - `.agents/skills/pto-design-system/SKILL.md`
-- `10-docs/01-conventions/agent-writing-style.md`
-- `10-docs/01-conventions/content-routing.md`
-- `10-docs/01-conventions/dual-agent-collaboration.md`
+- `09-docs/01-conventions/agent-writing-style.md`
+- `09-docs/01-conventions/content-routing.md`
+- `09-docs/01-conventions/dual-agent-collaboration.md`
