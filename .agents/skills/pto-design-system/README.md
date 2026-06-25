@@ -29,8 +29,8 @@
 
 - Codex：见项目根目录 `AGENTS.md` 的 `pto-design-system` skill 索引。
 - Claude：见项目根目录 `CLAUDE.md` 的默认必读/按需补读规则；`.claude/skills/pto-design-system` 是指向本目录的项目内桥接入口。
-- 人类可读设计系统投影：见 `07-designsystem/`。
-- 设计系统索引：见 `10-docs/03-indexes/designsystem.md`。
+- 人类可读预览入口：见 `.agents/skills/pto-design-system/design-system-preview.html`。
+- 设计系统索引：见 `09-docs/03-indexes/designsystem.md`。
 
 ## 使用原则
 

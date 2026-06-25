@@ -17,7 +17,7 @@
 - 用于预览 JSX 的小工具
   -> `06-tools/01-prototype-kit/previewer/`
 - 全局按钮和面板视觉基线
-  -> `07-designsystem/02-components/specs/` 或 `07-designsystem/02-components/ui/`
+  -> `.agents/skills/pto-design-system/references/` 或 `.agents/skills/pto-design-system/css/style.css`
 
 ## 默认文件名 | File Naming Defaults
 
@@ -30,8 +30,8 @@
 
 ## 索引维护 | Index Maintenance
 
-- 新课题 -> `10-docs/03-indexes/topics.md`
-- 新 shared 框架 -> `10-docs/03-indexes/shared-frameworks.md`
-- 新原型线 -> `10-docs/03-indexes/prototypes.md`
-- 新工具 -> `10-docs/03-indexes/tools.md`
-- 新设计系统模块 -> `10-docs/03-indexes/designsystem.md`
+- 新课题 -> `09-docs/03-indexes/topics.md`
+- 新 shared 框架 -> `09-docs/03-indexes/shared-frameworks.md`
+- 新原型线 -> `09-docs/03-indexes/prototypes.md`
+- 新工具 -> `09-docs/03-indexes/tools.md`
+- 新设计系统模块 -> `09-docs/03-indexes/designsystem.md`

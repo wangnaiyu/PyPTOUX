@@ -15,8 +15,8 @@ description: Use this skill when working inside the PyPTOUX repository and the t
 
 - 项目级协作约定、`pypto` refresh 规则、demo 数据等级和知识沉淀要求，统一见 [../../../AGENTS.md](../../../AGENTS.md)。
 - source registry、URL Domain Mapping、source schema、source 状态和 clone / mirror policy 见 [references/sources.md](references/sources.md)。
-- 如需把结论写回正式目录，结合 [../../../10-docs/01-conventions/content-routing.md](../../../10-docs/01-conventions/content-routing.md) 和 canonical filenames 决定落点。
-- 涉及 `.agents` 或 skill 文案改写时，遵循 [../../../10-docs/01-conventions/agent-writing-style.md](../../../10-docs/01-conventions/agent-writing-style.md)。
+- 如需把结论写回正式目录，结合 [../../../09-docs/01-conventions/content-routing.md](../../../09-docs/01-conventions/content-routing.md) 和 canonical filenames 决定落点。
+- 涉及 `.agents` 或 skill 文案改写时，遵循 [../../../09-docs/01-conventions/agent-writing-style.md](../../../09-docs/01-conventions/agent-writing-style.md)。
 
 ## 3. 核心流程 | Core Flow
 
@@ -28,7 +28,7 @@ description: Use this skill when working inside the PyPTOUX repository and the t
 4. 多源探索：复杂问题允许多个 primary retrieval roles；不要把某个 source、外链或 `overview.md` 当作唯一入口。
 5. Claim verification：把 claim 分层并标注校验状态；冲突、过期和经验性材料必须显式保留。
 6. UX-oriented synthesis：对 UX / demo / strategy 输出，把技术证据转成任务流、决策点、失败点、工具断点、数据需求和设计机会。
-7. Writeback routing：如需沉淀，按 content routing 规则决定是否进入 `02-knowledge/`、`03-insights/`、`04-uxdesign/`、`05-prototypes/`、`09-references/` 或任务包。
+7. Writeback routing：如需沉淀，按 content routing 规则决定是否进入 `02-knowledge/`、`03-insights/`、`04-uxdesign/`、`05-prototypes/`、`08-references/` 或任务包。
 
 ## 4. Intent Mode
 

@@ -23,7 +23,7 @@
 
 - 本目录只记录 workflow / skill organization，不把 skill 文案中的技术结论当事实出口。
 - 引用 skill 时保留原始 skill 名，例如 `pypto-op-develop`、`ascendc-code-review`。
-- 如果要把 CANNBot 的 workflow 投影到 PyPTOUX，需要另做适配设计，不直接复制其 agent / plugin 结构。
+- 如果要把 CANNBot 的 workflow 同步到 PyPTOUX，需要另做适配设计，不直接复制其 agent / plugin 结构。
 - 发现 README / AGENTS 与当前 checkout 目录结构不一致时，保留 drift。
 
 ## 1. 仓库定位

@@ -24,8 +24,8 @@
 - `datasets/*.md`
 - `AGENTS.md`
 - `.agents/skills/pypto-demo-data-filling/SKILL.md`
-- `10-docs/03-indexes/content-map.md`
-- `10-docs/03-indexes/shared-frameworks.md`
+- `09-docs/03-indexes/content-map.md`
+- `09-docs/03-indexes/shared-frameworks.md`
 - `04-uxdesign/03-ascend-hardware-architecture/interaction-spec.md`
 
 ## Migration

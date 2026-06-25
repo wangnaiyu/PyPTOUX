@@ -15,14 +15,14 @@
 
 - `experiments/`、`prompts/`、`notes/`、`snapshots/`、`app/src/` 默认由 Claude 主写。
 - `app/` 下除 `src/` 外的工程与配置默认由 Codex 主写。
-- 详细边界见 `10-docs/01-conventions/dual-agent-collaboration.md`。
+- 详细边界见 `09-docs/01-conventions/dual-agent-collaboration.md`。
 
 ## 数据与分享速查
 
-- demo 数据分为 `L1 / L2 / L3`，详细规则见 `AGENTS.md` 与 `10-docs/01-conventions/dual-agent-collaboration.md`。
+- demo 数据分为 `L1 / L2 / L3`，详细规则见 `AGENTS.md` 与 `09-docs/01-conventions/dual-agent-collaboration.md`。
 - 单文件原型：`share-safe / exploration-only`
 - `app/` 阶段：`离线分享包 / 内部联调版本`
-- 原型更新记录使用 `notes/update-YYYY-MM-DD.md`；用户场景、体验脚本、demo story 使用 `notes/story-YYYY-MM-DD.md`；详细命名规则见 `10-docs/01-conventions/content-routing.md`。
+- 原型更新记录使用 `notes/update-YYYY-MM-DD.md`；用户场景、体验脚本、demo story 使用 `notes/story-YYYY-MM-DD.md`；详细命名规则见 `09-docs/01-conventions/content-routing.md`。
 
 ## 推荐流程
 

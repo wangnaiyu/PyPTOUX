@@ -12,10 +12,10 @@ This bundle lets any AI generate or retrofit pages in PTO visual style.
 Within PyPTOUX, this skill is the agent-facing implementation bundle for PTO UI work:
 
 - canonical path: `.agents/skills/pto-design-system/`
-- stable human-facing projection: `07-designsystem/`
-- source sync governance: `07-designsystem/03-guidance/source-sync.md`
+- human-facing preview: `.agents/skills/pto-design-system/design-system-preview.html`
+- source sync notes: `09-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/`
 
-Agents should read this skill before building or retrofitting `05-prototypes/` pages, PTO-style workbenches, graph/timeline/architecture pages, or reusable UI patterns. `07-designsystem/` is for stable documentation, approved pattern projection, and human review; do not treat it as a replacement for this executable skill bundle.
+Agents should read this skill before building or retrofitting `05-prototypes/` pages, PTO-style workbenches, graph/timeline/architecture pages, or reusable UI patterns. PyPTOUX no longer keeps a separate repo-level design-system projection directory; use this skill bundle for tokens, CSS classes, pattern contracts, preview and references.
 
 When creating PyPTOUX repository artifacts, follow project routing rules from `AGENTS.md` and `pyptoux-content-router`.
 

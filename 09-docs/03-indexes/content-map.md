@@ -1,0 +1,48 @@
+# Content Map
+
+这份映射表用于快速把关键词路由到仓库中的高概率目标位置。
+
+## By Content Intent
+
+| 关键词 / 意图 | 默认目标 |
+| --- | --- |
+| PyPTO 架构、编译链路、术语、业务机制 | `02-knowledge/` |
+| 通用业务框架、通用流程、公共概念 | `02-knowledge/00-shared/` |
+| PTO ISA、Tile 编程、PTO 指令、通信 ISA、CostModel | `02-knowledge/00-shared/pto-isa/` |
+| CANN transformer 算子、operator workflow、算子迁移、aclnn / torch extension 调用 | `02-knowledge/00-shared/ops-transformer/` |
+| CANNBot skills、agent workflow、skill governance、GitCode issue / PR workflow | `02-knowledge/00-shared/cannbot-skills/` |
+| Graph 节点显示参数、Tensor Graph / Tile Graph / Block Graph / Execute Graph 节点 | `02-knowledge/00-shared/pypto-data/schemas/computation-graph-nodes.md` |
+| A5、Ascend 950、950PR、950DT、950 硬件流 | `02-knowledge/00-shared/ascend-a5-950-hardware/` |
+| 竞品、案例、灵感、模式对照 | `03-insights/` |
+| 通用交互模式、IDE 模式、可视化策略 | `04-uxdesign/00-shared/` 或 `03-insights/00-shared/` |
+| PRD、UX 分析、信息架构、交互方案 | `04-uxdesign/` |
+| Agent 协作约定、分工边界、协作治理 | `09-docs/01-conventions/dual-agent-collaboration.md` |
+| HTML demo、JSX demo、原型验证 | `05-prototypes/` |
+| JSX 预览器、转换脚本、启动脚本 | `06-tools/` |
+| 颜色、字体、组件规范、UI 基础件 | `.agents/skills/pto-design-system/` |
+| 截图、录屏、导出图 | `07-assets/` |
+| 外部来源、链接、出处 | `08-references/` 或对应目录的 `sources.md` |
+| 仓库升级计划、批量治理、跨 session 任务恢复 | `09-docs/04-upgrade-plans/` |
+| GitHub Pages 短链接、线上发布入口 | `11-pages/` |
+
+## By Existing Topic
+
+| 课题 | 主要目录 |
+| --- | --- |
+| Block Level Coding | `02-knowledge/01-block-level-coding/` `04-uxdesign/01-block-level-coding/` `05-prototypes/01-block-level-coding/` |
+| Swimlane Profiler | `02-knowledge/02-swimlane-profiler/` `04-uxdesign/02-swimlane-profiler/` `05-prototypes/02-swimlane-profiler/` |
+| Ascend Hardware Architecture | `02-knowledge/00-shared/ascend-a5-950-hardware/` `04-uxdesign/03-ascend-hardware-architecture/` `05-prototypes/03-ascend-hardware-architecture/` |
+| Operator Doc Assistant | `05-prototypes/04-operator-doc-assistant/` |
+| PyPTO Studio | `02-knowledge/00-shared/pypto-architecture/` `02-knowledge/00-shared/pypto-toolkit/` `02-knowledge/00-shared/pypto-data/` `05-prototypes/05-pypto-studio/` |
+| A5 PMU Visualization | `02-knowledge/00-shared/ascend-a5-950-hardware/` `04-uxdesign/04-a5-pmu-visualization/` `05-prototypes/06-a5-pmu-visualization/` |
+| PTO ISA / Tile Lib | `02-knowledge/00-shared/pto-isa/` |
+| Operator Workflow | `02-knowledge/00-shared/ops-transformer/` |
+| CANNBot Agent Workflow | `02-knowledge/00-shared/cannbot-skills/` |
+
+## Shared Buckets
+
+| 场景 | 目标 |
+| --- | --- |
+| 暂时不确定归属但明显跨课题 | 对应层的 `00-shared/` |
+| 暂时不确定且尚未整理 | `01-inbox/` |
+| 已废弃但需要留档 | `10-archive/` |

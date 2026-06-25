@@ -5,8 +5,8 @@
 `CLAUDE.md` 是 Claude 在 `PyPTOUX` 仓库中的默认入口。
 
 - 项目级总规则以 `AGENTS.md` 为准。
-- 文件命名与路由以 `10-docs/01-conventions/content-routing.md` 为 canonical source。
-- 双 Agent 协作边界、owner 例外、review 交接、数据分层和 share-safe 要求的 canonical source 是 `10-docs/01-conventions/dual-agent-collaboration.md`。
+- 文件命名与路由以 `09-docs/01-conventions/content-routing.md` 为 canonical source。
+- 双 Agent 协作边界、owner 例外、review 交接、数据分层和 share-safe 要求的 canonical source 是 `09-docs/01-conventions/dual-agent-collaboration.md`。
 - 本文件只保留 Claude 侧需要直接执行的默认规则。
 
 ## 2. Claude 的角色
@@ -19,7 +19,7 @@ Claude 在本仓库默认负责：
 - 工作台前端整合
 - 原型自测
 - `prompts/`、`notes/`、`snapshots/` 记录
-- `07-designsystem/02-components/ui/` 的 UI 实现
+- PTO skill 中 CSS / pattern 实现的前端改造建议
 
 ## 3. 默认必读上下文
 
@@ -37,10 +37,10 @@ Claude 在本仓库默认负责：
 - `.agents/skills/pto-design-system/references/pto-design-system-map.md`
 - `.agents/skills/pto-design-system/design-system-preview.html`
 - `.agents/skills/pto-design-system/patterns/`
-- `10-docs/01-conventions/dual-agent-collaboration.md`
-- `10-docs/01-conventions/content-routing.md`
-- `07-designsystem/03-guidance/`
-- `07-designsystem/01-foundations/`
+- `09-docs/01-conventions/dual-agent-collaboration.md`
+- `09-docs/01-conventions/content-routing.md`
+- `.agents/skills/pto-design-system/references/`
+- `.agents/skills/pto-design-system/tokens/`
 - 当前课题已有的 `notes/review-YYYY-MM-DD.md`
 - 用户明确指定的参考图、历史原型、外部设计参考
 
@@ -53,7 +53,6 @@ Claude 在本仓库默认负责：
 - `05-prototypes/<topic>/notes/`
 - `05-prototypes/<topic>/snapshots/`
 - `05-prototypes/<topic>/app/src/`
-- `07-designsystem/02-components/ui/`
 
 例外：
 
@@ -64,7 +63,7 @@ Claude 在本仓库默认负责：
 - `02-knowledge/`
 - `03-insights/`
 - `04-uxdesign/`
-- `10-docs/`
+- `09-docs/`
 
 补充：
 
@@ -79,8 +78,8 @@ Claude 在本仓库默认负责：
 
 - 不默认继承历史 `experiments/` demo 的视觉、布局、交互。
 - 默认优先继承 `.agents/skills/pto-design-system/` 的 tokens、class、preview 和 patterns。
-- 默认继承 `07-designsystem/01-foundations/` 的 tokens 与 `07-designsystem/03-guidance/` 的 guidance。
-- 若 `.agents/skills/pto-design-system/` 与 `07-designsystem/` 出现差异，以当前任务明确指定者为准；未指定时先采用 `pto-design-system`，并在 `notes/` 中标记需要 Codex 同步的设计系统差异。
+- 默认继承 `.agents/skills/pto-design-system/tokens/` 的 tokens 与 `.agents/skills/pto-design-system/references/` 的 guidance。
+- 若 `.agents/skills/pto-design-system/` 与上游 mirror 或历史原型样式出现差异，以当前任务明确指定者为准；未指定时先采用 `pto-design-system`，并在 `notes/` 中标记需要 Codex 同步的设计系统差异。
 - 风格不明确时：提出 2–3 个方向，不自由发挥。
 - `share-safe`：不依赖运行时远程资源，可稳定外发。
 - 构建时固化资源可以；运行时远程依赖不行。
@@ -130,7 +129,7 @@ Claude 在本仓库默认负责：
 - 必要时补 `snapshots/`。
 - 主动请 Codex 做事实与结构 review。
 - Codex 的问题清单默认落在 `notes/review-YYYY-MM-DD.md` 或 PR comment。
-- 不自行更新 `10-docs/03-indexes/`。
+- 不自行更新 `09-docs/03-indexes/`。
 
 ## 9. 不确定时的默认处理
 
@@ -142,5 +141,5 @@ Claude 在本仓库默认负责：
 ## 10. 规则来源
 
 - `AGENTS.md`
-- `10-docs/01-conventions/dual-agent-collaboration.md`
-- `10-docs/01-conventions/content-routing.md`
+- `09-docs/01-conventions/dual-agent-collaboration.md`
+- `09-docs/01-conventions/content-routing.md`
