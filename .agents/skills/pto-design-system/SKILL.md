@@ -13,7 +13,7 @@ Within PyPTOUX, this skill is the agent-facing implementation bundle for PTO UI 
 
 - canonical path: `.agents/skills/pto-design-system/`
 - human-facing preview: `.agents/skills/pto-design-system/design-system-preview.html`
-- source sync notes: `09-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/`
+- source sync notes: `10-archive/upgrade-plans/2026-06-systematic-repo-upgrade/`
 
 Agents should read this skill before building or retrofitting `05-prototypes/` pages, PTO-style workbenches, graph/timeline/architecture pages, or reusable UI patterns. PyPTOUX no longer keeps a separate repo-level design-system projection directory; use this skill bundle for tokens, CSS classes, pattern contracts, preview and references.
 
