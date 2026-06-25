@@ -9,3 +9,6 @@
 - `06-tools/03-templates`
 - `.agents/skills/pyptoux-content-router`
 - `.agents/skills/pyptoux-git-github`
+- `.agents/skills/pypto-knowledge-source`
+- `.agents/skills/pypto-demo-data-filling`
+- `.agents/skills/pto-design-system`

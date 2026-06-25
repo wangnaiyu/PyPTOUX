@@ -176,3 +176,21 @@
 - 决策：PTO 设计系统在 PyPTOUX 内的项目入口收敛为 `.agents/skills/pto-design-system/`，设计系统索引只指向 skill bundle、preview、tokens、CSS、patterns 和 references。
 - 决策：不再维护额外的仓库级设计系统 HTML 文档层；需要人类预览时使用 `.agents/skills/pto-design-system/design-system-preview.html`。
 - 影响：根目录结构调整为 `07-assets/`、`08-references/`、`09-docs/`、`10-archive/`、`11-pages/`；`README.md`、`AGENTS.md`、`CLAUDE.md`、内容路由规则、索引和 source registry 已同步更新。
+
+## 2026-06-25 Batch E 规则收束完成
+
+- 决策：将 Batch A-D 中已经稳定的 source governance、PyPTO architecture、Toolkit/data 和 design system sync 结论毕业到正式项目规则、索引和 `final-report.md`。
+- 决策：`AGENTS.md` 保持 concise project entry，只写长期协作摘要；详细 source schema、URL Domain Mapping、claim policy 和 mirror policy 仍以 `.agents/skills/pypto-knowledge-source/references/sources.md` 为准。
+- 决策：`09-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/` 标记为 `complete` 后继续保留为近期审计记录；是否归档到 `10-archive/upgrade-plans/` 等用户后续明确指令。
+- 决策：本轮不补 `06-tools/` 设计系统 sync / audit 脚本；如果未来同步变得高频，再单独立项。
+- 原因：任务包不应替代正式规则；A-D 稳定结论已经在 skills、知识目录和索引中可执行，Batch E 只做长期入口和审计收束。
+- 影响：`status.md`、`prompts/resume.md` 和 `batch-e-rule-consolidation-plan.md` 已标记 complete；新增 `final-report.md` 作为本次系统性升级的最终入口。
+
+## 2026-06-25 Source governance post-completion confirmations
+
+- 决策：`cann.csdn.net/**` 可长期保留为 `official-community-material`，但仍只作 supporting / discovery，不作 factual source of truth。
+- 决策：`github.com/hengliao1972/**` 中除 `pypto_top_level_design_documents` 外，没有其他需要登记的 source。
+- 决策：允许为 `github.com/hengliao1972/pypto_top_level_design_documents` 建立本地 mirror，默认根目录为 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`。
+- 执行：已 clone `pypto_top_level_design_documents` 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto_top_level_design_documents`。
+- Snapshot：branch `main`，commit `7faac0b910e40989a6bbd381a80595b65ab29708`，commit date `2026-04-28T01:22:43+08:00`。
+- 影响：source registry 已将 `pypto-top-level-design-documents` 更新为 `active` / `local-mirror`；`open-questions.md` 中对应 source governance 和 mirror 问题已关闭。

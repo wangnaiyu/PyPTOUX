@@ -14,7 +14,7 @@
 - `04-uxdesign/`：需求、信息架构、交互方案、视觉方案、评审材料
 - `05-prototypes/`：交互 demo 与原型演进记录
 - `06-tools/`：为原型和设计流程服务的工具
-- `.agents/skills/pto-design-system/`：视觉基础、组件规则和可复用 UI
+- `.agents/skills/pto-design-system/`：PTO 视觉基础、组件规则、preview、tokens、approved patterns 和可复用 UI
 - `07-assets/`：截图、图标、视频与导出资源
 - `08-references/`：外部来源、资料出处与链接索引
 - `09-docs/`：仓库规范、模板与索引
@@ -45,9 +45,14 @@
 - 研究型目录建议至少包含 `overview.md`
 - 有外部依据的内容建议补 `sources.md`
 - 术语密集的目录建议补 `glossary.md`
+- 业务知识 source registry 的唯一主登记是 `.agents/skills/pypto-knowledge-source/references/sources.md`
+- 涉及外部 mirror、manifest source、URL Domain Mapping、source type 或 source instance 状态时，先更新 source registry，再按需要同步本目录规则和 `09-docs/03-indexes/`
+- `09-docs/04-upgrade-plans/` 是 active workbench，不替代正式规则；完成后必须写 `final-report.md` 并确认稳定结论已回写
 
 ## Design System Rule
 
-- 新 demo 默认从 `.agents/skills/pto-design-system/` 获取视觉基线
+- 新 demo 默认从 `.agents/skills/pto-design-system/` 获取视觉基线、tokens、CSS class 和 pattern contract
 - 允许早期实验偏离，但应记录偏离原因
 - 进入 `app/` 的原型优先复用 `.agents/skills/pto-design-system/css/style.css`
+- PyPTOUX 不维护独立仓库级设计系统目录；人类预览入口是 `.agents/skills/pto-design-system/design-system-preview.html`
+- 上游 `yinyucheng0601/pto-design-system` 只通过已确认的 mirror inspect / audit / change report 同步稳定内容
