@@ -2,12 +2,12 @@
 
 ## Current Status
 
-- 状态：`active`
-- 当前批次：`Ready for Batch E: Rule Consolidation`
-- 当前 focus：Batch D 已完成上游 mirror 和 PTO skill 更新；2026-06-25 已撤销独立仓库级设计系统目录，当前设计系统入口收敛为 `.agents/skills/pto-design-system/`；下一步启动 Batch E，把 Batch A-D 稳定规则回写到正式项目规则和最终报告。
-- next_batch_prompt: `exists`
-- next_batch_plan: `exists`
-- next_batch_gate: `discuss-first`
+- 状态：`complete`
+- 当前批次：`Batch E: Rule Consolidation complete`
+- 当前 focus：系统性升级已收束；Batch A-D 稳定结论已回写到正式项目规则、索引、skills、知识目录和 `final-report.md`。任务包保留为近期审计记录，后续如需归档再由用户明确触发。
+- next_batch_prompt: `not-needed`
+- next_batch_plan: `not-needed`
+- next_batch_gate: `complete`
 - 最近更新：`2026-06-25`
 
 ## Progress
@@ -19,10 +19,19 @@
 | Batch B: PyPTO Architecture Refresh | `complete` | 已 refresh `pypto` mirror，更新 architecture 文档和依赖旧 hint 的规则 |
 | Batch C: Toolkit And Runtime Data Strategy | `complete` | 已确认 `pypto-tools`、`pypto-sample-dataset`、`pypto-testdata` 和 toolkit design files 的治理边界，并更新 `pypto-toolkit` / `pypto-data` |
 | Batch D: Design System Sync Strategy | `complete` | 已 clone 上游 design system mirror，更新 PTO skill；独立仓库级设计系统目录已撤销 |
-| Batch E: Rule Consolidation | `pending` | 最后回写正式规则和索引 |
+| Batch E: Rule Consolidation | `complete` | 已回写正式规则、索引和最终报告 |
 
 ## Done This Session
 
+- 2026-06-25：按用户确认更新 source governance open questions：`cann.csdn.net/**` 长期保留为 `official-community-material`；`github.com/hengliao1972/**` 除 `pypto_top_level_design_documents` 外不登记其他 source。
+- 2026-06-25：clone `pypto_top_level_design_documents` 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto_top_level_design_documents`，snapshot branch `main`，commit `7faac0b910e40989a6bbd381a80595b65ab29708`，commit date `2026-04-28T01:22:43+08:00`。
+- 2026-06-25：同步 source registry、`open-questions.md`、`decisions.md`、`sources-to-refresh.md` 和 `final-report.md`；顺手清理 Batch C 中 `pypto-tools` “has not been downloaded or cloned” 的过时表述。
+- 2026-06-25：执行 Batch E rule consolidation；运行 `git status --short`，确认开始时工作树无输出。
+- 2026-06-25：更新 `AGENTS.md`，将 source registry、agentic search governance、外部 mirror refresh、PyPTO data / toolkit 边界、`share-safe` 和 PTO design system 同步策略收束为长期项目级规则。
+- 2026-06-25：更新 `09-docs/01-conventions/repository-structure.md`，补 source registry 主登记、upgrade plan lifecycle、PTO design system 入口和上游同步规则。
+- 2026-06-25：更新 `09-docs/03-indexes/content-map.md`、`designsystem.md`、`tools.md`，补 source governance、Toolkit/data、设计系统和 final report 的检索入口。
+- 2026-06-25：新增 `final-report.md`，总结 Batch A-D 已毕业结论、Batch E 回写文件、保留审计记录和剩余非阻塞事项。
+- 2026-06-25：更新 `batch-e-rule-consolidation-plan.md`、`decisions.md`、`open-questions.md`、`sources-to-refresh.md` 和 `prompts/resume.md`，将系统性升级状态标记为 complete。
 - 2026-06-25：按用户要求删除独立仓库级设计系统目录，将后续根目录编号前移为 `07-assets/`、`08-references/`、`09-docs/`、`10-archive/`、`11-pages/`，并把项目入口、路由规则、索引和 source registry 收敛到 `.agents/skills/pto-design-system/`。
 - 2026-06-24：启动 Batch D，运行 `git status --short`，确认 PyPTOUX 工作树无输出；读取 Batch D prompt、任务包、`AGENTS.md`、PTO design system skill、preview gate、source registry 和现有 `.agents/skills/pto-design-system/` 骨架。
 - 2026-06-24：用户整体确认 Batch D preflight：允许 `yinyucheng0601/pto-design-system` 本地 mirror + 手动触发 sync / audit + diff / change report；允许 `/goal` 阶段实际 clone 到推荐 mirror path；`.agents/skills/pto-design-system/` 继续作为 agent 主入口；本轮暂不落地同步脚本；首次同步除了文档层，也复制 token CSS 或 approved pattern code。
@@ -90,16 +99,15 @@
 
 ## Next Step
 
-启动 Batch E: Rule Consolidation 的 preflight 讨论。
+本系统性升级已完成。
 
-建议动作：
+后续可选动作：
 
-1. 读取 `README.md`、`status.md`、`decisions.md`、`open-questions.md`、`sources-to-refresh.md`、Batch A-D plan 和 `batch-e-rule-consolidation-plan.md`。
-2. 使用 `prompts/batch-e-rule-consolidation.md` 启动 Batch E。
-3. 先与用户确认 Batch E 是否将 Batch A-D 稳定结论全部毕业到正式规则、`AGENTS.md` 的摘要粒度，以及 `final-report.md` 的详细程度。
-4. 确认后再回写正式规则、索引和最终报告。
+1. 如用户明确要求归档，将本任务包整体移动到 `10-archive/upgrade-plans/2026-06-systematic-repo-upgrade/`。
+2. 如后续要 refresh 外部 mirror，按 source registry 的 mirror policy 单独确认权限、检查本地改动并记录 snapshot。
+3. 日常任务不再读取本任务包作为主规则入口；优先读取 `AGENTS.md`、`.agents/skills/*`、`09-docs/01-conventions/*`、`09-docs/03-indexes/*` 和对应知识目录。
 
 ## Risks
 
-- `pypto-tools` 和 `pypto-testdata` 已 clone；如后续要 refresh，需要单独授权外部目录写入和网络访问，并记录 snapshot。
-- Batch D 已更新 `.agents/skills/pto-design-system/`；Batch E 需要注意不要重复扩写，只把稳定规则提炼回正式入口和 final report。
+- `pypto-tools`、`pypto-testdata` 和 `pto-design-system` 已 clone；如后续要 refresh，需要单独授权外部目录写入和网络访问，并记录 snapshot。
+- 任务包虽已 complete，但仍是近期审计记录；归档前确认用户不再需要 active workbench 入口。

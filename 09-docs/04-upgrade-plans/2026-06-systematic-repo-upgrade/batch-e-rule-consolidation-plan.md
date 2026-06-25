@@ -32,25 +32,25 @@ Batch E 不做：
 - 不新建 demo、prototype 或视觉改造。
 - 不重写已完成 batch 的事实内容；只做稳定规则回写和索引收束。
 
-## 4. Plan Gate
+## 4. Execution Assumptions
 
-启动 Batch E 前需要确认：
+Batch E 执行时采用以下收束假设：
 
-- 是否将当前任务包中的 Batch A-D 结论全部视为可毕业到正式规则。
-- 是否需要对 `AGENTS.md` 做轻量摘要，还是完整展开更多 source governance 细节。
-- `final-report.md` 需要中文摘要即可，还是需要附更完整的审计表。
+- 当前任务包中的 Batch A-D 稳定结论可毕业到正式规则。
+- `AGENTS.md` 保持轻量项目级入口，不完整展开 source governance 细节。
+- `final-report.md` 使用中文摘要，并附正式回写清单、审计记录边界和剩余非阻塞事项。
 
 ## 5. Implementation Checklist
 
-- [ ] 读取 `README.md`、`status.md`、`decisions.md`、`open-questions.md`、`sources-to-refresh.md` 和 Batch A-D plan。
-- [ ] 检查 PyPTOUX `git status --short`。
-- [ ] 更新 `AGENTS.md`，保留 concise project entry。
-- [ ] 更新必要的 `.agents/skills/*` 长期规则。
-- [ ] 更新 `09-docs/01-conventions/*`。
-- [ ] 更新 `09-docs/03-indexes/*`。
-- [ ] 写 `final-report.md`。
-- [ ] 更新 `status.md` 为 `complete` 或明确剩余阻塞。
-- [ ] 更新 `prompts/resume.md`，说明系统性升级已收束或剩余动作。
+- [x] 读取 `README.md`、`status.md`、`decisions.md`、`open-questions.md`、`sources-to-refresh.md` 和 Batch A-D plan。
+- [x] 检查 PyPTOUX `git status --short`。
+- [x] 更新 `AGENTS.md`，保留 concise project entry。
+- [x] 更新必要的 `.agents/skills/*` 长期规则。
+- [x] 更新 `09-docs/01-conventions/*`。
+- [x] 更新 `09-docs/03-indexes/*`。
+- [x] 写 `final-report.md`。
+- [x] 更新 `status.md` 为 `complete` 或明确剩余阻塞。
+- [x] 更新 `prompts/resume.md`，说明系统性升级已收束或剩余动作。
 
 ## 6. Definition Of Done
 
@@ -58,3 +58,18 @@ Batch E 不做：
 - `final-report.md` 已创建。
 - `status.md` 和 `prompts/resume.md` 可让新 session 正确判断任务已完成或只剩归档。
 - 未覆盖用户或其他 agent 的未提交改动。
+
+## 7. Batch E Result
+
+状态：
+
+- `batch_status`: `complete`
+- `plan_status`: `implemented`
+
+执行摘要：
+
+- Batch A-D 稳定结论已回写到 `AGENTS.md`、正式 conventions、索引、source registry、相关 skills 和知识目录。
+- 本轮没有重新 clone / refresh 外部 mirror。
+- 本轮没有新建 demo、prototype 或视觉改造。
+- `final-report.md` 已创建，用于替代任务包过程文件成为本次系统性升级的收束入口。
+- 任务包保留为近期审计记录；是否归档到 `10-archive/upgrade-plans/` 留给后续用户指令。

@@ -1,5 +1,12 @@
 # 待确认问题
 
+## Batch E Resolution
+
+- Batch E 已完成。
+- 本轮将 Batch A-D 稳定结论回写到正式项目规则、索引和 `final-report.md`。
+- 本轮没有需要用户立即判断的 Batch E 阻塞项。
+- 本任务包后续是否归档到 `10-archive/upgrade-plans/2026-06-systematic-repo-upgrade/`，留给用户明确指令。
+
 ## Batch B Preflight（启动前必须确认）
 
 这些问题必须在执行 Batch B refresh / rewrite 之前先与用户确认。
@@ -34,17 +41,20 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 
 - 是否存在用户明确要求 `deprecated` 的旧来源？
 - 是否存在用户明确要求 `blocked` 的来源？
-- `cann.csdn.net/**` 是否长期保留为 `official-community-material`，还是只作为普通 supporting source？
-- `github.com/hengliao1972/**` 中除 `pypto_top_level_design_documents` 之外是否还有应登记的 active / candidate source？
+
+### 已确认
+
+- `cann.csdn.net/**` 可长期保留为 `official-community-material`，但仍只作 supporting / discovery，不作 factual source of truth。
+- `github.com/hengliao1972/**` 中除 `pypto_top_level_design_documents` 外，没有其他需要登记的 source。
 
 ## Clone / Local Mirror Policy
 
-- 候选 mirror set 的默认本地根目录放在哪里？
-- `github.com/hengliao1972/pypto_top_level_design_documents` 是否需要建立本地 mirror 供 agent 跨文件检索？
 - issue / discussion / PR / FAQ 类 source 是否需要本地导出快照，还是保持在线检索？
 
 ### 已确认
 
+- 候选 mirror set 的默认本地根目录为 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`，除非具体 source 另有用户确认路径。
+- `pypto-top-level-design-documents` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto_top_level_design_documents`；snapshot branch `main`，commit `7faac0b910e40989a6bbd381a80595b65ab29708`。
 - `pypto-tools` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`；snapshot branch `master`，commit `5a4fae5cb574276cedb01880f649011d7f09ca61`。
 - `pypto-testdata` / `PTO-TestData` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`；snapshot branch `main`，commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`。
 - `pto-isa` 已 clone 到 `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-isa`；snapshot branch `master`，commit `4bd9a4d5175c9fce28f83560a982c5877fb6c685`。
@@ -60,11 +70,11 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 - source type `runtime-artifact-source` 重命名为 `pypto-data-source`。
 - `pypto-sample-dataset` 和 `pypto-testdata` 都属于 `pypto-data-source`，并可同时属于 `demo-evidence-source`。
 - 移除 source instance `pypto-runtime-data`；新增 PyPTO 数据材料应归入 `pypto-sample-dataset`、`pypto-testdata` 或后续明确的新 source instance，不再使用泛化的运行数据 source instance。
-- `pypto-tools` planned local mirror root is `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`; it has not been downloaded or cloned.
+- `pypto-tools` local mirror root is `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`; it has been cloned to `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`.
 - PyPTOUX may record `pypto-tools` file structure, schema, screenshots and small code snippets.
 - `pypto-sample-dataset` may write back manifest, summaries, data levels and schema; sampled or desensitized data may enter PyPTOUX.
 - Only sampled / desensitized data or schema-generated L2 data can be marked `share-safe`.
-- `pypto-testdata` may be cloned to `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件`; its data level is L1 and its permission / external boundary follows `pypto-sample-dataset`.
+- `pypto-testdata` has been cloned to `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`; its data level is L1 and its permission / external boundary follows `pypto-sample-dataset`.
 - Toolkit design raw files must not enter PyPTOUX; local storage is `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/设计文件`; thumbnails, screenshots and structure summaries are allowed.
 - `02-knowledge/00-shared/pypto-toolkit/` should use canonical files `overview.md`, `sources.md`, and `manifest.md`, scoped to Toolkit、`pypto-tools` and toolkit design inputs.
 - `02-knowledge/00-shared/pypto-data/` should use canonical files `overview.md`, `sources.md`, and `manifest.md`, scoped to PyPTO sample/test data, compile/runtime artifacts, data levels and `share-safe` rules.
@@ -93,7 +103,10 @@ Batch A 已通过以下默认策略解除本批次阻塞：
 ### 待确认
 
 - 无 Batch D 阻塞项。
-- 后续是否在 Batch E 或单独 batch 中补 `06-tools/` sync / audit 脚本，可在 Batch E 中判断。
+
+### 已确认
+
+- 本轮不补 `06-tools/` design system sync / audit 脚本；如果未来同步变得高频，再单独立项。
 
 ## Collaboration
 

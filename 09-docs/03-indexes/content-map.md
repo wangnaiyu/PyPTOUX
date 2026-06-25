@@ -13,16 +13,20 @@
 | CANNBot skills、agent workflow、skill governance、GitCode issue / PR workflow | `02-knowledge/00-shared/cannbot-skills/` |
 | Graph 节点显示参数、Tensor Graph / Tile Graph / Block Graph / Execute Graph 节点 | `02-knowledge/00-shared/pypto-data/schemas/computation-graph-nodes.md` |
 | A5、Ascend 950、950PR、950DT、950 硬件流 | `02-knowledge/00-shared/ascend-a5-950-hardware/` |
+| source registry、source instance、URL Domain Mapping、mirror policy、claim policy | `.agents/skills/pypto-knowledge-source/references/sources.md` |
+| `pypto-tools`、Toolkit 产品能力、toolkit design inputs | `02-knowledge/00-shared/pypto-toolkit/` |
+| PyPTO sample data、`PTO-TestData`、数据等级、`share-safe` | `02-knowledge/00-shared/pypto-data/` |
 | 竞品、案例、灵感、模式对照 | `03-insights/` |
 | 通用交互模式、IDE 模式、可视化策略 | `04-uxdesign/00-shared/` 或 `03-insights/00-shared/` |
 | PRD、UX 分析、信息架构、交互方案 | `04-uxdesign/` |
 | Agent 协作约定、分工边界、协作治理 | `09-docs/01-conventions/dual-agent-collaboration.md` |
 | HTML demo、JSX demo、原型验证 | `05-prototypes/` |
 | JSX 预览器、转换脚本、启动脚本 | `06-tools/` |
-| 颜色、字体、组件规范、UI 基础件 | `.agents/skills/pto-design-system/` |
+| PTO 颜色、字体、组件规范、preview、tokens、approved patterns、UI 基础件 | `.agents/skills/pto-design-system/` |
 | 截图、录屏、导出图 | `07-assets/` |
 | 外部来源、链接、出处 | `08-references/` 或对应目录的 `sources.md` |
 | 仓库升级计划、批量治理、跨 session 任务恢复 | `09-docs/04-upgrade-plans/` |
+| 已完成升级计划的审计报告 | `09-docs/04-upgrade-plans/<date-slug>/final-report.md` |
 | GitHub Pages 短链接、线上发布入口 | `11-pages/` |
 
 ## By Existing Topic
@@ -38,6 +42,7 @@
 | PTO ISA / Tile Lib | `02-knowledge/00-shared/pto-isa/` |
 | Operator Workflow | `02-knowledge/00-shared/ops-transformer/` |
 | CANNBot Agent Workflow | `02-knowledge/00-shared/cannbot-skills/` |
+| PTO Design System | `.agents/skills/pto-design-system/` |
 
 ## Shared Buckets
 

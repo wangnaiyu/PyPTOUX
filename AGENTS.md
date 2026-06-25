@@ -86,6 +86,7 @@
 | 做前端原型、PTO 风格页面或视觉改造 | `pto-design-system` | 如需真实素材，补 `pypto-demo-data-filling`；如需路由，补 `pyptoux-content-router` |
 | 提交、推送、开 PR | `pyptoux-git-github` | 无 |
 | 查到新业务事实后写回知识库 | `pypto-knowledge-source` | `pyptoux-content-router` |
+| 更新 source registry、mirror 状态或 URL mapping | `pypto-knowledge-source` | 如涉及目录落点再补 `pyptoux-content-router` |
 
 ## 5. 项目级协作约定
 
@@ -102,9 +103,10 @@
 ### 5.2 `PyPTO` 业务知识检索
 
 - `PyPTO` 相关业务知识任务优先使用 `pypto-knowledge-source`
-- 可参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 作为 `orientation_hints` 缩小查询范围
+- source registry、URL Domain Mapping、source schema、source 状态和 clone / mirror policy 的唯一主登记是 `.agents/skills/pypto-knowledge-source/references/sources.md`
+- 可参考 `02-knowledge/00-shared/pypto-architecture/overview.md` 作为 `orientation_hints` 缩小查询范围；它不是当前实现事实出口
 - 当前实现事实、字段、路径和上游 literal 必须回 `pypto` 本地镜像、官方文档或其他 authoritative source 校验
-- 再按 `pypto-knowledge-source` 的 evidence strategy 到最匹配的来源检索信息
+- 按 `pypto-knowledge-source` 的 `Intent Mode` / `Output Mode` / evidence strategy / claim verification 流程选择来源；复杂问题允许多个 primary retrieval roles
 - 结论需要沉淀回 `02-knowledge/` 对应主题；没有合适主题时新建
 - 对上游 `pypto` 仓库或样例数据里的真实文件名、路径、字段键、索引键、trace key 保持原样，不要为了统一术语口径而改写
 - 可统一的是我们自己的解释性正文；不可改写的是用于追溯上游产物的 literal，例如 `program.json`、`*_ROOT.json`、`rootHash`、`callOpMagic`、`leafHash`
@@ -112,13 +114,17 @@
 当前高频来源包括：
 
 - `pypto` 本地镜像：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto`
-- PyPTO 官方文档：[quick_start](https://pypto.gitcode.com/tutorials/introduction/quick_start.html)
+- PyPTO 官方文档：[tutorials](https://pypto.gitcode.com/tutorials/)
 - 样例数据目录：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例数据`
+- `pypto-tools` 本地镜像：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-tools`
+- `PTO-TestData` 本地镜像：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`
+- PTO design system 上游镜像：`/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`
 
-### 5.3 `pypto` refresh 规则
+### 5.3 外部 mirror / refresh 规则
 
 - 默认每个自然天最多 clone / refresh 一次 `pypto`
 - 不要在同一天内因为多个 session 或多个问题反复 clone
+- 对 `pypto-tools`、`PTO-TestData`、`pto-design-system`、`pto-isa`、`ops-transformer`、`cannbot-skills` 等本地 mirror 执行 fetch / refresh 前，需要单独确认权限、记录 snapshot，并检查本地改动
 - 如果本地镜像存在未提交改动，不要直接覆盖，先确认
 
 ### 5.4 Demo 素材规则
@@ -135,16 +141,26 @@
 - 做 demo 展示、sample-data 或原型实现时，不要改写上游 literal（字段名、文件名、trace key 等）
 - 优先保证“可追溯 + 自洽”，再追求“好看”
 - 如果用到样例数据或数据 schema，优先查看 `02-knowledge/00-shared/pypto-data/overview.md`
+- `02-knowledge/00-shared/pypto-data/` 承接 `pypto-sample-dataset`、`pypto-testdata`、数据等级和 `share-safe` 规则；`02-knowledge/00-shared/pypto-toolkit/` 只承接 Toolkit、`pypto-tools` 和 toolkit design inputs
+- 原始 `L1` 不默认等于 `share-safe`；只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 `L2` 的数据，才可标记为 `share-safe`
 - 更完整的规则见 `09-docs/01-conventions/dual-agent-collaboration.md`
 
-### 5.5 Git / GitHub
+### 5.5 PTO 设计系统
+
+- 新建或改造 `05-prototypes/` 页面、PTO 风格工作台、graph / timeline / architecture UI 时优先使用 `pto-design-system`
+- PyPTOUX 当前只保留 `.agents/skills/pto-design-system/` 作为 PTO 设计系统入口；不再维护独立仓库级设计系统目录
+- 人类预览入口是 `.agents/skills/pto-design-system/design-system-preview.html`
+- 上游 `yinyucheng0601/pto-design-system` 采用本地 mirror + 手动 sync / audit / change report；不要把上游仓库全量盲目复制进 PyPTOUX
+- 需要新增共享视觉模式时，先走 `.agents/skills/pto-design-system/references/preview-gate.md`
+
+### 5.6 Git / GitHub
 
 - Git 操作前先确认工作目录位于本仓库
 - `pull` / `push` 前先确认 `origin`
 - 本机已安装 `gh`
 - 若 GitHub connector 不可用或权限异常，优先回退到 `gh`
 
-### 5.6 双 Agent 协作约定
+### 5.7 双 Agent 协作约定
 
 - `PyPTOUX` 默认采用 Codex + Claude Desktop 协作
 - Codex 主责：规划与方案、业务知识检索、内容路由、结构维护、demo 素材准备、构建与后端、Git / GitHub

@@ -79,7 +79,7 @@
 | `gitcode.com/cann/pypto/**` | `pypto` |
 | `pypto.gitcode.com/**` | `pypto-official-docs` |
 | `github.com/hengliao1972/pypto_top_level_design_documents/**` | `pypto-top-level-design-documents` |
-| `github.com/hengliao1972/**` | `candidate external design-intent source` |
+| `github.com/hengliao1972/**` | `web-discovery / no registered source by default` |
 | `hiascend.com/**` | `cann-docs-community-edition` |
 | `cann.csdn.net/**` | `curated-external-links (official-community-material)` |
 | `gitcode.com/cann/community/tree/master/events/meetup/slides/950/**` | `curated-external-links (official-community-material)` |
@@ -95,7 +95,7 @@
 | `mp.weixin.qq.com/**` | `curated-external-links` |
 | 其他 | `web-discovery / curated-external-links (unknown)` |
 
-未列 domain 视为 `web-discovery / curated-external-links (unknown)`；先识别，再按 claim 级别回 authoritative source 校验。`official-community-material` 可作为高可信公开材料入口，但仍不是长期 factual source of truth。
+未列 domain 视为 `web-discovery / curated-external-links (unknown)`；先识别，再按 claim 级别回 authoritative source 校验。`official-community-material` 可长期保留为高可信公开材料入口，但仍不是长期 factual source of truth。
 
 ## 6. Registered Source Instances
 
@@ -124,32 +124,34 @@
 - `status`: `active`
 - `access_mode`: `online`
 - `source_type`: `official-doc-source`
-- `remote`: `https://pypto.gitcode.com/tutorials/introduction/quick_start.html`
-- `authority_scope`: PyPTO 官网页面、quick-start 编排、官网教程步骤、对外发布措辞。
-- `best_for`: 用户问官网怎么说、官网展示、对外文案、官网 URL、教程入口。
+- `remote`: `https://pypto.gitcode.com/tutorials/`
+- `authority_scope`: PyPTO 官方 tutorials 入口、官网教程编排、对外发布措辞。
+- `best_for`: 用户问官网怎么说、官网展示、对外文案、官网 URL、教程入口和 tutorials 导航。
 - `not_for`: 当前代码事实、字段名、文件路径、可运行行为、文档源码 freshness。
 - `question_modes`: `lookup`, `freshness`, `workflow-research`
 - `output_modes`: `answer`, `research-brief`, `knowledge-writeback`
 - `freshness_policy`: 在线只读；检索时把在线文档站点视为当前版本。
 - `search_mode`: 在线单点读取官网页面；不做无界 web crawl。
-- `discovery_policy`: 可从官网导航发现相关 tutorial / guide；高价值新入口可登记。
+- `discovery_policy`: 可从 `https://pypto.gitcode.com/tutorials/` 导航发现相关 tutorial / guide；高价值新入口可登记。
 - `claim_policy`: 官网 wording authoritative；若与 `pypto` 代码事实冲突，分开标注。
 - `writeback_policy`: 官网口径可进入 `02-knowledge/` sources 或 answer；不要复制大段官网内容。
 
 ### pypto-top-level-design-documents
 
-- `status`: `active` within design-intent / `mirror-candidate`
-- `access_mode`: `online`
+- `status`: `active` within design-intent / `local-mirror`
+- `access_mode`: `local-mirror`, `online`
 - `source_type`: `design-intent-source`
 - `remote`: `https://github.com/hengliao1972/pypto_top_level_design_documents`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto_top_level_design_documents`
+- `snapshot`: branch `main`, commit `7faac0b910e40989a6bbd381a80595b65ab29708`, commit date `2026-04-28T01:22:43+08:00`
 - `authority_scope`: PyPTO 顶层设计、架构意图、方向规划、专题设计、设计决策背景。
 - `best_for`: `workflow-research`、`ux-strategy`、`trend-research`、架构方向和 design decision 类问题。
 - `not_for`: 当前实现事实、字段名、文件路径、运行行为、上游 literal；这些必须回 `pypto` 校验。
 - `question_modes`: `lookup`, `workflow-research`, `trend-research`, `ux-strategy`, `demo-design`
 - `output_modes`: `answer`, `research-brief`, `ux-analysis`, `demo-brief`, `ux-design-spec`, `knowledge-writeback`
-- `freshness_policy`: 默认在线读取当前 GitHub 内容；是否建立 local mirror 待后续确认。
-- `search_mode`: 优先查根目录专题、architecture index、logical / development / process / physical / scenario views、module detailed designs、design decisions、open questions、glossary、codebase mapping。
-- `discovery_policy`: 不因当前已知 runtime redesign 子主题过窄而排除更 general 的 PyPTO 顶层设计主题。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-25` clone；后续 fetch / refresh 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
+- `search_mode`: 优先本地 `rg` 查根目录专题、architecture index、logical / development / process / physical / scenario views、module detailed designs、design decisions、open questions、glossary、codebase mapping；需要 freshness 时再在线单点读取。
+- `discovery_policy`: 不因当前已知 runtime redesign 子主题过窄而排除更 general 的 PyPTO 顶层设计主题。`github.com/hengliao1972/**` 中除本 source 外，当前没有其他需要登记的 source；后续只有用户指定或证据充分时再登记。
 - `claim_policy`: design-intent claim 可由本 source 支撑；实现事实必须回 `pypto`。
 - `writeback_policy`: 可支持 UX / strategy / research writeback；若涉及当前代码行为，必须附校验来源。
 - `orientation_hints`: `pypto-runtime-arch-docs/00-index.md`、`01-introduction.md`、`02-logical-view.md`、`modules/*.md`、`08-design-decisions.md`、`09-open-questions.md`、`appendix-a-glossary.md`、`appendix-b-codebase-mapping.md`。
@@ -190,24 +192,25 @@
 - `writeback_policy`: PyPTOUX 仓库可在 `02-knowledge/00-shared/pypto-data/` 记录 manifest、摘要、数据等级、schema、来源和生成 / 获取规则；允许写入抽样或脱敏后的数据。demo 使用时同步记录数据等级、来源、可外发状态和生成规则。
 - `overwrite_guard`: 不主动改写该目录；清理、替换或批量写入前先确认。
 
-### curated-external-links
+### pypto-testdata
 
-- `status`: `active` as discovery/supporting
-- `access_mode`: `local-registry`, `web-discovery`
-- `source_type`: `external-discovery-source`
-- `local_registry`: `08-references/curated-external-links.md`
-- `authority_scope`: 外部文章、微信、知乎、博客、社区分享、专家解读、场景化总结的发现入口和 claim 假设源。
-- `best_for`: `trend-research`、`painpoint-mining`、`workflow-research`、`ux-strategy` 的背景材料、关键词和待验证 claim。
-- `not_for`: factual source of truth；不可直接作为字段、API、版本、运行行为的最终依据。
-- `question_modes`: `lookup`, `trend-research`, `painpoint-mining`, `workflow-research`, `ux-strategy`
-- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: local registry 条目以人工登记为准；带“最近 / 新 / 这周 / 这个月”的问题需 web discovery 或平台搜索。
-- `search_mode`: 用户问收藏链接时 grep local registry；用户问某平台是否讲过某主题时平台站内搜索或 web search。
-- `discovery_policy`: 高价值材料经 claim 校验后可建议写入 local registry；unknown URL 先抽 claim。
-- `claim_policy`: factual claim 必须回 authoritative source 校验；empirical / opinion 必须标注。
-- `writeback_policy`: 写入 `08-references/` 前注意未提交工作树锁。
-
-## 7. Candidate / Manifest Sources
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
+- `source_type`: `pypto-data-source`, `demo-evidence-source`
+- `remote`: `https://gitcode.com/zhanghuixin/PTO-TestData`
+- `display_name`: `PTO-TestData`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`
+- `snapshot`: branch `main`, commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`, commit date `2026-06-17T16:16:59+08:00`
+- `authority_scope`: 候选 PyPTO 测试数据、样例数据、运行产物和 demo evidence。
+- `best_for`: `demo-material`、`demo-design`、PyPTO data source 对照。
+- `not_for`: 原始 L1 数据不得默认作为 `share-safe` 外发；未抽样、未脱敏、未写明边界的数据不得进入对外 demo。
+- `question_modes`: `lookup`, `demo-material`, `demo-design`, `ux-strategy`
+- `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。
+- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
+- `discovery_policy`: 可升级为 PyPTO data / demo evidence source。
+- `claim_policy`: 数据等级为 L1；权限和可外发边界同 `pypto-sample-dataset`。只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 L2 的数据，才可标记为 `share-safe`。
+- `writeback_policy`: PyPTOUX 仓库可在 `02-knowledge/00-shared/pypto-data/` 记录 manifest、摘要、数据等级、schema、来源和生成 / 获取规则；允许写入抽样或脱敏后的数据，不写入原始全量数据。
 
 ### pypto-tools
 
@@ -248,26 +251,6 @@
 - `claim_policy`: ISA claim 以当前 snapshot 的文档、头文件或测试为准；A5/950 硬件 claim 需与官方 CANN/Ascend 或代码 source 对照；PyPTO 当前行为仍回 `pypto`。
 - `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/pto-isa/` 和任务包；不复制大段源码或完整 ISA 表。
 
-### cannbot-skills
-
-- `status`: `active`
-- `access_mode`: `local-mirror`, `online`
-- `source_type`: `tooling-source`, `agent-workflow-source`
-- `remote`: `https://gitcode.com/cann/cannbot-skills`
-- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`
-- `snapshot`: branch `master`, commit `bba4e1823e0b366c14b38a5186c987b5703c1f66`, commit date `2026-06-24T15:51:30+08:00`
-- `knowledge_map`: `02-knowledge/00-shared/cannbot-skills/`
-- `authority_scope`: agent skill taxonomy、tooling workflow、prompt pattern、skill governance、GitCode issue / PR workflow 和自动化线索。
-- `best_for`: `workflow-research`、`ux-strategy` 中与 agent 辅助、工具链工作流有关的问题。
-- `not_for`: PyPTO / CANN factual source of truth。
-- `question_modes`: `workflow-research`, `trend-research`, `ux-strategy`
-- `output_modes`: `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
-- `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
-- `discovery_policy`: 可作为 CANN agent / skill workflow 的高相关 source；不将 skill 文案中的技术 claim 直接提升为事实。
-- `claim_policy`: 仅作 workflow / tooling / skill governance 线索；API、硬件、性能、PyPTO 行为等 factual claim 回 authoritative source。
-- `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/cannbot-skills/` 和任务包；不复制全量 skills。
-
 ### ops-transformer
 
 - `status`: `active`
@@ -288,25 +271,25 @@
 - `claim_policy`: factual claim 需回当前代码、配套 tag、CANN/Ascend 官方文档或具体算子目录校验；PyPTO 当前行为仍回 `pypto`。
 - `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/ops-transformer/` 和任务包；不复制全量算子列表或大段源码。
 
-### pypto-testdata
+### cannbot-skills
 
 - `status`: `active`
 - `access_mode`: `local-mirror`, `online`
-- `source_type`: `pypto-data-source`, `demo-evidence-source`
-- `remote`: `https://gitcode.com/zhanghuixin/PTO-TestData`
-- `display_name`: `PTO-TestData`
-- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`
-- `snapshot`: branch `main`, commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`, commit date `2026-06-17T16:16:59+08:00`
-- `authority_scope`: 候选 PyPTO 测试数据、样例数据、运行产物和 demo evidence。
-- `best_for`: `demo-material`、`demo-design`、PyPTO data source 对照。
-- `not_for`: 原始 L1 数据不得默认作为 `share-safe` 外发；未抽样、未脱敏、未写明边界的数据不得进入对外 demo。
-- `question_modes`: `lookup`, `demo-material`, `demo-design`, `ux-strategy`
-- `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。
+- `source_type`: `tooling-source`, `agent-workflow-source`
+- `remote`: `https://gitcode.com/cann/cannbot-skills`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`
+- `snapshot`: branch `master`, commit `bba4e1823e0b366c14b38a5186c987b5703c1f66`, commit date `2026-06-24T15:51:30+08:00`
+- `knowledge_map`: `02-knowledge/00-shared/cannbot-skills/`
+- `authority_scope`: agent skill taxonomy、tooling workflow、prompt pattern、skill governance、GitCode issue / PR workflow 和自动化线索。
+- `best_for`: `workflow-research`、`ux-strategy` 中与 agent 辅助、工具链工作流有关的问题。
+- `not_for`: PyPTO / CANN factual source of truth。
+- `question_modes`: `workflow-research`, `trend-research`, `ux-strategy`
+- `output_modes`: `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 本地 mirror 已于 `2026-06-24` clone；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
-- `discovery_policy`: 可升级为 PyPTO data / demo evidence source。
-- `claim_policy`: 数据等级为 L1；权限和可外发边界同 `pypto-sample-dataset`。只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 L2 的数据，才可标记为 `share-safe`。
-- `writeback_policy`: PyPTOUX 仓库可在 `02-knowledge/00-shared/pypto-data/` 记录 manifest、摘要、数据等级、schema、来源和生成 / 获取规则；允许写入抽样或脱敏后的数据，不写入原始全量数据。
+- `discovery_policy`: 可作为 CANN agent / skill workflow 的高相关 source；不将 skill 文案中的技术 claim 直接提升为事实。
+- `claim_policy`: 仅作 workflow / tooling / skill governance 线索；API、硬件、性能、PyPTO 行为等 factual claim 回 authoritative source。
+- `writeback_policy`: 可写入 source registry、`02-knowledge/00-shared/cannbot-skills/` 和任务包；不复制全量 skills。
 
 ### yinyucheng0601/pto-design-system
 
@@ -360,6 +343,23 @@
 - `claim_policy`: 用户反馈可证明痛点存在，不证明技术事实正确；技术事实回 authoritative source。
 - `writeback_policy`: 可写入 UX analysis / painpoint notes；注意隐私和引用边界。
 
+### curated-external-links
+
+- `status`: `active` as discovery/supporting
+- `access_mode`: `local-registry`, `web-discovery`
+- `source_type`: `external-discovery-source`
+- `local_registry`: `08-references/curated-external-links.md`
+- `authority_scope`: 外部文章、微信、知乎、博客、社区分享、专家解读、场景化总结的发现入口和 claim 假设源。
+- `best_for`: `trend-research`、`painpoint-mining`、`workflow-research`、`ux-strategy` 的背景材料、关键词和待验证 claim。
+- `not_for`: factual source of truth；不可直接作为字段、API、版本、运行行为的最终依据。
+- `question_modes`: `lookup`, `trend-research`, `painpoint-mining`, `workflow-research`, `ux-strategy`
+- `output_modes`: `answer`, `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: local registry 条目以人工登记为准；带“最近 / 新 / 这周 / 这个月”的问题需 web discovery 或平台搜索。
+- `search_mode`: 用户问收藏链接时 grep local registry；用户问某平台是否讲过某主题时平台站内搜索或 web search。
+- `discovery_policy`: 高价值材料经 claim 校验后可建议写入 local registry；unknown URL 先抽 claim。
+- `claim_policy`: factual claim 必须回 authoritative source 校验；empirical / opinion 必须标注。
+- `writeback_policy`: 写入 `08-references/` 前注意未提交工作树锁。`cann.csdn.net/**` 可长期保留为 `official-community-material` supporting source。
+
 ### web-discovery
 
 - `status`: `candidate`
@@ -393,7 +393,7 @@
 - `claim_policy`: repo pool 本身不承载 factual claim；claim 必须落到具体 source instance。
 - `writeback_policy`: 只写候选 repo、相关理由和验证状态。
 
-## 8. Clone / Local Mirror Policy
+## 7. Clone / Local Mirror Policy
 
 Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refresh。
 
@@ -417,7 +417,7 @@ Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refres
 - `https://github.com/hengliao1972/pypto_top_level_design_documents`
 - `https://github.com/yinyucheng0601/pto-design-system`
 
-## 9. Maintenance Rule
+## 8. Maintenance Rule
 
 - 新的常用业务来源统一在这里新增 source instance。
 - 每个新 source 至少写清楚 `status`、`access_mode`、`source_type`、`authority_scope`、`best_for`、`not_for`、`question_modes`、`output_modes`、`freshness_policy`、`search_mode`、`discovery_policy`、`claim_policy` 和 `writeback_policy`。

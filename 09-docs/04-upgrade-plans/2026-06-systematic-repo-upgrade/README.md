@@ -46,6 +46,7 @@
 - `batch-c-toolkit-runtime-data-strategy-plan.md`：Batch C 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `batch-d-design-system-sync-strategy-plan.md`：Batch D 在启动前讨论和 Plan 模式中确认的方案、实施边界和 `/goal` Definition of Done。
 - `batch-e-rule-consolidation-plan.md`：Batch E 的规则收束方案、实施边界和 Definition of Done。
+- `final-report.md`：本次系统性升级的最终摘要、正式回写清单、审计记录边界和剩余非阻塞事项。
 - `prompts/resume.md`：新 session 续作时优先使用的通用 prompt。
 - `prompts/batch-a-source-governance.md`：正式启动 Batch A 时使用的 prompt。
 - `prompts/batch-b-pypto-architecture-refresh.md`：正式启动 Batch B 时使用的 prompt。
