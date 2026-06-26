@@ -11,7 +11,7 @@ Create or update `02-knowledge/00-shared/pypto-data/` so it owns PyPTO sample da
 - `.agents/skills/pypto-knowledge-source/references/sources.md`
 - `02-knowledge/00-shared/pypto-toolkit/`
 - `09-docs/01-conventions/content-routing.md`
-- `09-docs/04-upgrade-plans/2026-06-systematic-repo-upgrade/decisions.md`
+- `10-archive/upgrade-plans/2026-06-systematic-repo-upgrade/decisions.md`
 
 ## Decisions To Preserve
 
