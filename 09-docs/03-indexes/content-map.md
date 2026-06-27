@@ -39,6 +39,7 @@
 | Operator Doc Assistant | `05-prototypes/04-operator-doc-assistant/` |
 | PyPTO Studio | `02-knowledge/00-shared/pypto-architecture/` `02-knowledge/00-shared/pypto-toolkit/` `02-knowledge/00-shared/pypto-data/` `05-prototypes/05-pypto-studio/` |
 | A5 PMU Visualization | `02-knowledge/00-shared/ascend-a5-950-hardware/` `04-uxdesign/04-a5-pmu-visualization/` `05-prototypes/06-a5-pmu-visualization/` |
+| Fusion Performance Diagnosis | `03-insights/01-fusion-performance-diagnosis/` |
 | PTO ISA / Tile Lib | `02-knowledge/00-shared/pto-isa/` |
 | Operator Workflow | `02-knowledge/00-shared/ops-transformer/` |
 | CANNBot Agent Workflow | `02-knowledge/00-shared/cannbot-skills/` |

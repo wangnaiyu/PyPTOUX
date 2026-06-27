@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyPTO Fusion Performance Diagnosis PRD</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2328;
+      --muted: #5d6470;
+      --line: #d8dee8;
+      --soft: #f6f8fb;
+      --accent: #315f9d;
+      --accent-soft: #eaf1fb;
+      --warn: #8b5a00;
+      --warn-soft: #fff5da;
+      --good: #1f6b45;
+      --good-soft: #e9f6ee;
+      --risk: #9a3412;
+      --risk-soft: #fff0e8;
+      --paper: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.72;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    main {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 28px;
+      margin-bottom: 36px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 890px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .meta div,
+    .summary-item,
+    .requirement,
+    .story,
+    .decision,
+    .risk {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 14px 16px;
+    }
+
+    .meta strong,
+    .summary-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    nav a {
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    section {
+      margin: 44px 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 28px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 19px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul,
+    ol {
+      margin: 8px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+
+    .callout {
+      margin: 22px 0;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 16px 18px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout.warning {
+      border-left-color: var(--warn);
+      background: var(--warn-soft);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .requirement-grid,
+    .story-grid,
+    .decision-grid,
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .requirement {
+      background: #fff;
+    }
+
+    .requirement .rid {
+      display: inline-flex;
+      margin-bottom: 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 2px 9px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 4px 6px 0 0;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 2px 8px;
+      font-size: 12px;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--soft);
+      font-weight: 700;
+    }
+
+    .status-p0 {
+      color: var(--good);
+      background: var(--good-soft);
+      border-color: #b8e2c8;
+    }
+
+    .status-p1 {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: #c8d9f1;
+    }
+
+    .status-p2 {
+      color: var(--warn);
+      background: var(--warn-soft);
+      border-color: #efdca8;
+    }
+
+    .decision,
+    .story {
+      background: #fff;
+    }
+
+    .risk {
+      background: var(--risk-soft);
+      border-color: #ffd0bf;
+    }
+
+    .source-list a {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 56px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 860px) {
+      main {
+        width: min(100% - 28px, 1120px);
+        padding-top: 32px;
+      }
+
+      .meta,
+      .summary-grid,
+      .two-col,
+      .requirement-grid,
+      .story-grid,
+      .decision-grid,
+      .risk-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Product Requirements Document</p>
+      <h1>PyPTO Fusion Performance Diagnosis PRD</h1>
+      <p class="lead">
+        本 PRD 面向 PyPTO Toolkit 的融合算子性能诊断能力，把 issue #2141 暴露的“看见慢 task 但无法归因”问题，
+        转化为从采集、归因、下钻、源码动作到复跑验证的产品闭环。
+      </p>
+      <div class="meta" aria-label="文档元信息">
+        <div><strong>输出位置</strong>04-uxdesign/05-fusion-performance-diagnosis</div>
+        <div><strong>文档状态</strong>PRD 草案 v0.1</div>
+        <div><strong>日期</strong>2026-06-27</div>
+        <div><strong>输入依据</strong>UX 分析 + 竞品分析</div>
+      </div>
+    </header>
+
+    <nav aria-label="目录">
+      <a href="#summary">1. 产品判断</a>
+      <a href="#background">2. 背景与问题</a>
+      <a href="#users">3. 目标用户</a>
+      <a href="#goals">4. 目标与非目标</a>
+      <a href="#scope">5. 分期范围</a>
+      <a href="#experience">6. 目标体验</a>
+      <a href="#requirements">7. 功能需求</a>
+      <a href="#data">8. 数据需求</a>
+      <a href="#metrics">9. 成功指标</a>
+      <a href="#risks">10. 风险与开放问题</a>
+    </nav>
+
+    <section id="summary">
+      <h2>1. 产品判断</h2>
+      <div class="callout">
+        <p>
+          Fusion Performance Diagnosis 的第一期不应被定义为 Memory Viewer，也不应被做成大而全 Trace Viewer。
+          它的核心价值是把一个慢 task 自动解释成可行动的根因假设、证据强度和下一步 PyPTO 修改动作。
+        </p>
+      </div>
+      <div class="summary-grid">
+        <article class="summary-item">
+          <strong>核心用户问题</strong>
+          看得到 task 慢，但不知道是计算、等待、依赖、UB pressure、spill-like 行为还是额外 GM/UB 搬运导致。
+        </article>
+        <article class="summary-item">
+          <strong>产品机会</strong>
+          把 PyPTO Toolkit 从执行可视化工具推进为融合算子性能诊断入口。
+        </article>
+        <article class="summary-item">
+          <strong>设计原则</strong>
+          先归因，再下钻；痛点绑定动作；建议必须能被下一轮运行验证。
+        </article>
+      </div>
+    </section>
+
+    <section id="background">
+      <h2>2. 背景与问题</h2>
+      <p>
+        当前用户通过 <code>debug_options={"runtime_debug_mode": 1}</code> 采集运行上下文，同一轮得到程序结果与
+        <code>merged_swimlane.json</code>。这套机制可以让用户看到执行时间线，却没有把异常时间、内存压力、等待关系、
+        PMU counter、<code>program.json</code>、计算图和源码动作串成诊断链路。
+      </p>
+      <p>
+        设计研究显示，用户情绪谷底并不发生在采集或打开泳道图时，而是发生在“已经看到慢 task，却只能靠经验猜根因”的阶段。
+        竞品分析进一步说明，成熟性能工具的优势不是图表数量，而是选择窗口、时间线、资源指标、事件详情和行动出口之间的联动。
+      </p>
+
+      <table aria-label="问题转译">
+        <thead>
+          <tr>
+            <th>现状痛点</th>
+            <th>用户真实意图</th>
+            <th>产品化转译</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>打开泳道图后需要手工找慢 task、读依赖、看 copy 节点。</td>
+            <td>先知道哪几个 task 最值得看，以及主导瓶颈是什么。</td>
+            <td>提供 Top abnormal tasks / wraps 与 bottleneck type。</td>
+          </tr>
+          <tr>
+            <td>task bar 只有总耗时，用户无法区分干活、搬运和等待。</td>
+            <td>知道时间花在 compute、memory move、wait 还是未解释区间。</td>
+            <td>提供 compute / memory move / wait / unaccounted 分段泳道。</td>
+          </tr>
+          <tr>
+            <td>怀疑 UB pressure 或 spill-like 行为，但没有证据。</td>
+            <td>确认 peak live memory、UB headroom、额外搬运和贡献对象。</td>
+            <td>提供 Memory Pressure 下钻与 Top contributors。</td>
+          </tr>
+          <tr>
+            <td>试错调 tile、nbuffer 或融合边界后，很难证明因果。</td>
+            <td>用下一轮运行证明动作是否有效。</td>
+            <td>提供 Before / After 诊断对比和调优记录沉淀。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="users">
+      <h2>3. 目标用户</h2>
+      <div class="two-col">
+        <article class="story">
+          <h3>目标用户：Fusion Performance Engineer</h3>
+          <p>
+            PyPTO / CANN 高阶算子开发与性能调优用户，主要处理大模型 RoPE / Attention 相关融合算子性能交付。
+            该用户能够阅读泳道图和计算图，也能修改 tile、融合策略或 <code>vec_nbuffer_setting</code>。
+          </p>
+          <p>
+            他的核心困境不是“不会调”，而是工具没有把性能现象翻译成足够可信、可执行、可验证的根因证据。
+          </p>
+        </article>
+        <article class="story">
+          <h3>非目标用户</h3>
+          <ul>
+            <li>PyPTO 入门用户：优先需要教程、示例代码和基础错误排查。</li>
+            <li>纯算法研究者：主要关心算法效果，不负责融合算子性能归因。</li>
+            <li>应用层调用方：只需要端到端趋势或整体 profiling 报告。</li>
+            <li>平台管理视角：关注资源利用和调度概览，不修改 tile / nbuffer / fusion boundary。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="goals">
+      <h2>4. 目标与非目标</h2>
+      <div class="two-col">
+        <article class="decision">
+          <h3>产品目标</h3>
+          <ul>
+            <li>让用户在打开运行产物后 1 分钟内看到 Top abnormal tasks 与主导瓶颈类型。</li>
+            <li>把慢 task 的时间拆成 compute、memory move、wait、unaccounted 四类解释。</li>
+            <li>对内存相关异常给出 peak live memory、UB headroom、extra movement 与 Top contributors。</li>
+            <li>把诊断结论绑定到 task、wrap、tensor、op、<code>program.json</code>、计算图和源码位置。</li>
+            <li>让每条建议都能被下一轮运行的 task time、extra movement、UB pressure 或 utilization delta 验证。</li>
+          </ul>
+        </article>
+        <article class="decision">
+          <h3>非目标</h3>
+          <ul>
+            <li>不在第一期做通用 Trace Viewer 或可任意配置 counter 的专家自由探索工具。</li>
+            <li>不把 PMU CSV 表格直接暴露为产品主能力。</li>
+            <li>不把 Memory Viewer 作为独立终点，内存信息必须回到诊断和动作。</li>
+            <li>不承诺自动改写用户 PyPTO 代码，第一阶段只提供证据、建议和跳转出口。</li>
+            <li>不覆盖所有算子类型，先聚焦融合 task、wrap 与 RoPE / Attention 类高频性能问题。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="scope">
+      <h2>5. 分期范围</h2>
+      <table aria-label="分期路线">
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>能力</th>
+            <th>用户价值</th>
+            <th>最小数据需求</th>
+            <th>交付判断</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag status-p0">P0</span></td>
+            <td>Diagnosis Overview + Top abnormal tasks</td>
+            <td>打开产物后先建立方向感。</td>
+            <td><code>exec_start/end</code>、task duration、wrap mapping、severity rule。</td>
+            <td>用户能从异常列表进入对应 task / wrap。</td>
+          </tr>
+          <tr>
+            <td><span class="tag status-p0">P0</span></td>
+            <td>Segmented Swimlane</td>
+            <td>立即区分真计算、额外搬运、等待和未解释时间。</td>
+            <td>PMU accounted cycles、wait / sync events、memory movement summary。</td>
+            <td>每个异常 task 至少展示 dominant segment 与 ratio。</td>
+          </tr>
+          <tr>
+            <td><span class="tag status-p0">P0</span></td>
+            <td>Memory Pressure 面板</td>
+            <td>直接回应 #2141 的 UB pressure、spill-like 与额外 GM/UB 搬运诉求。</td>
+            <td>live memory、copy in/out、raw tensor memory range、Top contributors。</td>
+            <td>用户能定位贡献最大的 tensor / op / fusion fragment。</td>
+          </tr>
+          <tr>
+            <td><span class="tag status-p1">P1</span></td>
+            <td>Wait Chain 面板</td>
+            <td>区分搬得慢、等别人、调度晚和资源未覆盖间隙。</td>
+            <td><code>syncEvents</code>、predecessor ready time、schedule wait、peer task mapping。</td>
+            <td>用户能看到 signal 方、等待方、wrap 和 critical peer。</td>
+          </tr>
+          <tr>
+            <td><span class="tag status-p1">P1</span></td>
+            <td>Pipeline Balance by PMU group</td>
+            <td>把 PMU group 转译成 C / V / MTE / FixPipe / Scalar 的诊断镜头。</td>
+            <td>PMU group 2/4/6/7/8 counters、wrap / core mapping、total cycle。</td>
+            <td>用户能判断 compute-heavy、MTE-heavy、UB-conflict 或 L2 reuse failure。</td>
+          </tr>
+          <tr>
+            <td><span class="tag status-p2">P2</span></td>
+            <td>源码 / 计算图 / program 联动</td>
+            <td>让诊断结果落到能改的 PyPTO 表达。</td>
+            <td><code>rootHash</code>、<code>callOpMagic</code>、<code>leafHash</code>、operand hints、source map。</td>
+            <td>用户能从诊断跳到源码、计算图节点和 <code>program.json</code> 片段。</td>
+          </tr>
+          <tr>
+            <td><span class="tag status-p2">P2</span></td>
+            <td>Before / After 自动对比</td>
+            <td>把试错变成验证，沉淀团队可复用调优经验。</td>
+            <td>run id、task identity matching、metric delta、diagnosis delta。</td>
+            <td>系统能展示 task time、extra movement、wait ratio、headroom 与 pipeline balance 的变化。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="experience">
+      <h2>6. 目标体验</h2>
+      <div class="story-grid">
+        <article class="story">
+          <h3>用户故事 1：先知道看哪里</h3>
+          <p>作为高阶融合算子调优用户，我希望打开本轮运行产物后先看到异常 task 排名、瓶颈类型和证据强度，以便不用从空白泳道图开始猜。</p>
+          <span class="tag">P0</span><span class="tag">Overview</span>
+        </article>
+        <article class="story">
+          <h3>用户故事 2：解释 task 时间</h3>
+          <p>作为用户，我希望 task bar 可以分段展示 compute、memory move、wait 和 unaccounted，以便判断耗时是在干活、搬运还是等待。</p>
+          <span class="tag">P0</span><span class="tag">Swimlane</span>
+        </article>
+        <article class="story">
+          <h3>用户故事 3：确认内存压力证据</h3>
+          <p>作为用户，我希望点击内存相关异常后看到 peak live memory、UB headroom、GM/UB movement、Top contributors 和 copy edge，以便判断是否应该调 tile、nbuffer 或 fusion boundary。</p>
+          <span class="tag">P0</span><span class="tag">Memory</span>
+        </article>
+        <article class="story">
+          <h3>用户故事 4：验证调优动作</h3>
+          <p>作为用户，我希望再次运行后看到新旧诊断对比，以便确认性能改善是否来自 extra movement 降低、UB headroom 增加或 wait ratio 下降。</p>
+          <span class="tag">P2</span><span class="tag">Compare</span>
+        </article>
+      </div>
+
+      <table aria-label="目标流程">
+        <thead>
+          <tr>
+            <th>阶段</th>
+            <th>用户行为</th>
+            <th>系统响应</th>
+            <th>输出</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>采集</td>
+            <td>保留 <code>runtime_debug_mode</code> 运行方式。</td>
+            <td>识别同轮运行产物和最近一次诊断上下文。</td>
+            <td>run context、产物绑定状态。</td>
+          </tr>
+          <tr>
+            <td>归因</td>
+            <td>打开 Toolkit，查看 Top abnormal tasks。</td>
+            <td>给出 severity、bottleneck type、evidence level 和推荐下钻入口。</td>
+            <td>诊断概览。</td>
+          </tr>
+          <tr>
+            <td>下钻</td>
+            <td>点击 task / segment / contributor。</td>
+            <td>同步过滤泳道图、Memory Pressure、Wait Chain 或 Pipeline Balance。</td>
+            <td>局部证据链。</td>
+          </tr>
+          <tr>
+            <td>行动</td>
+            <td>查看建议并跳到源码、计算图或 <code>program.json</code>。</td>
+            <td>解释建议适用条件、证据来源和验证指标。</td>
+            <td>tile / nbuffer / fusion 调整方向。</td>
+          </tr>
+          <tr>
+            <td>验证</td>
+            <td>修改后再次运行并打开新结果。</td>
+            <td>匹配上轮 task identity，展示核心指标 delta。</td>
+            <td>Before / After 对比与结论沉淀。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="requirements">
+      <h2>7. 功能需求</h2>
+      <div class="requirement-grid">
+        <article class="requirement">
+          <span class="rid">FR-01</span>
+          <h3>运行产物自动绑定</h3>
+          <p>系统应识别同一轮运行中的 <code>merged_swimlane.json</code>、<code>program.json</code>、计算图、PMU 文件与源码映射状态，并提示缺失项。</p>
+          <ul>
+            <li>必须展示当前 run id 或可读的运行时间标识。</li>
+            <li>必须标记数据完整性：complete、partial、missing。</li>
+            <li>缺失关键证据时，不得给出高置信诊断。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-02</span>
+          <h3>Top abnormal tasks / wraps</h3>
+          <p>系统应按 duration、severity、bottleneck type 和 evidence level 展示优先排查对象。</p>
+          <ul>
+            <li>bottleneck type 初期至少包括 compute、memory movement、wait、UB pressure、unaccounted。</li>
+            <li>点击列表项后，泳道图和详情面板必须同步定位到对应 task / wrap。</li>
+            <li>每条异常必须展示“为什么它异常”的一句话解释。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-03</span>
+          <h3>分段泳道图</h3>
+          <p>异常 task bar 应分解为 compute、memory move、wait、unaccounted 四段，并展示各段 absolute time 与 ratio。</p>
+          <ul>
+            <li>dominant segment 应可被视觉或排序识别。</li>
+            <li>点击 segment 后右侧详情只解释当前 segment。</li>
+            <li>unaccounted 不能被隐藏，必须提示证据不足或计量缺口。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-04</span>
+          <h3>Memory Pressure 下钻</h3>
+          <p>系统应针对内存相关异常展示 live memory 曲线、UB headroom、extra GM/UB movement、copy edge 与 Top contributors。</p>
+          <ul>
+            <li>Top contributors 至少按 tensor、op、fusion fragment 或 task 归因。</li>
+            <li>每个 contributor 必须能追溯到数据来源字段或关联对象。</li>
+            <li>建议动作应明确指向 tile、nbuffer、fusion boundary 或中间结果减少。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-05</span>
+          <h3>Wait Chain 下钻</h3>
+          <p>系统应区分 predecessor wait、schedule wait、sync wait、resource / uncovered gap，并高亮信号方、等待方和 peer task。</p>
+          <ul>
+            <li>等待关系应支持从当前 task 跳到 critical peer。</li>
+            <li>当等待证据不足时，应提示无法区分等待类型。</li>
+            <li>等待诊断应避免与 memory movement 诊断互相覆盖。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-06</span>
+          <h3>Pipeline Balance 诊断</h3>
+          <p>系统应把 PMU group 转译为 AIC / AIV / MTE / FixPipe / Scalar 等维度的 utilization、dominant counter 和 critical lane。</p>
+          <ul>
+            <li>不得把 PMU CSV 直接作为主体验。</li>
+            <li>必须解释 MTE-heavy、AIV idle、UB conflict、L2 reuse failure 等诊断标签的证据。</li>
+            <li>当 counter 覆盖不足时，应降级为“趋势提示”而非强诊断。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-07</span>
+          <h3>源码与产物联动</h3>
+          <p>诊断结论应能回跳到 <code>program.json</code>、计算图节点和源码位置，保留 <code>rootHash</code>、<code>callOpMagic</code>、<code>leafHash</code> 等上游 literal。</p>
+          <ul>
+            <li>跳转失败时，应展示可复制的对象标识。</li>
+            <li>源码动作建议必须说明它影响哪个诊断指标。</li>
+            <li>不改写上游字段名、trace key 或文件名。</li>
+          </ul>
+        </article>
+
+        <article class="requirement">
+          <span class="rid">FR-08</span>
+          <h3>Before / After 诊断对比</h3>
+          <p>系统应支持两轮运行的 task identity matching，并比较 task time、extra movement、wait ratio、UB headroom 和 pipeline balance。</p>
+          <ul>
+            <li>匹配不确定时，应显示匹配置信度和候选对象。</li>
+            <li>对比结果应区分“改善”“恶化”“无显著变化”“证据不足”。</li>
+            <li>对比结论可沉淀为团队调优记录或后续 agent 输入。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="data">
+      <h2>8. 数据需求与诊断契约</h2>
+      <p>
+        本 PRD 不新增上游事实断言，只把现有研究中的字段和产物诉求整理为产品数据契约。真实字段、路径和 schema 需要在进入实现前回到
+        PyPTO 本地镜像、官方文档或样例数据中校验。
+      </p>
+      <table aria-label="数据契约">
+        <thead>
+          <tr>
+            <th>数据域</th>
+            <th>用途</th>
+            <th>关键对象或字段</th>
+            <th>缺失时的降级</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Execution timeline</td>
+            <td>定位 task / wrap、计算 duration 与异常排序。</td>
+            <td><code>merged_swimlane.json</code>、<code>exec_start/end</code>、task identity、wrap mapping。</td>
+            <td>只展示时间线与人工选择，不给出自动严重度。</td>
+          </tr>
+          <tr>
+            <td>Program linkage</td>
+            <td>把诊断回连到 PyPTO 表达和计算图。</td>
+            <td><code>program.json</code>、<code>rootHash</code>、<code>callOpMagic</code>、<code>leafHash</code>、operand hints。</td>
+            <td>保留对象标识，但不显示源码 / program 跳转。</td>
+          </tr>
+          <tr>
+            <td>Memory movement</td>
+            <td>判断额外 GM/UB 搬运、copy edge 与 Top contributors。</td>
+            <td>copy in/out、GM/UB bytes、raw tensor memory range、movement summary。</td>
+            <td>只展示 task 分段中的 memory move ratio，不给 contributor 归因。</td>
+          </tr>
+          <tr>
+            <td>Live memory</td>
+            <td>计算 peak live memory、UB headroom 与 pressure trend。</td>
+            <td>live tensor set、peak bytes、UB capacity reference、tensor lifetime。</td>
+            <td>不判断 UB pressure，只提示需要补充 live memory 数据。</td>
+          </tr>
+          <tr>
+            <td>Wait / sync</td>
+            <td>区分 predecessor wait、schedule wait、sync wait 与 peer relation。</td>
+            <td><code>syncEvents</code>、ready time、schedule wait、peer task mapping。</td>
+            <td>等待只作为未解释或弱证据段展示。</td>
+          </tr>
+          <tr>
+            <td>PMU counters</td>
+            <td>解释 pipeline balance、MTE-heavy、UB-conflict 等标签。</td>
+            <td>PMU group 2/4/6/7/8 counters、core mapping、total cycle。</td>
+            <td>仅显示趋势，不给高置信 pipeline 诊断。</td>
+          </tr>
+          <tr>
+            <td>Run comparison</td>
+            <td>验证调优动作是否有效。</td>
+            <td>run id、task identity matching、metric delta、diagnosis delta。</td>
+            <td>允许人工选择两轮任务后做局部对比。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <p>
+          诊断输出必须显式区分 evidence level。缺少 memory、wait 或 PMU 证据时，系统应降级表达为“可能原因”或“证据不足”，
+          避免把推断包装成事实。
+        </p>
+      </div>
+    </section>
+
+    <section id="metrics">
+      <h2>9. 成功指标与验收标准</h2>
+      <table aria-label="成功指标">
+        <thead>
+          <tr>
+            <th>指标</th>
+            <th>衡量方式</th>
+            <th>期望方向</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>首次定位时间</td>
+            <td>从打开运行产物到识别 Top abnormal task 与主导瓶颈的时间。</td>
+            <td>显著短于人工读泳道图。</td>
+          </tr>
+          <tr>
+            <td>诊断覆盖率</td>
+            <td>异常 task 中可给出 bottleneck type 和 evidence level 的比例。</td>
+            <td>P0 覆盖 memory movement / UB pressure 相关问题。</td>
+          </tr>
+          <tr>
+            <td>建议可执行率</td>
+            <td>诊断建议能绑定 tile、nbuffer、fusion boundary、tensor/op/source 的比例。</td>
+            <td>减少“泛泛建议”。</td>
+          </tr>
+          <tr>
+            <td>验证闭环率</td>
+            <td>完成修改后能通过下一轮运行看到 delta 的问题比例。</td>
+            <td>P2 后成为默认闭环。</td>
+          </tr>
+          <tr>
+            <td>证据可信度</td>
+            <td>用户是否认可诊断证据足以支撑下一步修改。</td>
+            <td>高于纯 timeline / CSV 观察。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>PRD 验收标准</h3>
+      <ul>
+        <li>P0 完成时，用户可以从异常列表进入分段泳道和 Memory Pressure 面板，完成一次“慢 task -> 内存证据 -> 调参方向”的诊断。</li>
+        <li>P1 完成时，用户可以区分 memory movement、wait chain 与 pipeline imbalance，减少误把等待当搬运或误把搬运当计算瓶颈。</li>
+        <li>P2 完成时，用户可以把诊断跳回源码 / 计算图 / <code>program.json</code>，并通过两轮运行对比验证动作效果。</li>
+      </ul>
+    </section>
+
+    <section id="risks">
+      <h2>10. 风险与开放问题</h2>
+      <div class="risk-grid">
+        <article class="risk">
+          <h3>风险：证据链不完整导致误诊</h3>
+          <p>如果 memory、wait、PMU 或 source map 缺失，强行给出单一根因会伤害信任。需要把 evidence level 作为一等输出。</p>
+        </article>
+        <article class="risk">
+          <h3>风险：默认视图变成复杂 Trace Viewer</h3>
+          <p>竞品启发应服务于诊断闭环，而不是堆叠 tracks 和 counters。P0 默认视图必须少而强。</p>
+        </article>
+        <article class="risk">
+          <h3>开放问题：UB capacity 与 headroom 如何标准化</h3>
+          <p>需要确认不同硬件、task 类型和采集粒度下，UB headroom 的计算口径与阈值。</p>
+        </article>
+        <article class="risk">
+          <h3>开放问题：task identity matching 的稳定键</h3>
+          <p>Before / After 对比依赖跨轮匹配，需要确认使用 task id、wrap、hash、op path 还是组合键。</p>
+        </article>
+        <article class="risk">
+          <h3>开放问题：建议模板的边界</h3>
+          <p>第一期建议应偏“方向 + 证据 + 验证指标”，还是可以给出更具体的 tile / nbuffer 参数候选，需要结合真实样例验证。</p>
+        </article>
+        <article class="risk">
+          <h3>开放问题：source map 缺失时的行动出口</h3>
+          <p>如果源码位置不可用，是否以 <code>program.json</code>、计算图节点、tensor/op 名称作为临时出口，需要产品和实现共同确认。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>输入依据</h2>
+      <ul class="source-list">
+        <li><a href="./ux-analysis.html">04-uxdesign/05-fusion-performance-diagnosis/ux-analysis.html</a>：用户画像、Before / After 旅程、设计原则与价值判断。</li>
+        <li><a href="../../03-insights/01-fusion-performance-diagnosis/competitive-analysis.html">03-insights/01-fusion-performance-diagnosis/competitive-analysis.html</a>：竞品模式、观测信息架构、分期路线与产品策略判断。</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>
+        本 PRD 是阅读型 HTML 正式设计输出，未使用 PTO design system 或原型工作台样式。后续若进入交互原型，应另行在
+        <code>05-prototypes/</code> 下承接，并按数据等级标注真实 / 推导 / 占位素材。
+      </p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,6 +1,6 @@
 ---
 name: pyptoux-content-router
-description: Use this skill when working inside the PyPTOUX repository and you need to decide where new content should live, how files should be named, how vibe-coding outputs should be routed, or how to quickly find relevant project information across project content layers and the PTO design-system skill.
+description: Use this skill when working inside the PyPTOUX repository and you need to decide where new content should live, how files should be named, how vibe-coding outputs should be routed, or how to quickly find relevant project information across project content layers. Route reports, research briefs, knowledge documents, and reading-oriented documents in any format with executing-agent-native output, without triggering the PTO design-system skill.
 ---
 
 # PyPTOUX Content Router | 内容路由
@@ -33,7 +33,8 @@ description: Use this skill when working inside the PyPTOUX repository and you n
 3. 决定它属于 `00-shared/` 还是某个具体 topic folder。
 4. 文件命名、语言和 shared/index 规则按 `AGENTS.md` 执行。
 5. 如果 artifact 来自 vibe coding，默认这样放：
-   - HTML -> `05-prototypes/<numbered-topic>/experiments/html/`
+   - HTML demo / prototype / visual-interaction experiment -> `05-prototypes/<numbered-topic>/experiments/html/`
+   - reading-oriented report / research brief / UX analysis document in any format (`.md`, `.html`, `.docx`, `.pptx`, PDF, etc.) -> route by content intent, usually `03-insights/`, `04-uxdesign/`, `09-docs/04-upgrade-plans/`, or `01-inbox/`; use executing-agent-native output and do not trigger `pto-design-system`
    - JSX / TSX -> `05-prototypes/<numbered-topic>/experiments/jsx/`
    - composite prompt -> `05-prototypes/<numbered-topic>/prompts/YYYY-MM-DD-<slug>.md`
    - prototype update notes -> `05-prototypes/<numbered-topic>/notes/update-YYYY-MM-DD.md`

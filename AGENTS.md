@@ -75,6 +75,10 @@
   - 把现有 demo 迁移到 PTO 样式
   - 需要复用 PTO tokens、组件 class、graph/swimlane/workbench patterns
   - 需要判断是否应新增共享视觉模式及 preview gate
+- 不适用场景：
+  - 生成报告、研究简报、知识库文档、UX 分析文档或 `final-report.md`
+  - 生成以阅读为主的 `.md` / `.html` / `.docx` / `.pptx` / PDF 等报告类内容
+  - 仅在报告中描述或评审 PTO 设计系统，而没有要求设计或实现 PTO 风格 UI / demo / prototype
 
 ## 4. 常见任务怎么选 skill
 
@@ -84,6 +88,7 @@
 | 查 `PyPTO` 业务知识并沉淀结论 | `pypto-knowledge-source` | `pyptoux-content-router` |
 | 做 `PyPTO` demo 并填真实素材 | `pypto-demo-data-filling` | 如需先查事实，先用 `pypto-knowledge-source` |
 | 做前端原型、PTO 风格页面或视觉改造 | `pto-design-system` | 如需真实素材，补 `pypto-demo-data-filling`；如需路由，补 `pyptoux-content-router` |
+| 生成报告、研究简报或阅读型文档（不限格式） | `pyptoux-content-router` | 如需查业务事实，先用 `pypto-knowledge-source`；使用执行 agent 原生效果，不触发 `pto-design-system` |
 | 提交、推送、开 PR | `pyptoux-git-github` | 无 |
 | 查到新业务事实后写回知识库 | `pypto-knowledge-source` | `pyptoux-content-router` |
 | 更新 source registry、mirror 状态或 URL mapping | `pypto-knowledge-source` | 如涉及目录落点再补 `pyptoux-content-router` |
@@ -94,8 +99,10 @@
 
 - 新写的说明性内容默认优先中文
 - 目录名、稳定文件名、命令、路径、代码标识保持英文
+- `03-insights/`、`04-uxdesign/`、`05-prototypes/` 下的非 `00-shared` topic 默认使用两位编号前缀，如 `01-fusion-performance-diagnosis`
 - 尽量复用 canonical filenames，如 `overview.md`、`sources.md`、`glossary.md`、`prd.md`
 - `.md`、`.html` 都可以作为正式文档 / 报告的阅读格式；路由先看内容意图，不单凭文件扩展名判断归属
+- 报告类内容不管输出为 `.md`、`.html`、`.docx`、`.pptx`、PDF 或其他格式，默认采用执行 agent 原生效果：Codex 执行时使用 Codex 原生效果，Claude 执行时使用 Claude 原生效果，其他 agent 同理；保持 document-first / deck-first 的清晰层级和原生排版，不使用 PTO design system，不做成 app/workbench/demo/dashboard 风格；除非用户明确要求可视化页面或 PTO 风格 demo
 - Codex 新建或更新 `02-knowledge/`、`03-insights/`、`04-uxdesign/` 下某主题的正式输出时，默认同步维护该主题下的 `prompts/` 与 `notes/`；`prompts/` 保存可再次执行、可复现当次输出效果的复合 prompt，而不是用户原始 prompt 逐字稿
 - 各主题下 `notes/story-YYYY-MM-DD.md` 用于记录用户场景、体验脚本、叙事脚本或 demo story；`04-uxdesign/` 与 `05-prototypes/` 下尤其适用，owner 仍按所在目录规则执行
 - 新增 topic 或 shared framework 时，记得同步更新 `09-docs/03-indexes/`

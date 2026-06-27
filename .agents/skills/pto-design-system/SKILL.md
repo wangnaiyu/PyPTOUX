@@ -1,6 +1,6 @@
 ---
 name: pto-design-system
-description: Enforce PTO design-system-first module creation. Use when building a new PTO page, composing an IDE/workbench/graph/timeline/architecture page from shared patterns, or retrofitting an existing demo to PTO. Reuse existing tokens, components, and patterns by default; do not invent new visual styles.
+description: Enforce PTO design-system-first module creation for design files, demos, prototypes, and PTO-style UI pages. Use when building a new PTO page, composing an IDE/workbench/graph/timeline/architecture UI page from shared patterns, or retrofitting an existing demo to PTO. Do not use for reports, research briefs, reading-oriented markdown/html/word/ppt/pdf documents, UX analysis documents, or final-report artifacts unless the user explicitly asks to design or implement a PTO-style UI/demo/prototype.
 ---
 
 # PTO Design System Skill (shareable bundle)
@@ -16,6 +16,8 @@ Within PyPTOUX, this skill is the agent-facing implementation bundle for PTO UI 
 - source sync notes: `10-archive/upgrade-plans/2026-06-systematic-repo-upgrade/`
 
 Agents should read this skill before building or retrofitting `05-prototypes/` pages, PTO-style workbenches, graph/timeline/architecture pages, or reusable UI patterns. PyPTOUX no longer keeps a separate repo-level design-system projection directory; use this skill bundle for tokens, CSS classes, pattern contracts, preview and references.
+
+Do not read or apply this skill for report generation, research briefs, reading-oriented markdown/html/word/ppt/pdf documents, UX analysis documents, knowledge-base writeback, or `final-report.md` artifacts. Report-class content always uses executing-agent-native output by default, regardless of file format: Codex uses Codex-native output, Claude uses Claude-native output, and other agents use their own native output. A report can mention PTO design-system findings, but this skill only becomes active when the task asks to design, implement, retrofit, or validate a PTO-style UI/demo/prototype.
 
 When creating PyPTOUX repository artifacts, follow project routing rules from `AGENTS.md` and `pyptoux-content-router`.
 

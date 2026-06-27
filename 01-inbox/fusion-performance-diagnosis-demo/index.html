@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fusion Performance Diagnosis Demo</title>
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/tokens/foundation.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/tokens/semantic.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/tokens/components.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/css/style.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/patterns/workbench-shell/pattern.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/patterns/ide-frame/pattern.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/patterns/floating-playback-control/pattern.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/patterns/swimlane-task/pattern.css">
+  <link rel="stylesheet" href="../../.agents/skills/pto-design-system/patterns/pass-ir-graph-node/pattern.css">
+  <style>
+    body.fusion-demo-page {
+      min-height: 100vh;
+      height: auto;
+      overflow: auto;
+      display: block;
+      background: var(--ide-frame-page-bg);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+    }
+
+    .fusion-shell {
+      width: min(1560px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 12px 0 28px;
+    }
+
+    .fusion-frame {
+      height: min(920px, calc(100vh - 24px));
+      min-height: 760px;
+      aspect-ratio: auto;
+    }
+
+    .brand-stack {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: var(--radius-md);
+      background: var(--foreground);
+      color: var(--background);
+      font: 700 11px/1 var(--font-sans);
+    }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      color: var(--foreground);
+      font: var(--ide-frame-title-font);
+    }
+
+    .brand-title span,
+    .soft-meta {
+      color: var(--foreground-muted);
+      font: var(--ide-frame-meta-font);
+    }
+
+    .search-readout {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-metrics {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .metric-pill,
+    .status-pill,
+    .tiny-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: var(--tag-height);
+      border-radius: var(--radius-pill);
+      padding: 0 var(--space-2);
+      background: var(--comp-tag-bg);
+      border: 1px solid var(--comp-tag-border);
+      color: var(--foreground-secondary);
+      font: var(--text-label);
+      white-space: nowrap;
+    }
+
+    .status-pill.is-warn { color: var(--warning); }
+    .status-pill.is-danger { color: var(--danger); }
+    .status-pill.is-ok { color: var(--success); }
+
+    .pane-title-row,
+    .pane-toolbar-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    .pane-title-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .pane-title-stack strong {
+      color: var(--foreground);
+      font: var(--ide-frame-title-font);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pane-title-stack span {
+      color: var(--foreground-muted);
+      font: var(--ide-frame-meta-font);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artifact-list,
+    .task-list,
+    .story-list,
+    .inspector-stack,
+    .source-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .nav-section {
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-kicker {
+      margin: 0 0 var(--space-2);
+      color: var(--foreground-muted);
+      font: var(--text-label);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-label);
+    }
+
+    .artifact-item,
+    .task-item,
+    .story-item {
+      width: 100%;
+      display: grid;
+      gap: 4px;
+      padding: var(--space-2);
+      border: 0;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--foreground-secondary);
+      text-align: left;
+      font: var(--text-body-sm);
+      cursor: pointer;
+    }
+
+    .artifact-item:hover,
+    .task-item:hover,
+    .story-item:hover,
+    .artifact-item.is-selected,
+    .task-item.is-selected,
+    .story-item.is-selected {
+      background: var(--state-hover);
+      color: var(--foreground);
+    }
+
+    .task-item.is-target {
+      background: var(--state-selected);
+    }
+
+    .item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    .item-head strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--foreground);
+      font: 600 12px/1.25 var(--font-sans);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    .viewport-wrap {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--background);
+    }
+
+    .diagnosis-strip {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--border-subtle);
+      background: color-mix(in srgb, var(--surface-1) 72%, transparent);
+    }
+
+    .diagnosis-stat {
+      min-width: 0;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      background: var(--surface-1);
+    }
+
+    .diagnosis-stat span {
+      display: block;
+      color: var(--foreground-muted);
+      font: var(--text-label);
+      margin-bottom: 4px;
+    }
+
+    .diagnosis-stat strong {
+      color: var(--foreground);
+      font: 600 13px/1.25 var(--font-sans);
+    }
+
+    .swimlane-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .segmented-control button {
+      min-height: 28px;
+      padding: 0 var(--space-2);
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--foreground-secondary);
+      font: var(--button-font);
+      cursor: pointer;
+    }
+
+    .segmented-control button.is-selected {
+      background: var(--foreground);
+      color: var(--background);
+    }
+
+    .swimlane-scroll {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      background: var(--background);
+    }
+
+    .swimlane-stage {
+      position: relative;
+      min-width: 1260px;
+    }
+
+    #swimlaneCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .hit-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .task-hit {
+      position: absolute;
+      pointer-events: auto;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .task-hit.is-selected {
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.86);
+    }
+
+    .task-hit.is-related {
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.42);
+    }
+
+    .detail-tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .detail-tabs .btn {
+      min-height: 28px;
+      padding: 0 9px;
+    }
+
+    .inspector-scroll {
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .inspector-block {
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .inspector-block:last-child {
+      border-bottom: 0;
+    }
+
+    .inspector-block h3 {
+      margin: 0 0 var(--space-2);
+      color: var(--foreground);
+      font: var(--text-title-2);
+    }
+
+    .inspector-block p {
+      margin: 0;
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+    }
+
+    .soft-card {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: var(--inspector-soft-card-bg);
+    }
+
+    .kv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2);
+    }
+
+    .kv {
+      min-width: 0;
+      display: grid;
+      gap: 3px;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      background: var(--surface-1);
+    }
+
+    .kv span {
+      color: var(--foreground-muted);
+      font: var(--text-label);
+    }
+
+    .kv strong {
+      color: var(--foreground);
+      font: var(--text-mono);
+      overflow-wrap: anywhere;
+    }
+
+    .segment-row {
+      display: grid;
+      grid-template-columns: 96px 1fr 64px;
+      gap: var(--space-2);
+      align-items: center;
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+    }
+
+    .segment-track,
+    .compare-track {
+      height: 8px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-3);
+      overflow: hidden;
+    }
+
+    .segment-fill,
+    .compare-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      background: var(--primary);
+    }
+
+    .segment-fill.compute { background: var(--primary); }
+    .segment-fill.memory_move { background: var(--warning); }
+    .segment-fill.wait { background: var(--danger); }
+    .segment-fill.unaccounted { background: var(--accent); }
+
+    .source-code {
+      margin: 0;
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--background) 78%, black);
+      color: var(--foreground-secondary);
+      font: 500 12px/1.55 var(--font-mono);
+      overflow: auto;
+    }
+
+    .source-code .mark {
+      color: var(--foreground);
+      background: var(--state-selected);
+      border-radius: 4px;
+      padding: 1px 2px;
+    }
+
+    .graph-mount {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: flex-start;
+      padding-top: var(--space-2);
+    }
+
+    .memory-svg {
+      width: 100%;
+      height: 112px;
+      display: block;
+      border-radius: var(--radius-md);
+      background: var(--surface-1);
+    }
+
+    .flow-line {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: var(--space-2);
+      align-items: center;
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+    }
+
+    .flow-node {
+      min-width: 0;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      background: var(--surface-1);
+    }
+
+    .flow-arrow {
+      color: var(--foreground-muted);
+      font: var(--text-mono);
+    }
+
+    .compare-metric {
+      display: grid;
+      grid-template-columns: 105px 1fr 54px;
+      gap: var(--space-2);
+      align-items: center;
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+    }
+
+    .data-boundary {
+      padding: var(--space-2) var(--space-3);
+      border-top: 1px solid var(--border-subtle);
+      color: var(--foreground-muted);
+      font: var(--text-body-sm);
+    }
+
+    .floating-mount {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 18px;
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    .floating-mount .pto-floating-playback {
+      pointer-events: auto;
+    }
+
+    @media (max-width: 980px) {
+      .fusion-shell {
+        width: 100%;
+        padding: 0;
+      }
+
+      .fusion-frame {
+        min-height: 900px;
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .diagnosis-strip,
+      .kv-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="fusion-demo-page" data-theme="dark">
+  <main class="fusion-shell">
+    <section class="pto-ide-frame fusion-frame" data-ide-frame data-host="standalone" aria-label="Fusion Performance Diagnosis demo">
+      <header class="pto-ide-frame__topbar pto-ide-frame__standalone-chrome">
+        <div class="pto-ide-frame__topbar-left">
+          <div class="brand-stack">
+            <span class="brand-mark">FD</span>
+            <span class="brand-title">
+              <strong>PyPTO Toolkit · Fusion Diagnosis</strong>
+              <span>L2 share-safe demo · issue #2141</span>
+            </span>
+          </div>
+        </div>
+        <div class="pto-ide-frame__topbar-center">
+          <div class="pto-ide-frame__search">
+            <span class="search-readout mono" id="runSearch">loading run context...</span>
+          </div>
+        </div>
+        <div class="pto-ide-frame__topbar-right">
+          <div class="top-metrics" id="topMetrics"></div>
+        </div>
+      </header>
+
+      <div class="pto-ide-frame__body">
+        <nav class="pto-ide-frame__activity-rail pto-ide-frame__standalone-chrome" aria-label="Activity rail">
+          <button class="btn btn-icon btn-ghost pto-ide-frame__rail-button is-selected" type="button" title="Diagnosis">
+            <svg class="pto-ide-frame__rail-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"></path><path d="m7 15 4-4 3 3 5-7"></path></svg>
+          </button>
+          <button class="btn btn-icon btn-ghost pto-ide-frame__rail-button" type="button" title="Artifacts">
+            <svg class="pto-ide-frame__rail-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9l-.81-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+          </button>
+          <button class="btn btn-icon btn-ghost pto-ide-frame__rail-button" type="button" title="Search">
+            <svg class="pto-ide-frame__rail-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </button>
+        </nav>
+
+        <div class="pto-ide-frame__workarea">
+          <div class="pto-ide-frame__split" data-ide-split="fusion-main" data-split-direction="horizontal" data-sizes="22,52,26" data-pixel-sizes="320" data-min-size="260,520,320">
+            <aside class="pto-ide-frame__pane pto-ide-frame__explorer" data-ide-pane="explorer">
+              <header class="pto-ide-frame__pane-header">
+                <div class="pane-title-row">
+                  <span class="pane-title-stack">
+                    <strong>Run Materials</strong>
+                    <span>自动绑定 + 异常入口</span>
+                  </span>
+                </div>
+              </header>
+              <div class="pto-ide-frame__pane-body inspector-scroll" id="navigationPane"></div>
+            </aside>
+
+            <section class="pto-ide-frame__pane" data-ide-pane="editor-preview">
+              <div class="pto-ide-frame__tabstrip">
+                <div class="tab-control" role="tablist" aria-label="Diagnosis views">
+                  <button class="tab-control-item is-selected" type="button">Segmented Swimlane</button>
+                  <button class="tab-control-item" type="button">Memory Pressure</button>
+                  <button class="tab-control-item" type="button">Wait Chain</button>
+                  <button class="tab-control-item" type="button">Before / After</button>
+                </div>
+              </div>
+              <header class="pto-ide-frame__pane-header">
+                <div class="pane-toolbar-row">
+                  <span class="pane-title-stack">
+                    <strong id="previewTitle">A5 single-die 54-lane diagnosis</strong>
+                    <span id="previewMeta">all lanes visible, cluster07 focus</span>
+                  </span>
+                  <div class="segmented-control segmented-control-muted" role="group" aria-label="swimlane scope">
+                    <button class="is-selected" type="button" data-scope="all">All 54</button>
+                    <button type="button" data-scope="focus">Focus wrap 7</button>
+                    <button type="button" data-scope="peers">Peer lanes</button>
+                  </div>
+                </div>
+              </header>
+              <div class="pto-ide-frame__pane-body">
+                <div class="viewport-wrap">
+                  <div class="diagnosis-strip" id="diagnosisStrip"></div>
+                  <div class="swimlane-toolbar">
+                    <div class="pane-title-stack">
+                      <strong>merged_swimlane.json · segmented runtime evidence</strong>
+                      <span id="selectedReadout">selecting top abnormal task...</span>
+                    </div>
+                    <div class="top-metrics">
+                      <span class="tiny-pill">compute</span>
+                      <span class="tiny-pill">memory_move</span>
+                      <span class="tiny-pill">wait</span>
+                      <span class="tiny-pill">unaccounted</span>
+                    </div>
+                  </div>
+                  <div class="swimlane-scroll" id="swimlaneScroll">
+                    <div class="swimlane-stage" id="swimlaneStage">
+                      <canvas id="swimlaneCanvas"></canvas>
+                      <div class="hit-layer" id="hitLayer"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="pto-ide-frame__pane" data-ide-pane="inspector">
+              <header class="pto-ide-frame__pane-header">
+                <div class="pane-title-row">
+                  <span class="pane-title-stack">
+                    <strong>Evidence Inspector</strong>
+                    <span id="inspectorMeta">Memory / Wait / Source / Compare</span>
+                  </span>
+                </div>
+              </header>
+              <div class="pto-ide-frame__pane-body inspector-scroll">
+                <div class="inspector-block">
+                  <div class="detail-tabs" id="detailTabs"></div>
+                </div>
+                <div id="inspectorPane"></div>
+              </div>
+            </aside>
+          </div>
+
+          <footer class="pto-ide-frame__status-strip pto-ide-frame__standalone-chrome">
+            <span class="soft-meta" id="statusText">Loading data...</span>
+          </footer>
+        </div>
+      </div>
+      <div class="floating-mount" id="playbackMount"></div>
+    </section>
+  </main>
+
+  <script src="../../.agents/skills/pto-design-system/patterns/workbench-shell/pattern.js"></script>
+  <script src="../../.agents/skills/pto-design-system/patterns/floating-playback-control/pattern.js"></script>
+  <script src="../../.agents/skills/pto-design-system/patterns/ide-frame/pattern.js"></script>
+  <script src="../../.agents/skills/pto-design-system/patterns/swimlane-task/pattern.js"></script>
+  <script src="../../.agents/skills/pto-design-system/patterns/pass-ir-graph-node/pattern.js"></script>
+  <script src="./fusion-diagnosis-a5-demo-data.js"></script>
+  <script>
+    const state = {
+      data: null,
+      selectedTaskId: 'A5D0C07V0-T023',
+      detail: 'memory',
+      scope: 'all',
+      step: 1,
+      hitboxes: [],
+      tooltipHandle: null,
+      playback: null,
+      playing: false,
+      timer: null
+    };
+
+    const storySteps = [
+      { id: 'capture', title: '1. 捕获', detail: 'overview', copy: '保留 runtime_debug_mode 采集方式，自动绑定 merged_swimlane.json / program.json / PMU。' },
+      { id: 'overview', title: '2. 总览', detail: 'overview', copy: '先指出 A5D0C07V0-T023 是 Top abnormal task。' },
+      { id: 'lanes', title: '3. 泳道', detail: 'overview', copy: '展开 A5 单 die 54 条执行泳道，并聚焦 cluster07 peer lanes。' },
+      { id: 'segments', title: '4. 分段', detail: 'segments', copy: '把慢 task 拆成 compute / memory_move / wait / unaccounted。' },
+      { id: 'memory', title: '5. 内存压力', detail: 'memory', copy: '定位 UB headroom、extra GM/UB movement 和 top contributors。' },
+      { id: 'wait', title: '6. 等待链路', detail: 'wait', copy: '解释 CV_SYNC_WAIT 与 peer AIC 的控制依赖。' },
+      { id: 'action', title: '7. 行动', detail: 'source', copy: '把建议落到 K/V tile、vec_nbuffer_setting、program.json 与源码位置。' },
+      { id: 'compare', title: '8. 验证', detail: 'compare', copy: '再次运行后比较 task time、extra movement、UB headroom 与 wait ratio delta。' }
+    ];
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const fmtUs = (value) => `${Number(value).toFixed(1)} us`;
+    const fmtBytes = (value) => {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return '-';
+      return number >= 1024 ? `${(number / 1024).toFixed(1)} KiB` : `${number} B`;
+    };
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char]);
+
+    function durationEvents() {
+      return state.data.traceEvents.filter((event) => event.ph === 'X');
+    }
+
+    function selectedEvent() {
+      return durationEvents().find((event) => event.args.taskId === state.selectedTaskId) || state.data.diagnosisSummary.targetTraceEvent;
+    }
+
+    function eventLaneId(event) {
+      const lane = state.data.lanes.find((item) => item.tid === event.tid);
+      return lane?.laneId || event.args.execution-hint?.split(' executes ')[0] || '';
+    }
+
+    function clusterOfLane(laneId) {
+      const match = String(laneId).match(/cluster(\d+)/);
+      return match ? Number(match[1]) : -1;
+    }
+
+    function filteredLanes() {
+      if (state.scope === 'focus') return state.data.lanes.filter((lane) => lane.cluster >= 5 && lane.cluster <= 9);
+      if (state.scope === 'peers') return state.data.lanes.filter((lane) => lane.cluster === 7);
+      return state.data.lanes;
+    }
+
+    function renderTop() {
+      const data = state.data;
+      const summary = data.diagnosisSummary;
+      $('#runSearch').textContent = `${data.scenario.operator} / ${summary.targetTaskId} / wrapId ${summary.wrapId}`;
+      $('#topMetrics').innerHTML = `
+        <span class="metric-pill">lanes <strong class="mono">${data.hardware.laneCount}</strong></span>
+        <span class="status-pill is-warn">bottleneck ${esc(summary.bottleneckType)}</span>
+        <span class="status-pill is-ok">${esc(data.dataLevel)} · share-safe</span>
+      `;
+      $('#statusText').textContent = `Data: ${data.generatedBy} -> ${data.version}. Values are ${data.dataRole}, not L1 runtime facts.`;
+    }
+
+    function renderNavigation() {
+      const data = state.data;
+      const target = data.diagnosisSummary;
+      const events = durationEvents()
+        .filter((event) => event.args.diagnosisTags.includes('top_abnormal') || event.args.wrapId === 7 || event.dur > 80)
+        .sort((a, b) => b.dur - a.dur);
+
+      $('#navigationPane').innerHTML = `
+        <section class="nav-section">
+          <p class="section-kicker">Bound artifacts</p>
+          <div class="artifact-list">
+            ${[
+              ['merged_swimlane.json', `${data.traceEvents.length} traceEvents / ${data.hardware.laneCount} lanes`],
+              ['program.json', 'rootHash / callOpMagic / leafHash linkage'],
+              ['tilefwk_prof_pmu.csv', `${data.pmuRows.length} PMU rows`],
+              ['demo-data-script.py', 'L2 schema-generated / share-safe']
+            ].map(([name, meta], index) => `
+              <button class="artifact-item ${index === 0 ? 'is-selected' : ''}" type="button">
+                <span class="item-head"><strong>${esc(name)}</strong><span class="tiny-pill">ready</span></span>
+                <span>${esc(meta)}</span>
+              </button>
+            `).join('')}
+          </div>
+        </section>
+        <section class="nav-section">
+          <p class="section-kicker">Top abnormal tasks</p>
+          <div class="task-list">
+            ${events.map((event) => {
+              const lane = eventLaneId(event);
+              const tags = event.args.diagnosisTags.join(' / ') || event.args.coreType;
+              return `
+                <button class="task-item ${event.args.taskId === state.selectedTaskId ? 'is-selected' : ''} ${event.args.taskId === target.targetTaskId ? 'is-target' : ''}" type="button" data-task-id="${esc(event.args.taskId)}">
+                  <span class="item-head"><strong>${esc(event.args.taskId)}</strong><span class="tiny-pill">${fmtUs(event.dur)}</span></span>
+                  <span>${esc(lane)} · wrap ${event.args.wrapId}</span>
+                  <span>${esc(tags)}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </section>
+        <section class="nav-section">
+          <p class="section-kicker">Demo story</p>
+          <div class="story-list">
+            ${storySteps.map((step, index) => `
+              <button class="story-item ${state.step === index + 1 ? 'is-selected' : ''}" type="button" data-story-step="${index + 1}">
+                <span class="item-head"><strong>${esc(step.title)}</strong><span class="tiny-pill">${index + 1}/8</span></span>
+                <span>${esc(step.copy)}</span>
+              </button>
+            `).join('')}
+          </div>
+        </section>
+      `;
+
+      $$('.task-item', $('#navigationPane')).forEach((button) => {
+        button.addEventListener('click', () => {
+          state.selectedTaskId = button.dataset.taskId;
+          state.detail = button.dataset.taskId === target.targetTaskId ? 'memory' : 'segments';
+          renderAll();
+        });
+      });
+      $$('.story-item', $('#navigationPane')).forEach((button) => {
+        button.addEventListener('click', () => setStoryStep(Number(button.dataset.storyStep)));
+      });
+    }
+
+    function renderDiagnosisStrip() {
+      const summary = state.data.diagnosisSummary;
+      const mem = state.data.memoryPressure;
+      const wait = state.data.waitChain;
+      $('#diagnosisStrip').innerHTML = `
+        <div class="diagnosis-stat"><span>Top abnormal task</span><strong class="mono">${esc(summary.targetTaskId)}</strong></div>
+        <div class="diagnosis-stat"><span>Dominant bottleneck</span><strong>${esc(summary.bottleneckType)} · ${fmtUs(56.1)}</strong></div>
+        <div class="diagnosis-stat"><span>UB headroom</span><strong>${fmtBytes(mem.ubHeadroomBytes)} / ${fmtBytes(mem.ubBudgetBytes)}</strong></div>
+        <div class="diagnosis-stat"><span>Wait chain</span><strong>${esc(wait.syncType)} · ${fmtUs(wait.waitDurationUs)}</strong></div>
+      `;
+    }
+
+    function renderScopeControls() {
+      $$('.segmented-control [data-scope]').forEach((button) => {
+        button.classList.toggle('is-selected', button.dataset.scope === state.scope);
+        button.onclick = () => {
+          state.scope = button.dataset.scope;
+          renderAll();
+        };
+      });
+    }
+
+    function renderSwimlane() {
+      const canvas = $('#swimlaneCanvas');
+      const stage = $('#swimlaneStage');
+      const hitLayer = $('#hitLayer');
+      const lanes = filteredLanes();
+      const events = durationEvents().filter((event) => lanes.some((lane) => lane.tid === event.tid));
+      const allEvents = durationEvents();
+      const minTs = Math.min(...allEvents.map((event) => event.ts));
+      const maxEnd = Math.max(...allEvents.map((event) => event.ts + event.dur));
+      const labelW = 168;
+      const rowH = state.scope === 'all' ? 24 : 38;
+      const topPad = 30;
+      const rightPad = 40;
+      const width = state.scope === 'all' ? 1320 : 1180;
+      const height = topPad + lanes.length * rowH + 20;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      stage.style.width = `${width}px`;
+      stage.style.height = `${height}px`;
+      hitLayer.innerHTML = '';
+      hitLayer.style.width = `${width}px`;
+      hitLayer.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const css = getComputedStyle(document.documentElement);
+      const fg = css.getPropertyValue('--foreground').trim();
+      const muted = css.getPropertyValue('--foreground-muted').trim();
+      const secondary = css.getPropertyValue('--foreground-secondary').trim();
+      const border = css.getPropertyValue('--border-subtle').trim();
+      const surface = css.getPropertyValue('--surface-1').trim();
+      const colormap = window.PtoSwimlaneTaskPattern.createTaskColormap();
+      const timeToX = (ts) => labelW + ((ts - minTs) / (maxEnd - minTs)) * (width - labelW - rightPad);
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = css.getPropertyValue('--background').trim();
+      ctx.fillRect(0, 0, width, height);
+      ctx.font = '500 11px JetBrains Mono, monospace';
+      ctx.fillStyle = muted;
+      ctx.fillText('t + 0 us', labelW, 18);
+      ctx.fillText(`t + ${(maxEnd - minTs).toFixed(1)} us`, width - 126, 18);
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i += 1) {
+        const x = labelW + i * (width - labelW - rightPad) / 5;
+        ctx.beginPath();
+        ctx.moveTo(x, topPad - 8);
+        ctx.lineTo(x, height - 12);
+        ctx.stroke();
+      }
+
+      const selected = selectedEvent();
+      lanes.forEach((lane, index) => {
+        const y = topPad + index * rowH;
+        const isPeer = lane.cluster === 7;
+        ctx.fillStyle = isPeer ? 'rgba(255,255,255,0.045)' : surface;
+        ctx.fillRect(0, y, width, rowH - 1);
+        ctx.fillStyle = isPeer ? fg : secondary;
+        ctx.font = `${isPeer ? '600' : '500'} 11px JetBrains Mono, monospace`;
+        ctx.fillText(lane.laneId, 10, y + Math.min(22, rowH - 8));
+        ctx.fillStyle = muted;
+        ctx.fillText(String(lane.physicalCoreId).padStart(2, '0'), 138, y + Math.min(22, rowH - 8));
+      });
+
+      state.hitboxes = [];
+      events.forEach((event) => {
+        const laneIndex = lanes.findIndex((lane) => lane.tid === event.tid);
+        if (laneIndex < 0) return;
+        const x = timeToX(event.ts);
+        const w = Math.max(18, timeToX(event.ts + event.dur) - x);
+        const y = topPad + laneIndex * rowH + Math.max(4, Math.floor(rowH * 0.18));
+        const h = Math.max(14, Math.floor(rowH * 0.58));
+        const isSelected = event.args.taskId === state.selectedTaskId;
+        const isRelated = event.args.wrapId === selected.args.wrapId || event.args.syncEvents.some((sync) => sync.peerTaskId === selected.args.taskId);
+        const task = {
+          id: event.args.taskId,
+          label: event.args.semantic_label,
+          displayName: event.args.semantic_label,
+          rawName: event.name,
+          laneKind: event.args.coreType,
+          laneId: eventLaneId(event),
+          totalCycle: event.dur,
+          status: event.args.diagnosisTags.includes('top_abnormal') ? 'wait' : 'ok',
+          dominantCounter: event.args.diagnosisTags.includes('memory_movement') ? 'mte2/mte3 busy' : event.args.coreType,
+          wrapId: event.args.wrapId,
+          durationUnit: 'us',
+          segments: event.args.segments,
+          event
+        };
+        const baseColor = colormap.colorForTask({ label: event.args.semantic_label, laneKind: event.args.coreType }, 'semantic');
+        window.PtoSwimlaneTaskPattern.drawTaskBar(ctx, {
+          x, y, width: w, height: h, task, baseColor,
+          isSelected,
+          isRelated,
+          isEmphasized: event.args.diagnosisTags.includes('top_abnormal'),
+          fontFamily: 'JetBrains Mono, monospace'
+        });
+
+        const hit = document.createElement('button');
+        hit.type = 'button';
+        hit.className = `task-hit${isSelected ? ' is-selected' : ''}${isRelated ? ' is-related' : ''}`;
+        hit.style.left = `${x}px`;
+        hit.style.top = `${y}px`;
+        hit.style.width = `${w}px`;
+        hit.style.height = `${h}px`;
+        hit.setAttribute('aria-label', `${event.args.taskId} ${event.args.semantic_label}`);
+        hit.__ptoSwimlaneTask = task;
+        hit.addEventListener('click', () => {
+          state.selectedTaskId = event.args.taskId;
+          state.detail = event.args.diagnosisTags.includes('top_abnormal') ? 'memory' : 'segments';
+          renderAll();
+        });
+        hitLayer.appendChild(hit);
+      });
+
+      state.tooltipHandle?.destroy?.();
+      state.tooltipHandle = window.PtoSwimlaneTaskPattern.initHoverTooltip({
+        root: hitLayer,
+        appendTo: $('#swimlaneScroll'),
+        bounds: $('#swimlaneScroll'),
+        targets: '.task-hit',
+        durationUnit: 'us',
+        getTooltipHtml: (task) => {
+          const rows = (task.segments || []).map((segment) =>
+            `<div class="pto-swimlane-task-tooltip__row"><span class="pto-swimlane-task-tooltip__key">${esc(segment.kind)}</span><span class="pto-swimlane-task-tooltip__value">${fmtUs(segment.duration_us)}</span></div>`
+          ).join('');
+          return `
+            <div class="pto-swimlane-task-tooltip__title">${esc(task.id)} · ${esc(task.displayName)}</div>
+            <div class="pto-swimlane-task-tooltip__row"><span class="pto-swimlane-task-tooltip__key">lane</span><span class="pto-swimlane-task-tooltip__value">${esc(task.laneId)}</span></div>
+            <div class="pto-swimlane-task-tooltip__row"><span class="pto-swimlane-task-tooltip__key">wrap</span><span class="pto-swimlane-task-tooltip__value">${esc(task.wrapId)}</span></div>
+            ${rows}
+          `;
+        }
+      });
+
+      $('#selectedReadout').textContent = `${selected.args.taskId} · ${eventLaneId(selected)} · ${fmtUs(selected.dur)} · ${selected.args.semantic_label}`;
+      $('#previewMeta').textContent = state.scope === 'all' ? 'all 54 lanes visible, cluster07 focus' : state.scope === 'focus' ? 'cluster05-09 focus window' : 'cluster07 peer lanes only';
+    }
+
+    function renderDetailTabs() {
+      const tabs = [
+        ['overview', 'Overview'],
+        ['segments', 'Segments'],
+        ['memory', 'Memory'],
+        ['wait', 'Wait'],
+        ['source', 'Source'],
+        ['compare', 'Compare']
+      ];
+      $('#detailTabs').innerHTML = tabs.map(([id, label]) =>
+        `<button class="btn btn-sm ${state.detail === id ? 'is-selected' : ''}" type="button" data-detail="${id}">${label}</button>`
+      ).join('');
+      $$('#detailTabs [data-detail]').forEach((button) => {
+        button.addEventListener('click', () => {
+          state.detail = button.dataset.detail;
+          renderInspector();
+        });
+      });
+    }
+
+    function renderInspector() {
+      renderDetailTabs();
+      const event = selectedEvent();
+      const args = event.args;
+      const pane = $('#inspectorPane');
+      const renderers = {
+        overview: renderOverview,
+        segments: renderSegments,
+        memory: renderMemory,
+        wait: renderWait,
+        source: renderSource,
+        compare: renderCompare
+      };
+      pane.innerHTML = renderers[state.detail](event);
+      if (state.detail === 'source') renderGraphCards(event);
+      $('#inspectorMeta').textContent = `${args.taskId} / wrap ${args.wrapId} / ${state.detail}`;
+    }
+
+    function renderOverview(event) {
+      const args = event.args;
+      return `
+        <section class="inspector-block">
+          <h3>Diagnosis Overview</h3>
+          <div class="soft-card">
+            <p>${esc(state.data.diagnosisSummary.explanation)}</p>
+            <div class="kv-grid">
+              <div class="kv"><span>task</span><strong>${esc(args.taskId)}</strong></div>
+              <div class="kv"><span>lane</span><strong>${esc(eventLaneId(event))}</strong></div>
+              <div class="kv"><span>duration</span><strong>${fmtUs(event.dur)}</strong></div>
+              <div class="kv"><span>evidence</span><strong>${esc(state.data.diagnosisSummary.evidenceLevel)}</strong></div>
+            </div>
+          </div>
+        </section>
+        <section class="inspector-block">
+          <h3>Original literals</h3>
+          <p class="mono">${esc(args['event-hint'])}</p>
+        </section>
+      `;
+    }
+
+    function renderSegments(event) {
+      const total = event.args.segments.reduce((sum, segment) => sum + Number(segment.duration_us || 0), 0) || event.dur;
+      return `
+        <section class="inspector-block">
+          <h3>Task time explanation</h3>
+          <div class="inspector-stack">
+            ${event.args.segments.map((segment) => {
+              const ratio = Number(segment.ratio ?? segment.duration_us / total);
+              return `
+                <div class="segment-row">
+                  <span class="mono">${esc(segment.kind)}</span>
+                  <span class="segment-track"><span class="segment-fill ${esc(segment.kind)}" style="width:${Math.max(2, ratio * 100)}%"></span></span>
+                  <span class="mono">${(ratio * 100).toFixed(1)}%</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </section>
+        <section class="inspector-block">
+          <h3>Interpretation</h3>
+          <p>当前目标 task 的 memory_move 和 wait 共同解释主要耗时；unaccounted 保留为证据不足区间，不隐藏。</p>
+        </section>
+      `;
+    }
+
+    function renderMemory() {
+      const mem = state.data.memoryPressure;
+      const peakRatio = mem.peakLiveBytes / mem.ubBudgetBytes;
+      const points = mem.topContributors.map((item, index) => {
+        const x = 22 + index * 84;
+        const y = 92 - Math.min(74, item.bytes / 1024);
+        return `${x},${y}`;
+      }).join(' ');
+      return `
+        <section class="inspector-block">
+          <h3>Memory Pressure</h3>
+          <div class="kv-grid">
+            <div class="kv"><span>peak live</span><strong>${fmtBytes(mem.peakLiveBytes)}</strong></div>
+            <div class="kv"><span>UB headroom</span><strong>${fmtBytes(mem.ubHeadroomBytes)}</strong></div>
+            <div class="kv"><span>extra GM/UB</span><strong>${fmtBytes(mem.extraGmUbBytes)}</strong></div>
+            <div class="kv"><span>budget meaning</span><strong>${Math.round(peakRatio * 100)}% demo threshold</strong></div>
+          </div>
+        </section>
+        <section class="inspector-block">
+          <h3>Live set shape</h3>
+          <svg class="memory-svg" viewBox="0 0 360 112" role="img" aria-label="Memory live-set sketch">
+            <path d="M18 90 H342" stroke="var(--border-default)" stroke-width="1" fill="none"></path>
+            <path d="M18 24 H342" stroke="var(--warning)" stroke-width="1" stroke-dasharray="4 4" fill="none"></path>
+            <polyline points="${points}" fill="none" stroke="var(--primary)" stroke-width="2"></polyline>
+            <circle cx="274" cy="19" r="4" fill="var(--danger)"></circle>
+            <text x="18" y="18" fill="var(--foreground-muted)" font-size="10">demo UB threshold</text>
+            <text x="226" y="34" fill="var(--warning)" font-size="10">low headroom</text>
+          </svg>
+        </section>
+        <section class="inspector-block">
+          <h3>Top contributors</h3>
+          <div class="inspector-stack">
+            ${mem.topContributors.map((item) => `
+              <div class="segment-row">
+                <span title="${esc(item.name)}">${esc(item.name.split('.').pop())}</span>
+                <span class="segment-track"><span class="segment-fill memory_move" style="width:${Math.min(100, item.bytes / 900)}%"></span></span>
+                <span class="mono">${fmtBytes(item.bytes)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+        <section class="inspector-block">
+          <h3>Copy edges</h3>
+          <div class="inspector-stack">
+            ${mem.copyEdges.map((edge) => `<div class="soft-card"><p><strong class="mono">${esc(edge.edge)}</strong> · ${fmtBytes(edge.bytes)} · ${esc(edge.reason)}</p></div>`).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderWait() {
+      const wait = state.data.waitChain;
+      return `
+        <section class="inspector-block">
+          <h3>Wait Chain</h3>
+          <div class="flow-line">
+            <div class="flow-node"><strong class="mono">${esc(wait.signalTaskId)}</strong><p>${esc(wait.signalLaneId)}</p></div>
+            <span class="flow-arrow">CV_SYNC_SET -> WAIT</span>
+            <div class="flow-node"><strong class="mono">${esc(wait.waitingTaskId)}</strong><p>${esc(wait.waitingLaneId)}</p></div>
+          </div>
+        </section>
+        <section class="inspector-block">
+          <div class="kv-grid">
+            <div class="kv"><span>sync type</span><strong>${esc(wait.syncType)}</strong></div>
+            <div class="kv"><span>wait duration</span><strong>${fmtUs(wait.waitDurationUs)}</strong></div>
+          </div>
+        </section>
+        <section class="inspector-block">
+          <h3>Boundary</h3>
+          <p>${esc(wait.note)}</p>
+        </section>
+      `;
+    }
+
+    function renderSource(event) {
+      const args = event.args;
+      return `
+        <section class="inspector-block">
+          <h3>Action outlet</h3>
+          <div class="inspector-stack">
+            ${state.data.recommendations.map((rec) => `
+              <div class="soft-card">
+                <p><strong>${esc(rec.id)}</strong> ${esc(rec.action)}</p>
+                <p>${esc(rec.expectedMetricMove.join(' / '))}</p>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+        <section class="inspector-block">
+          <h3>Source sketch</h3>
+          <pre class="source-code"><code>def interleave_rope_attention_fuse(q_tile, k_tile, v_tile):
+    pypto.set_semantic_label("qk_matmul")
+    qk = matmul(q_tile, k_tile)
+
+    <span class="mark">pypto.set_semantic_label("${esc(args.semantic_label)}")</span>
+    rope_q, rope_k = interleave_rope(q_tile, k_tile)
+    # Suggested: reduce K/V tile or review vec_nbuffer_setting
+
+    pypto.set_semantic_label("softmax_acc")
+    return softmax_acc(qk, rope_q, rope_k, v_tile)</code></pre>
+        </section>
+        <section class="inspector-block">
+          <h3>Program / graph linkage</h3>
+          <p class="mono">${esc(args['event-hint'])}</p>
+          <div class="graph-mount" id="graphMount"></div>
+        </section>
+      `;
+    }
+
+    function renderGraphCards(event) {
+      const mount = $('#graphMount');
+      if (!mount || !window.PtoPassIrGraphNodePattern) return;
+      const args = event.args;
+      const cards = [
+        {
+          type: 'op',
+          compact: true,
+          data: {
+            semanticLabel: args.semantic_label,
+            opcode: 'interleave_rope',
+            latency: `${event.dur.toFixed(1)}us`,
+            subgraphId: `wrap-${args.wrapId}`,
+            magic: args.callOpMagic || 10027,
+            outShape: [1, 16, 128],
+            ioperands: [1, 2, 3],
+            ooperands: [4, 5]
+          }
+        },
+        {
+          type: 'tensor',
+          compact: true,
+          data: {
+            symbol: 'rope_cache_split.k_cache_tile',
+            shape: [16, 128],
+            rawShape: [16, 128],
+            dtype: 'float16',
+            magic: 'k_cache',
+            format: 'GM->UB'
+          }
+        },
+        {
+          type: 'group',
+          compact: true,
+          data: {
+            groupType: 'tensor',
+            count: 4,
+            memFlow: 'extra GM/UB movement',
+            rows: [['rootHash', '9928535964290202035'], ['leafHash', '1231527610565308499']],
+            members: state.data.memoryPressure.topContributors.map((item) => ({ type: 'tensor', label: item.name }))
+          }
+        }
+      ];
+      window.PtoPassIrGraphNodePattern.renderCardSet(mount, cards);
+    }
+
+    function renderCompare() {
+      const before = state.data.beforeAfter.before;
+      const after = state.data.beforeAfter.after;
+      const rows = [
+        ['task time', before.taskTimeUs, after.taskTimeUs, 'us'],
+        ['extra GM/UB', before.extraGmUbBytes / 1024, after.extraGmUbBytes / 1024, 'KiB'],
+        ['UB headroom', before.ubHeadroomBytes / 1024, after.ubHeadroomBytes / 1024, 'KiB'],
+        ['wait ratio', before.waitRatio * 100, after.waitRatio * 100, '%']
+      ];
+      return `
+        <section class="inspector-block">
+          <h3>Before / After validation</h3>
+          <div class="inspector-stack">
+            ${rows.map(([label, oldVal, newVal, unit]) => {
+              const base = Math.max(oldVal, newVal);
+              const pct = Math.max(4, newVal / base * 100);
+              const delta = newVal - oldVal;
+              return `
+                <div class="compare-metric">
+                  <span>${esc(label)}</span>
+                  <span class="compare-track"><span class="compare-fill" style="width:${pct}%"></span></span>
+                  <span class="mono">${newVal.toFixed(unit === '%' ? 1 : 0)}${unit}</span>
+                </div>
+                <p class="soft-meta">before ${oldVal.toFixed(unit === '%' ? 1 : 0)}${unit}; delta ${delta > 0 ? '+' : ''}${delta.toFixed(unit === '%' ? 1 : 0)}${unit}</p>
+              `;
+            }).join('')}
+          </div>
+        </section>
+        <section class="inspector-block">
+          <div class="soft-card"><p>${esc(state.data.beforeAfter.validationStatement)}</p></div>
+        </section>
+      `;
+    }
+
+    function setStoryStep(step) {
+      state.step = Math.max(1, Math.min(storySteps.length, step));
+      const story = storySteps[state.step - 1];
+      state.detail = story.detail;
+      if (story.id === 'lanes') state.scope = 'all';
+      if (story.id === 'wait') state.scope = 'peers';
+      if (story.id === 'memory' || story.id === 'segments') state.scope = 'focus';
+      syncPlayback();
+      renderAll();
+    }
+
+    function initPlayback() {
+      const mount = $('#playbackMount');
+      const ids = {
+        shell: 'fusion-playback-shell',
+        toggle: 'fusion-playback-toggle',
+        collapsedButton: 'fusion-playback-collapsed',
+        collapsedIcon: 'fusion-playback-collapsed-icon',
+        controls: 'fusion-playback-controls',
+        stepBack: 'fusion-step-back',
+        play: 'fusion-play',
+        stepForward: 'fusion-step-forward',
+        replay: 'fusion-replay',
+        scrubber: 'fusion-scrubber',
+        scrubberLabel: 'fusion-scrubber-label',
+        scrubberOpname: 'fusion-scrubber-opname',
+        scrubberHover: 'fusion-scrubber-hover'
+      };
+      const control = window.PtoFloatingPlaybackControl.createControl({
+        ids,
+        className: 'pto-floating-playback--preview'
+      });
+      mount.appendChild(control);
+      state.playback = window.PtoFloatingPlaybackControl.init({
+        root: control,
+        isPlaying: () => state.playing
+      });
+      window.PtoFloatingPlaybackControl.initScrubberHover({
+        root: control,
+        totalSteps: storySteps.length,
+        getLabelForStep: (step) => storySteps[step]?.title || `Step ${step + 1}`
+      });
+      const scrubber = $(`#${ids.scrubber}`);
+      const label = $(`#${ids.scrubberLabel}`);
+      const opname = $(`#${ids.scrubberOpname}`);
+      scrubber.min = '0';
+      scrubber.max = String(storySteps.length - 1);
+      const update = () => {
+        scrubber.value = String(state.step - 1);
+        label.textContent = `${state.step} / ${storySteps.length}`;
+        opname.textContent = storySteps[state.step - 1].copy;
+        state.playback.sync({ playing: state.playing });
+      };
+      state.syncPlayback = update;
+      $(`#${ids.stepBack}`).addEventListener('click', () => setStoryStep(state.step - 1));
+      $(`#${ids.stepForward}`).addEventListener('click', () => setStoryStep(state.step + 1));
+      $(`#${ids.replay}`).addEventListener('click', () => setStoryStep(1));
+      $(`#${ids.play}`).addEventListener('click', () => {
+        state.playing = !state.playing;
+        if (state.playing) {
+          state.timer = window.setInterval(() => {
+            if (state.step >= storySteps.length) {
+              state.playing = false;
+              window.clearInterval(state.timer);
+              update();
+              return;
+            }
+            setStoryStep(state.step + 1);
+          }, 1800);
+        } else {
+          window.clearInterval(state.timer);
+        }
+        update();
+      });
+      scrubber.addEventListener('input', () => setStoryStep(Number(scrubber.value) + 1));
+      update();
+    }
+
+    function syncPlayback() {
+      state.syncPlayback?.();
+    }
+
+    function renderAll() {
+      renderTop();
+      renderNavigation();
+      renderDiagnosisStrip();
+      renderScopeControls();
+      renderSwimlane();
+      renderInspector();
+      syncPlayback();
+    }
+
+    async function init() {
+      if (window.FUSION_DIAGNOSIS_DEMO_DATA) {
+        state.data = window.FUSION_DIAGNOSIS_DEMO_DATA;
+      } else {
+        const response = await fetch('./fusion-diagnosis-a5-demo-data.json');
+        state.data = await response.json();
+      }
+      window.PtoIdeFrame?.initAll?.();
+      initPlayback();
+      renderAll();
+    }
+
+    init().catch((error) => {
+      console.error(error);
+      $('#statusText').textContent = `Failed to load demo data: ${error.message}. If opened from file://, use the bundled fusion-diagnosis-a5-demo-data.js fallback or open through localhost.`;
+    });
+  </script>
+</body>
+</html>
