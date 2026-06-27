@@ -1,0 +1,889 @@
+<!doctype html>
+<!--
+Candidate routing: 04-uxdesign/00-shared/domain-agent-workspace/overview.html or 09-docs/ depending on whether this becomes an external-facing design brief or repository governance doc.
+Current status: inbox draft for presenting the current PyPTOUX agent workspace operating model.
+-->
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PyPTOUX Agent Workspace 运行逻辑与作业流程</title>
+  <link rel="stylesheet" href="../.agents/skills/pto-design-system/tokens/foundation.css">
+  <link rel="stylesheet" href="../.agents/skills/pto-design-system/tokens/semantic.css">
+  <link rel="stylesheet" href="../.agents/skills/pto-design-system/tokens/components.css">
+  <link rel="stylesheet" href="../.agents/skills/pto-design-system/css/style.css">
+  <style>
+    body {
+      min-height: 100vh;
+      height: auto;
+      overflow: auto;
+      display: block;
+      background: var(--background);
+      color: var(--foreground);
+      font: var(--text-body);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1180px, calc(100vw - 48px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 88vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.84fr);
+      gap: var(--space-6);
+      align-items: center;
+      padding: 52px 0 28px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      width: max-content;
+      max-width: 100%;
+      min-height: var(--tag-height);
+      padding: 0 var(--tag-padding-x);
+      border: 1px solid var(--comp-tag-border);
+      border-radius: var(--tag-radius);
+      background: var(--comp-tag-bg);
+      color: var(--accent);
+      font: var(--text-label);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-label);
+    }
+
+    .hero h1 {
+      margin-top: var(--space-4);
+      max-width: 780px;
+      font: var(--text-display);
+      font-size: 48px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .hero-lead {
+      margin-top: var(--space-5);
+      max-width: 720px;
+      color: var(--foreground-secondary);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+    }
+
+    .hero-actions .btn {
+      text-decoration: none;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin-top: 34px;
+    }
+
+    .status-card {
+      min-height: 108px;
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .status-card strong {
+      display: block;
+      margin-bottom: var(--space-2);
+      color: var(--foreground);
+      font: var(--text-title-2);
+    }
+
+    .status-card span {
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+    }
+
+    .map-shell {
+      padding: var(--space-5);
+      border-radius: var(--radius-xl);
+      background: var(--background-elevated);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .map-title {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+
+    .map-title h2 {
+      font: var(--text-title-1);
+    }
+
+    .map-title span {
+      color: var(--foreground-muted);
+      font: var(--text-mono);
+    }
+
+    .agent-map {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .map-node {
+      position: relative;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: var(--space-3);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .map-node:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 31px;
+      bottom: -13px;
+      width: 1px;
+      height: 13px;
+      background: var(--border-strong);
+    }
+
+    .node-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-md);
+      background: var(--surface-3);
+      color: var(--foreground);
+      font: var(--text-mono);
+    }
+
+    .node-copy strong {
+      display: block;
+      margin-bottom: var(--space-1);
+      font: var(--text-title-2);
+    }
+
+    .node-copy span {
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+    }
+
+    .section {
+      padding: 54px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-header {
+      display: grid;
+      grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
+      gap: var(--space-6);
+      align-items: end;
+      margin-bottom: var(--space-6);
+    }
+
+    .section-kicker {
+      margin-bottom: var(--space-2);
+      color: var(--foreground-muted);
+      font: var(--text-label);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-label);
+    }
+
+    .section h2 {
+      font: var(--text-title-1);
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .section-header p {
+      color: var(--foreground-secondary);
+      line-height: 1.75;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+
+    .info-card {
+      padding: var(--space-5);
+      border-radius: var(--radius-lg);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .info-card h3 {
+      margin-bottom: var(--space-3);
+      font: var(--text-title-2);
+    }
+
+    .info-card p,
+    .info-card li {
+      color: var(--foreground-secondary);
+      line-height: 1.7;
+    }
+
+    .info-card ul {
+      display: grid;
+      gap: var(--space-2);
+      padding-left: 18px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--tag-height);
+      padding: 0 var(--tag-padding-x);
+      border-radius: var(--tag-radius);
+      border: 1px solid var(--comp-tag-border);
+      background: var(--comp-tag-bg);
+      color: var(--foreground-secondary);
+      font: var(--text-label);
+      letter-spacing: var(--letter-spacing-label);
+      white-space: nowrap;
+    }
+
+    .tag.success {
+      color: var(--success);
+    }
+
+    .tag.warning {
+      color: var(--warning);
+    }
+
+    .tag.primary {
+      color: var(--primary-hover);
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+
+    .workflow-step {
+      min-height: 184px;
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .workflow-step .num {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+      border-radius: var(--radius-md);
+      background: var(--surface-3);
+      color: var(--foreground);
+      font: var(--text-mono);
+    }
+
+    .workflow-step h3 {
+      margin-bottom: var(--space-2);
+      font: var(--text-title-2);
+    }
+
+    .workflow-step p {
+      color: var(--foreground-secondary);
+      font: var(--text-body-sm);
+      line-height: 1.65;
+    }
+
+    .role-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+
+    .role-card {
+      padding: var(--space-5);
+      border-radius: var(--radius-lg);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .role-card h3 {
+      margin-bottom: var(--space-4);
+      font: var(--text-title-1);
+    }
+
+    .role-list {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .role-item {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .role-item:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .role-item strong {
+      color: var(--foreground);
+      font: var(--text-label);
+      letter-spacing: var(--letter-spacing-label);
+    }
+
+    .role-item span {
+      color: var(--foreground-secondary);
+      line-height: 1.65;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      border-radius: var(--radius-xl);
+      background: var(--background-elevated);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .pipeline-row {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr) 210px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .pipeline-row strong {
+      font: var(--text-title-2);
+    }
+
+    .pipeline-row p {
+      color: var(--foreground-secondary);
+      line-height: 1.65;
+    }
+
+    .pipeline-row code,
+    .code-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 var(--space-2);
+      border-radius: var(--radius-sm);
+      background: var(--surface-3);
+      color: var(--foreground);
+      font: var(--text-mono);
+      white-space: nowrap;
+    }
+
+    .share-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: var(--space-4);
+      align-items: stretch;
+    }
+
+    .checklist {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      gap: var(--space-3);
+      align-items: start;
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .check-mark {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-3);
+      color: var(--success);
+      font: var(--text-label);
+    }
+
+    .check-item strong {
+      display: block;
+      margin-bottom: var(--space-1);
+      font: var(--text-title-2);
+    }
+
+    .check-item span {
+      color: var(--foreground-secondary);
+      line-height: 1.65;
+    }
+
+    .quote {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100%;
+      padding: var(--space-6);
+      border-radius: var(--radius-xl);
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .quote p {
+      font-size: 22px;
+      line-height: 1.6;
+      color: var(--foreground);
+    }
+
+    .quote footer {
+      margin-top: var(--space-6);
+      color: var(--foreground-muted);
+      font: var(--text-body-sm);
+    }
+
+    .footer {
+      padding: 34px 0 46px;
+      color: var(--foreground-muted);
+      font: var(--text-body-sm);
+    }
+
+    @media (max-width: 1020px) {
+      .hero,
+      .section-header,
+      .share-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .workflow {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .container {
+        width: min(100vw - 28px, 1180px);
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 32px;
+      }
+
+      .hero h1 {
+        font-size: 34px;
+        line-height: 1.16;
+      }
+
+      .status-grid,
+      .grid-2,
+      .grid-3,
+      .role-board,
+      .workflow {
+        grid-template-columns: 1fr;
+      }
+
+      .pipeline-row {
+        grid-template-columns: 1fr;
+      }
+
+      .role-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="container hero">
+      <div>
+        <span class="eyebrow">BYO-AI Domain Agent Workspace</span>
+        <h1>PyPTOUX 如何把通用 AI 组织成特定领域 Agent</h1>
+        <p class="hero-lead">
+          当前工程本身不内置模型，也不要求用户启动独立 agent 服务。它把 `AGENTS.md`、项目级 skills、知识库、PTO 设计系统、数据等级规则和协作约定打包成一个工作空间。用户用自己的 Codex 或 Claude 打开仓库后，AI 会按仓库规则完成检索、设计、原型和落盘。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="#workflow">查看作业流程</a>
+          <a class="btn" href="#share">分享定位</a>
+        </div>
+        <div class="status-grid">
+          <div class="status-card">
+            <strong>不是内置模型</strong>
+            <span>AI 能力来自用户自己的 Codex、Claude 或同类工具。</span>
+          </div>
+          <div class="status-card">
+            <strong>是领域工作空间</strong>
+            <span>仓库提供任务路由、知识、约束、素材和验证规则。</span>
+          </div>
+          <div class="status-card">
+            <strong>接近 Agent Kit</strong>
+            <span>打开项目即可获得 PyPTO/CANN 领域化的 AI 协作体验。</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="map-shell" aria-label="PyPTOUX agent operating map">
+        <div class="map-title">
+          <h2>运行逻辑</h2>
+          <span>workspace loop</span>
+        </div>
+        <div class="agent-map">
+          <div class="map-node">
+            <span class="node-index">01</span>
+            <span class="node-copy">
+              <strong>用户提出任务</strong>
+              <span>问业务知识、做 UX 设计、填 demo 素材、改前端原型或整理 GitHub。</span>
+            </span>
+          </div>
+          <div class="map-node">
+            <span class="node-index">02</span>
+            <span class="node-copy">
+              <strong>Agent 读取项目入口</strong>
+              <span>`AGENTS.md` 定义技能索引、协作边界、写作语言和数据治理。</span>
+            </span>
+          </div>
+          <div class="map-node">
+            <span class="node-index">03</span>
+            <span class="node-copy">
+              <strong>按 intent 选择 skill</strong>
+              <span>内容路由、知识检索、demo 数据填充、PTO 设计系统、Git/GitHub 各司其职。</span>
+            </span>
+          </div>
+          <div class="map-node">
+            <span class="node-index">04</span>
+            <span class="node-copy">
+              <strong>检索证据并执行</strong>
+              <span>优先用仓库知识库、本地 mirror、样例数据、官方文档和设计系统。</span>
+            </span>
+          </div>
+          <div class="map-node">
+            <span class="node-index">05</span>
+            <span class="node-copy">
+              <strong>验证、落盘、交付</strong>
+              <span>输出结果，同时维护 notes、prompts、index 或原型文件。</span>
+            </span>
+          </div>
+        </div>
+      </aside>
+    </header>
+
+    <section class="section" id="positioning">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">Positioning</div>
+            <h2>它的准确定位</h2>
+          </div>
+          <p>
+            PyPTOUX 当前最像一个可分享的“领域 Agent 工作空间”。它把领域上下文、任务规程和产出治理放进仓库，让用户自己的 AI 在这个边界内工作。
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="info-card">
+            <h3>用户自带 AI</h3>
+            <p>模型、推理、工具调用能力来自用户自己的 Codex、Claude、Cursor 或 OpenCode。PyPTOUX 不试图替代这些通用 AI。</p>
+            <div class="tag-row">
+              <span class="tag primary">Codex</span>
+              <span class="tag primary">Claude</span>
+              <span class="tag">BYO-AI</span>
+            </div>
+          </article>
+          <article class="info-card">
+            <h3>仓库提供领域化</h3>
+            <p>领域化来自 `AGENTS.md`、`.agents/skills/`、知识库、source registry、PTO design system、demo data rules 和协作约定。</p>
+            <div class="tag-row">
+              <span class="tag success">skills</span>
+              <span class="tag success">knowledge</span>
+              <span class="tag success">governance</span>
+            </div>
+          </article>
+          <article class="info-card">
+            <h3>产出可沉淀</h3>
+            <p>一次任务不只是聊天回答，还会把结论、prompt、更新记录、原型和索引沉淀到稳定目录，方便跨 session 继续工作。</p>
+            <div class="tag-row">
+              <span class="tag warning">notes</span>
+              <span class="tag warning">prompts</span>
+              <span class="tag warning">indexes</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">Workflow</div>
+            <h2>一次任务的标准作业流程</h2>
+          </div>
+          <p>
+            当前 workflow 不是一个后台服务，而是由 Codex 或 Claude 在 workspace 中执行的 agent loop。规则写在仓库里，执行主体是用户打开项目后的 AI。
+          </p>
+        </div>
+        <div class="workflow">
+          <article class="workflow-step">
+            <span class="num">1</span>
+            <h3>接收任务</h3>
+            <p>用户直接问问题或要求产出，例如“解释 PyPTO 某机制”“做一个 PTO 风格原型”。</p>
+          </article>
+          <article class="workflow-step">
+            <span class="num">2</span>
+            <h3>判断 intent</h3>
+            <p>先判断是知识检索、内容路由、demo 数据、设计系统、原型实现还是 GitHub 操作。</p>
+          </article>
+          <article class="workflow-step">
+            <span class="num">3</span>
+            <h3>加载 skill</h3>
+            <p>只读匹配任务的 `SKILL.md` 和必要 reference，避免把所有规则混在一起。</p>
+          </article>
+          <article class="workflow-step">
+            <span class="num">4</span>
+            <h3>检索证据</h3>
+            <p>需要事实时回到本地 mirror、官方文档、样例数据或知识库，保留上游 literal。</p>
+          </article>
+          <article class="workflow-step">
+            <span class="num">5</span>
+            <h3>执行产出</h3>
+            <p>写文档、生成 HTML、整理原型素材、更新索引、运行验证或准备 Git 操作。</p>
+          </article>
+          <article class="workflow-step">
+            <span class="num">6</span>
+            <h3>回写状态</h3>
+            <p>把复合 prompt、update notes、sample-data、review 或 index 同步到对应目录。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="skills">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">Skill Router</div>
+            <h2>工程里的能力分派</h2>
+          </div>
+          <p>
+            Skill 的价值在于把“通用 AI 应该怎么做”变成稳定的项目协议。每个 skill 只覆盖一类任务，让 agent 可以先分类、再行动。
+          </p>
+        </div>
+        <div class="pipeline">
+          <div class="pipeline-row">
+            <strong>内容与目录</strong>
+            <p>判断新内容应该放在知识库、洞察、UX 设计、原型、工具、设计系统还是 inbox。</p>
+            <code>pyptoux-content-router</code>
+          </div>
+          <div class="pipeline-row">
+            <strong>业务知识</strong>
+            <p>回答 PyPTO/CANN 相关问题时，选择可信来源、验证 claim，并把结论沉淀回知识层。</p>
+            <code>pypto-knowledge-source</code>
+          </div>
+          <div class="pipeline-row">
+            <strong>Demo 素材</strong>
+            <p>用真实 PyPTO 代码、样例数据和编译产物填充演示内容，区分 L1、L2、L3 数据等级。</p>
+            <code>pypto-demo-data-filling</code>
+          </div>
+          <div class="pipeline-row">
+            <strong>前端与视觉</strong>
+            <p>新建或改造 PTO 风格页面时复用 tokens、components、patterns，避免每次发明新视觉语言。</p>
+            <code>pto-design-system</code>
+          </div>
+          <div class="pipeline-row">
+            <strong>Git 与协作</strong>
+            <p>处理分支、提交、推送、PR，并遵守工作树保护和项目内 GitHub 约定。</p>
+            <code>pyptoux-git-github</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="roles">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">Dual Agent</div>
+            <h2>Codex 与 Claude 的协作分工</h2>
+          </div>
+          <p>
+            PyPTOUX 当前默认是双 agent 协作模型。Codex 更像结构、事实和工程 owner；Claude 更像视觉、交互和前端原型 owner。
+          </p>
+        </div>
+        <div class="role-board">
+          <article class="role-card">
+            <h3>Codex 主责</h3>
+            <div class="role-list">
+              <div class="role-item">
+                <strong>规划</strong>
+                <span>拆任务、定目录、整理方案和后续状态。</span>
+              </div>
+              <div class="role-item">
+                <strong>事实</strong>
+                <span>查 PyPTO、CANN、样例数据和 source registry，验证字段、路径和 claim。</span>
+              </div>
+              <div class="role-item">
+                <strong>结构</strong>
+                <span>维护知识库、索引、prompts、notes、sample-data 和 Git/GitHub 流程。</span>
+              </div>
+              <div class="role-item">
+                <strong>工程</strong>
+                <span>处理构建、脚本、后端、测试、提交和 PR。</span>
+              </div>
+            </div>
+          </article>
+          <article class="role-card">
+            <h3>Claude 主责</h3>
+            <div class="role-list">
+              <div class="role-item">
+                <strong>原型</strong>
+                <span>快速生成 HTML/JSX 前端验证稿和交互体验。</span>
+              </div>
+              <div class="role-item">
+                <strong>视觉</strong>
+                <span>基于 PTO 设计系统做页面、工作台、graph、timeline 和 inspector 表达。</span>
+              </div>
+              <div class="role-item">
+                <strong>走查</strong>
+                <span>记录原型验证、待办、体验问题和交互建议。</span>
+              </div>
+              <div class="role-item">
+                <strong>边界</strong>
+                <span>涉及事实或 L2 推导时标记待 Codex review，不直接覆盖事实 owner。</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="persistence">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">Persistence</div>
+            <h2>为什么它不是普通聊天</h2>
+          </div>
+          <p>
+            普通聊天的上下文会消失。PyPTOUX 的核心是把有价值的上下文变成可版本化文件，让后续 agent 能接着工作。
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="info-card">
+            <h3>任务产物会进入稳定目录</h3>
+            <ul>
+              <li>`02-knowledge/` 保存业务知识和 shared framework。</li>
+              <li>`04-uxdesign/` 保存正式设计输出和决策记录。</li>
+              <li>`05-prototypes/` 保存原型、实验、样例数据和验证 notes。</li>
+              <li>`09-docs/03-indexes/` 让后续检索保持稳定。</li>
+            </ul>
+          </article>
+          <article class="info-card">
+            <h3>过程信息也会被保留</h3>
+            <ul>
+              <li>`prompts/` 保存可再次执行的复合 prompt，不是原始聊天逐字稿。</li>
+              <li>`notes/update-YYYY-MM-DD.md` 记录本轮更新、验证结果和待确认问题。</li>
+              <li>`notes/story-YYYY-MM-DD.md` 记录用户场景、叙事脚本和 demo story。</li>
+              <li>`notes/sample-data.md` 标注数据等级、来源和生成规则。</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="share">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-kicker">Shareable Direction</div>
+            <h2>作为可分享 Agent 的定位</h2>
+          </div>
+          <p>
+            最好的分享方式不是说“这是一个独立 AI”，而是说“这是一个自带 AI 的领域 Agent Kit”。用户下载后，把仓库设为工作空间，就能让自己的 AI 按 PyPTOUX 的规则工作。
+          </p>
+        </div>
+        <div class="share-grid">
+          <aside class="quote">
+            <p>
+              PyPTOUX packages domain knowledge, skills, source-routing rules, design-system constraints and workflow memory, so a user's own AI can operate as a PyPTO/CANN domain assistant.
+            </p>
+            <footer>推荐对外表述：BYO-AI Domain Agent Workspace</footer>
+          </aside>
+          <div class="checklist">
+            <div class="check-item">
+              <span class="check-mark">✓</span>
+              <span>
+                <strong>已经具备的部分</strong>
+                <span>AGENTS 入口、项目 skills、知识库、数据治理、设计系统、双 agent 协作约定。</span>
+              </span>
+            </div>
+            <div class="check-item">
+              <span class="check-mark">✓</span>
+              <span>
+                <strong>分享前建议补齐</strong>
+                <span>README、CLAUDE.md、quickstart、examples/prompts、sources template、本地 source healthcheck。</span>
+              </span>
+            </div>
+            <div class="check-item">
+              <span class="check-mark">✓</span>
+              <span>
+                <strong>需要明确的边界</strong>
+                <span>用户自己的 AI 提供推理能力；私有 mirror、样例数据和外部来源需要用户按模板配置。</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="container footer">
+      <span class="code-pill">01-inbox/pyptoux-agent-operating-flow.html</span>
+      <span> 当前状态：介绍页草案，可继续迁移到正式 UX 或 docs 目录。</span>
+    </footer>
+  </main>
+</body>
+</html>

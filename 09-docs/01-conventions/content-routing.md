@@ -12,6 +12,17 @@
 
 除非用户明确要求英文，或该内容本身必须以英文表达更准确，否则不要默认写成英文说明文档。
 
+## 0.1 Report Output Style
+
+报告类内容不按文件格式触发视觉系统。无论输出为 `.md`、`.html`、`.docx`、`.pptx`、PDF 或其他格式，默认使用执行 agent 原生效果：Codex 执行时使用 Codex 原生效果，Claude 执行时使用 Claude 原生效果，其他 agent 同理。
+
+- Markdown / 对话报告：使用原生 Markdown 层级、表格、列表和代码块。
+- HTML 报告：采用 document-first 的阅读型排版，只做必要的可读性样式。
+- Word / PDF 报告：采用文档原生标题、段落、表格和页眉页脚。
+- PPT 报告：采用 deck-first 的原生演示稿结构，保持简洁版式，不套 app / dashboard / demo 页面。
+
+报告类内容不触发 `pto-design-system`，也不套用 PTO token/class、app/workbench/demo chrome、dashboard 风格组件或自定义前端视觉系统；除非用户明确要求“做成可视化页面”“做 PTO 风格 demo / prototype”或“按某个设计系统排版”。
+
 ## 1. First Decide: Content Type
 
 按“这份内容主要解决什么问题”来归类：
@@ -61,14 +72,18 @@
 
 新课题目录统一用英文 kebab-case，名称要能稳定复用，避免过度描述。
 
+`03-insights/`、`04-uxdesign/`、`05-prototypes/` 下的非 `00-shared` topic 默认使用两位编号前缀，格式为 `<NN>-<business-topic>`，用于形成可扫描的专题序列。编号只表达稳定排列和引用入口，不直接表达优先级。
+
 推荐：
 
-- `block-level-coding`
-- `swimlane-profiler`
-- `operator-doc-assistant`
+- `01-fusion-performance-diagnosis`
+- `01-block-level-coding`
+- `02-swimlane-profiler`
+- `04-operator-doc-assistant`
 
 避免：
 
+- `fusion-performance-diagnosis`
 - `new-swimlane-idea-v2`
 - `some-random-demo`
 - `analysis-for-issue-1121-final`
@@ -115,9 +130,11 @@ UX 设计：
 
 说明：
 
-- `.md`、`.html` 都可以作为正式设计文档 / 报告的阅读格式。文件扩展名不单独决定目录归属；先按内容意图判断。
+- `.md`、`.html`、`.docx`、`.pptx`、PDF 等都可以作为正式设计文档 / 报告的阅读格式。文件扩展名不单独决定目录归属；先按内容意图判断。
 - 如果 `.html` 的主要用途是文档阅读、报告阅读或正式设计说明，可放在 `04-uxdesign/<topic>/`。
 - 如果 `.html` 的主要用途是可交互 demo、视觉 / 交互验证、前端实验或可分享原型，则放在 `05-prototypes/<topic>/experiments/html/`。
+- 生成报告、研究简报、知识库文档或阅读型文档时，不管输出格式是什么，都使用执行 agent 原生效果，不触发 `pto-design-system`；只有任务明确要求设计或实现 PTO 风格 UI / demo / prototype 时才使用。
+- 阅读型 HTML 报告应采用 document-first 的报告视觉语言，避免 app/workbench/demo chrome、PTO token/class、设计系统组件感的按钮/面板/工具栏、过强的 dashboard / prototype 视觉包装；除非用户明确要求做成可视化页面。
 - Claude 的原型验证、待办、备忘默认使用 `05-prototypes/<topic>/notes/<note-name>.md`。不要在 `04-uxdesign/<topic>/notes/` 新建 Claude 运行记录。
 - `04-uxdesign/<topic>/notes/` 用于 Codex 正式设计输出更新记录，以及 Codex 接收后的设计决策记录、review 归档或正式澄清记录；review / decision / clarification 文件头必须标明 `owner`、`status`、`decision`。
 
@@ -139,9 +156,10 @@ UX 设计：
 
 ## 5. Vibe Coding Defaults
 
-当内容由 vibe coding 产生时，默认这样处理：
+当内容由 vibe coding 产生时，默认这样处理。先判断内容意图；不要仅因为产物是 `.html` 就当作原型。
 
-- Claude 生成的单文件 HTML -> `05-prototypes/<topic>/experiments/html/`
+- Claude 生成的单文件 HTML demo / prototype / visual-interaction experiment -> `05-prototypes/<topic>/experiments/html/`
+- Claude 或 Codex 生成的 reading-oriented report / research brief / UX analysis document（不限 `.html`、`.md`、`.docx`、`.pptx`、PDF 等格式）-> 按内容意图进入 `03-insights/`、`04-uxdesign/`、`09-docs/04-upgrade-plans/` 或 `01-inbox/`，使用执行 agent 原生效果，不触发 `pto-design-system`
 - Claude 生成的 JSX / TSX 草案 -> `05-prototypes/<topic>/experiments/jsx/`
 - 对应复合 prompt、生成上下文、迭代约束 -> `05-prototypes/<topic>/prompts/YYYY-MM-DD-<slug>.md`
 - 原型结论、待办、验证结果 -> `05-prototypes/<topic>/notes/update-YYYY-MM-DD.md` 或对应类型的 `notes/<type>-YYYY-MM-DD.md`

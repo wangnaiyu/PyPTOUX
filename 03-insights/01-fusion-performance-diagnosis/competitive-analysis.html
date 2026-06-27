@@ -1,0 +1,1371 @@
+<!doctype html>
+<!--
+Current status: 03-insights draft for PyPTO fusion performance diagnosis competitive analysis.
+Evidence boundary:
+- GitCode issue page is a SPA; the raw issue body was not directly retrievable without an authenticated/front-end API context.
+- Issue demand is interpreted from existing PyPTOUX issue #2141 notes: UB pressure, spill-like behavior, extra GM/UB movement, wait, and pipeline utilization diagnosis.
+- Product screenshots are local copies of official documentation images. Code-generated mock figures are labeled as such in captions.
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PyPTO 融合算子性能诊断竞品分析：额外搬运 / 等待 / 流水利用率观测体验</title>
+  <style>
+    :root {
+      --ink: #191a1c;
+      --muted: #62666f;
+      --line: #d8dbe2;
+      --paper: #fbfaf7;
+      --surface: #ffffff;
+      --surface-2: #f1f4f3;
+      --teal: #1c7d73;
+      --amber: #bc7a19;
+      --violet: #6852a3;
+      --red: #b64848;
+      --green: #477a3d;
+      --blue: #386fa4;
+      --soft-teal: #e3f2ef;
+      --soft-amber: #fff1d7;
+      --soft-violet: #eee9fa;
+      --soft-red: #fae8e7;
+      --shadow: 0 10px 28px rgba(20, 24, 32, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 15px/1.72 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", Arial, sans-serif;
+    }
+
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 44px 28px 72px;
+    }
+
+    header {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 28px;
+      margin-bottom: 28px;
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 900px;
+      margin: 22px 0 0;
+      color: #30343a;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .meta-item {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .meta-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    section {
+      margin: 38px 0;
+      padding-top: 8px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    p { margin: 0 0 14px; }
+
+    .note {
+      border-left: 4px solid var(--amber);
+      background: var(--soft-amber);
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .box.plain {
+      box-shadow: none;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--surface-2);
+      color: #34383f;
+      border: 1px solid var(--line);
+    }
+
+    .tag.teal { background: var(--soft-teal); color: #155c55; border-color: #b7d8d2; }
+    .tag.amber { background: var(--soft-amber); color: #7d4d0c; border-color: #efcf92; }
+    .tag.violet { background: var(--soft-violet); color: #4a3980; border-color: #cec1ef; }
+    .tag.red { background: var(--soft-red); color: #893030; border-color: #efc0bc; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edeff0;
+      color: #30343a;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .figure {
+      margin: 18px 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+    }
+
+    .figure .svg-wrap {
+      padding: 16px;
+      background: #fff;
+      overflow-x: auto;
+    }
+
+    figcaption {
+      padding: 12px 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      line-height: 1.55;
+      background: #fafafa;
+    }
+
+    .source-note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .decision {
+      border-top: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+      padding: 18px 0;
+      margin: 18px 0;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .numbered {
+      counter-reset: item;
+      display: grid;
+      gap: 12px;
+    }
+
+    .numbered .step {
+      position: relative;
+      padding: 15px 16px 15px 54px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .numbered .step::before {
+      counter-increment: item;
+      content: counter(item);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--teal);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .quote {
+      font-size: 18px;
+      line-height: 1.55;
+      padding: 22px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .quote small {
+      display: block;
+      margin-top: 10px;
+      color: #d0d3d8;
+      font-size: 13px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .question-list {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 18px;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .question-list li {
+      position: relative;
+      padding: 12px 14px 12px 34px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .question-list li::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 22px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .insight-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .insight-list li {
+      margin-bottom: 8px;
+    }
+
+    .callout-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .callout {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 13px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .callout p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .pto-module {
+      --background: #101010;
+      --background-elevated: #141414;
+      --surface-1: #161616;
+      --surface-2: #1c1c1c;
+      --surface-3: #262626;
+      --surface-4: #313131;
+      --foreground: #e6e6e6;
+      --foreground-secondary: #999999;
+      --foreground-muted: #666666;
+      --border-subtle: #202020;
+      --border-default: #292929;
+      --border-strong: #3a3a3a;
+      --primary: #4369ef;
+      --success: #04d793;
+      --warning: #ffaa3b;
+      --danger: #ff4b7b;
+      --accent: #7c8db8;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-pill: 999px;
+      --font-sans: Inter, "Source Han Sans SC", "PingFang SC", "Noto Sans SC", sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-default);
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+    }
+
+    .pto-module * {
+      box-sizing: border-box;
+    }
+
+    .pto-ide-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--background-elevated);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .pto-ide-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .pto-ide-title strong {
+      font-size: 14px;
+      line-height: 1.3;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .pto-ide-title span {
+      color: var(--foreground-secondary);
+      font: 500 12px/1.4 var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pto-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      justify-content: flex-end;
+    }
+
+    .pto-chip {
+      border-radius: var(--radius-pill);
+      background: var(--surface-3);
+      color: var(--foreground-secondary);
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.5px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .pto-chip.warning { color: var(--warning); }
+    .pto-chip.success { color: var(--success); }
+    .pto-chip.danger { color: var(--danger); }
+    .pto-chip.primary { color: var(--primary); }
+
+    .pto-workbench {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 310px;
+      gap: 10px;
+      padding: 10px;
+      min-height: 660px;
+      background: var(--background);
+    }
+
+    .pto-pane {
+      min-width: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pto-pane-header {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .pto-pane-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pto-pane-title strong {
+      color: var(--foreground);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .pto-pane-title span {
+      color: var(--foreground-muted);
+      font: 500 11px/1.3 var(--font-mono);
+    }
+
+    .pto-pane-body {
+      padding: var(--space-3);
+      overflow: hidden;
+    }
+
+    .pto-attention {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .pto-attention-card {
+      background: var(--surface-1);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .pto-attention-card.is-selected {
+      background: var(--surface-4);
+      border-color: var(--border-strong);
+    }
+
+    .pto-attention-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .pto-attention-name {
+      color: var(--foreground);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pto-attention-meta {
+      color: var(--foreground-secondary);
+      font: 500 11px/1.4 var(--font-mono);
+    }
+
+    .pto-mini-bars {
+      display: grid;
+      gap: 5px;
+      margin-top: var(--space-2);
+    }
+
+    .pto-mini-bar {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) 38px;
+      gap: 8px;
+      align-items: center;
+      color: var(--foreground-muted);
+      font: 500 10px/1 var(--font-mono);
+    }
+
+    .pto-mini-track {
+      height: 6px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-3);
+      overflow: hidden;
+    }
+
+    .pto-mini-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      background: var(--primary);
+    }
+
+    .pto-mini-fill.warning { background: var(--warning); }
+    .pto-mini-fill.danger { background: var(--danger); }
+    .pto-mini-fill.success { background: var(--success); }
+    .pto-timeline {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .pto-overview {
+      height: 142px;
+      position: relative;
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, #181818, #141414);
+    }
+
+    .pto-overview svg,
+    .pto-lanes svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .pto-filmstrip {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: #131313;
+    }
+
+    .pto-frame-thumb {
+      min-height: 44px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-default);
+      background:
+        linear-gradient(90deg, transparent 0 28%, rgba(67,105,239,0.18) 28% 32%, transparent 32%),
+        linear-gradient(180deg, #232323 0 28%, #151515 28% 100%);
+      position: relative;
+    }
+
+    .pto-frame-thumb::after {
+      content: attr(data-label);
+      position: absolute;
+      left: 5px;
+      bottom: 4px;
+      color: var(--foreground-muted);
+      font: 500 9px/1 var(--font-mono);
+    }
+
+    .pto-lanes {
+      height: 330px;
+      position: relative;
+      background: #111;
+    }
+
+    .pto-inspector {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .pto-inspector-section {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: var(--space-3);
+    }
+
+    .pto-inspector-section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .pto-inspector-kicker {
+      color: var(--foreground-muted);
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .pto-inspector-section strong {
+      display: block;
+      color: var(--foreground);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .pto-inspector-section p {
+      color: var(--foreground-secondary);
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .pto-soft-card {
+      background: var(--surface-1);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      color: var(--foreground-secondary);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .pto-soft-card.warning {
+      color: var(--warning);
+      background: rgba(255, 170, 59, 0.09);
+    }
+
+    .pto-soft-card.danger {
+      color: var(--danger);
+      background: rgba(255, 75, 123, 0.09);
+    }
+
+    .sources {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .sources li { margin-bottom: 7px; }
+
+    @media (max-width: 880px) {
+      .page { padding: 30px 18px 54px; }
+      .meta-grid, .grid-2, .grid-3, .callout-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 30px; }
+      .lead { font-size: 15px; }
+      table { font-size: 13px; }
+      th, td { padding: 10px; }
+      .pto-workbench { grid-template-columns: 1fr; }
+      .pto-chip-row { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <p class="kicker">PyPTO Toolkit / Fusion Performance Diagnosis / Competitive Analysis</p>
+      <h1>从“慢 task”到“可行动根因”：额外搬运、等待与流水利用率的观测体验设计</h1>
+      <p class="lead">
+        本报告从资深 PTO 算子开发专家和 PyPTO 产品经理两个视角出发，以 issue #2141 暴露的慢 task 归因诉求为入口，拆解业内性能工具如何表达 memory movement、wait / stall、pipeline utilization，并转译为 PyPTO Toolkit 可落地的融合算子性能诊断体验方案。
+      </p>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>报告状态</strong>03-insights 竞品分析草案</div>
+        <div class="meta-item"><strong>生成日期</strong>2026-06-27</div>
+        <div class="meta-item"><strong>真实产品图</strong>Nsight Systems / Nsight Compute / Chrome DevTools</div>
+        <div class="meta-item"><strong>自绘图说明</strong>所有自绘图均在图注标明“代码生成示意图”</div>
+      </div>
+    </header>
+
+    <section>
+      <h2>1. Issue #2141 的业务本质</h2>
+      <div class="decision">
+        #2141 不只是要“看内存”，而是要把 PyPTO 高阶调优中最消耗专家注意力的灰区结构化：这个 task 慢，究竟是额外 GM/UB 搬运、UB pressure / spill-like 行为、同步等待、调度等待，还是 C/V/MTE/FixPipe 流水没有跑满？
+      </div>
+      <h3>本次竞品研究要回答的关键问题</h3>
+      <ul class="question-list">
+        <li>成熟性能工具如何把“时间线上的慢”拆成 memory movement、wait / stall、pipeline utilization，而不是只展示单一耗时条？</li>
+        <li>当用户选择一个异常时间区间或慢 task 时，哪些全局概览、局部截图、资源曲线和事件详情应该同步过滤？</li>
+        <li>Chrome DevTools Performance 的 overview + screenshots + tracks + summary 模式，迁移到 PyPTO 后应对应 host CPU、device CPU、AICPU、AICore、memory、计算图状态中的哪些对象？</li>
+        <li>PyPTO Toolkit 当前泳道图、PMU CSV、memory schema 已经具备哪些基础能力，哪些缺口导致用户仍要靠经验猜？</li>
+        <li>如果把 AICPU 视图、AICore 视图和 Memory 视图融合到同一泳道区，如何既保持全局性能感知，又避免图层过载？</li>
+      </ul>
+      <div class="grid-2">
+        <div class="box plain">
+          <h3>算子专家眼里的问题</h3>
+          <p>专家已经能看懂泳道图和计算图，也知道可以调 tile、改中间结果、调整 <code>vec_nbuffer_setting</code> 或融合边界。真正卡住的是“证据不足”：他看见慢，却不能快速证明慢来自内存、等待还是流水。</p>
+          <div class="tag-row">
+            <span class="tag amber">UB pressure</span>
+            <span class="tag amber">extra GM/UB movement</span>
+            <span class="tag violet">wait chain</span>
+            <span class="tag teal">pipeline balance</span>
+          </div>
+        </div>
+        <div class="box plain">
+          <h3>产品经理眼里的机会</h3>
+          <p>这不是增加一张图，而是把 PyPTO Toolkit 从“执行可视化工具”推进到“融合算子性能诊断入口”。产品价值在于把观察、归因、下钻、源码回跳、复跑验证串成闭环。</p>
+          <div class="tag-row">
+            <span class="tag teal">先归因</span>
+            <span class="tag violet">再下钻</span>
+            <span class="tag amber">绑定动作</span>
+            <span class="tag red">可验证</span>
+          </div>
+        </div>
+      </div>
+      <p class="note">
+        证据边界：GitCode issue 页面为 SPA，未登录/无前端上下文时只能读到页面壳；本报告对 #2141 的诉求使用 PyPTOUX 已沉淀的 issue 摘要作为输入：UB 压力、spill-like 行为、额外 GM/UB 搬运、等待和流水利用率观测。
+      </p>
+    </section>
+
+    <section>
+      <h2>2. 竞品不是“谁图多”，而是谁能闭环</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>产品 / 工具</th>
+            <th>它擅长回答什么</th>
+            <th>对 #2141 的启发</th>
+            <th>PyPTO 不能照搬的地方</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>NVIDIA Nsight Systems</td>
+            <td>某段时间内 GPU/CPU/IO/Memory 活动如何展开，资源是否空闲或被 IO 卡住。</td>
+            <td>把 memory transfer、GPU metrics、timeline 放在同一时间坐标下，让“什么时候搬、搬多久、与 kernel 是否重叠”可见。</td>
+            <td>它偏系统时间线，不能直接回答 PyPTO 的 tensor、leaf task、fusion fragment、tile 参数该改哪里。</td>
+          </tr>
+          <tr>
+            <td>NVIDIA Nsight Compute</td>
+            <td>单 kernel 的 memory chart、roofline、Speed of Light、stall / issue / throughput 归因。</td>
+            <td>用少量高层指标先定性瓶颈，再下钻 memory unit、link、pipe、counter。</td>
+            <td>PyPTO 是多 task、多 core、wrap / 1C2V 协作和编译产物联动，不能只做单 kernel 报告。</td>
+          </tr>
+          <tr>
+            <td>Chrome DevTools Performance</td>
+            <td>时间线局部选择、Memory chart、initiator 跳转、Summary / Bottom-up / Event Log 解释。</td>
+            <td>选中一个区间或事件后，所有详情都跟着过滤；用户不需要在全局数据里迷路。</td>
+            <td>Web 性能事件粒度与 PyPTO 硬件 counter 粒度不同，但交互范式很适合迁移。</td>
+          </tr>
+          <tr>
+            <td>PyTorch Profiler</td>
+            <td>通过 memory timeline 和 raw memory event 解释内存创建、增长、销毁与类别。</td>
+            <td>“曲线 + 原始事件 + category”的组合适合 PyPTO 表达 live memory、peak contributor、copy 事件。</td>
+            <td>PyPTO 需要把事件继续映射到 <code>rootHash</code>、<code>callOpMagic</code>、<code>leafHash</code>、源码和 tile 表达。</td>
+          </tr>
+          <tr>
+            <td>Perfetto / trace viewer 类工具</td>
+            <td>超大 trace 的 track、slice、counter、selection、SQL/查询式分析。</td>
+            <td>大规模 trace 要靠分层、过滤、选择和聚合，不应默认全量画所有同步线和 copy edge。</td>
+            <td>PyPTO 用户不是 trace 工具专家，默认视图必须更强归因、更少自由探索负担。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 真实产品图与可借鉴模式</h2>
+      <div class="grid-2">
+        <figure class="figure">
+          <img src="assets/nsys-memory-transfer.png" alt="Nsight Systems memory transfer row screenshot">
+          <figcaption>
+            真实产品图：NVIDIA Nsight Systems 的 Memory Transfer row。启发：额外搬运必须是时间线事件，而不是只在汇总表里给一个 bytes 数。来源：<a href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html">Nsight Systems User Guide</a>。
+          </figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="assets/nsys-gpu-metrics-timeline.png" alt="Nsight Systems GPU metrics timeline screenshot">
+          <figcaption>
+            真实产品图：Nsight Systems GPU Metrics timeline。启发：流水利用率要放回时间轴，帮助用户判断资源是否在关键区间被 IO、warp slots、SM activity 等约束。来源：<a href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html">Nsight Systems User Guide</a>。
+          </figcaption>
+        </figure>
+      </div>
+
+      <figure class="figure">
+        <img src="assets/ncu-memory-chart-a100.png" alt="Nsight Compute memory chart screenshot">
+        <figcaption>
+          真实产品图：NVIDIA Nsight Compute Memory Chart。启发：内存诊断需要把 logical units、physical units、links、ports、metrics 放在一张结构图里，而不是只展示一条 UB 曲线。来源：<a href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html">Nsight Compute Profiling Guide</a>。
+        </figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="assets/chrome-memory-metrics.png" alt="Chrome DevTools memory metrics screenshot">
+        <figcaption>
+          真实产品图：Chrome DevTools Performance 的 Memory metrics。启发：区域选择之后，内存曲线只解释当前选择区间；这对 PyPTO 的“选中慢 task / wrap 后只看相关 memory + wait + pipe”非常关键。来源：<a href="https://developer.chrome.com/docs/devtools/performance/reference">Chrome DevTools Performance reference</a>。
+        </figcaption>
+      </figure>
+
+      <figure class="figure">
+        <img src="assets/chrome-performance-page-load-user-upload.png" alt="Chrome DevTools Performance page load recording overview screenshot">
+        <figcaption>
+          用户提供真实产品图：Chrome DevTools Performance 的 page load recording。这里最值得 PyPTO 借鉴的不是 Memory checkbox 本身，而是顶部 overview 同时承载 FPS / CPU / NET 总览、截图序列、可拖拽选择区间，下方 tracks 再展示 Network / Frames / Main / GPU 等进程或资源轨道。来源：用户上传截图，参照 <a href="https://developer.chrome.com/docs/devtools/performance/reference">Chrome DevTools Performance reference</a>。
+        </figcaption>
+      </figure>
+
+      <h3>Chrome 时间轴迁移到 PyPTO 的核心判断</h3>
+      <div class="callout-grid">
+        <div class="callout">
+          <strong>Overview 不是装饰</strong>
+          <p>它是用户选择分析窗口的入口。PyPTO 应把 host CPU、device CPU、AICore busy、memory bandwidth、wait density 放到顶层概览。</p>
+        </div>
+        <div class="callout">
+          <strong>截图序列要换成计算状态序列</strong>
+          <p>Web 页面截图可迁移为计算图 / fusion graph / live memory 热点 / wrap topology 的时间片状态缩略图。</p>
+        </div>
+        <div class="callout">
+          <strong>Tracks 负责因果展开</strong>
+          <p>Chrome 的 Main / GPU / Network 对应 PyPTO 的 AICPU / AICore / Memory / Sync / Host runtime 多轨联动。</p>
+        </div>
+        <div class="callout">
+          <strong>Summary 必须跟选择区间同步</strong>
+          <p>选中 578ms-1.09s 后，summary 只解释该窗口。PyPTO 也应只解释当前 wrap、task group 或选中时间片。</p>
+        </div>
+      </div>
+      <div class="box plain">
+        <h3>待和你讨论的产品判断</h3>
+        <ul class="insight-list">
+          <li><strong>时间片缩略图放什么：</strong>我倾向于默认放“计算图状态缩略图 + memory pressure heat overlay”，而不是源码截图。原因是 #2141 的问题发生在融合片段运行时，用户更需要知道当前时间片哪个 subgraph / tensor live set / copy edge 在主导。</li>
+          <li><strong>顶层概览放几条曲线：</strong>建议首期限制在 5 条以内：Host CPU、Device CPU/AICPU、AICore active、UB headroom 或 live UB、Memory bandwidth / MTE busy。过多 counter 会把 overview 变成小型 PMU 表。</li>
+          <li><strong>Memory 是否成为独立 process：</strong>建议在泳道区作为一组 process-like tracks 出现：Memory Overview、GM↔UB movement、UB live set、L2 / main access。这样它既能和 AICore 同步对齐，又不被埋进单个 task tooltip。</li>
+          <li><strong>计算图状态图是否真的可生成：</strong>如果当前运行产物能稳定绑定 <code>program.json</code>、<code>rootHash</code>、<code>callOpMagic</code>、<code>leafHash</code>，可以先做静态图状态序列；若缺少时间片映射，先用 task / wrap 热点缩略图替代。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. #2141 的目标体验不是图，而是诊断路径</h2>
+      <div class="numbered">
+        <div class="step">
+          <h3>先用异常列表建立方向感</h3>
+          <p>打开本轮运行产物后，先展示 Top abnormal tasks：慢在哪里、主导瓶颈是什么、证据强度如何、下一步该看哪个视图。用户不应从空白泳道图开始猜。</p>
+        </div>
+        <div class="step">
+          <h3>再在泳道图上内联解释时间</h3>
+          <p>task bar 不再是单一耗时块，而是分为 compute、memory move、wait、unaccounted 四段。这样用户能立即区分“真干活”与“等/搬/解释不了”。</p>
+        </div>
+        <div class="step">
+          <h3>内存下钻绑定 tensor / op / source</h3>
+          <p>Memory pressure 面板必须展示 peak live memory、UB headroom、Top contributors、copy edge，并能跳回 <code>program.json</code>、计算图节点和源码。</p>
+        </div>
+        <div class="step">
+          <h3>等待下钻回答“谁让谁等”</h3>
+          <p>等待不是一个总数。需要区分 predecessor wait、schedule wait、sync wait、resource / uncovered gap，并能高亮信号方、等待方、wrap 和 peer task。</p>
+        </div>
+        <div class="step">
+          <h3>流水下钻回答“谁没有跑满”</h3>
+          <p>Pipeline view 应按 AIC / AIV / MTE / FixPipe / Scalar 等维度解释 utilization、dominant counter 和 critical lane，而不是把 PMU CSV 直接丢给用户。</p>
+        </div>
+        <div class="step">
+          <h3>最后用复跑对比证明动作有效</h3>
+          <p>每条建议都应能被下一轮运行验证：task time 是否下降、extra movement 是否减少、UB headroom 是否增加、wait ratio 是否下降、pipeline balance 是否改善。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. PTO 风格代码生成示意图：PyPTO 目标态</h2>
+      <div class="box plain">
+        <h3>先拆真实 PyPTO Toolkit 当前效果</h3>
+        <p>当前链路的强项是已经有运行产物和局部证据：<code>runtime_debug_mode</code> 可产出泳道相关数据，<code>draw_swim_lane.py</code> 里的 task 已包含 <code>exec_start</code>、<code>exec_end</code>、<code>wrapId</code>、operand hint、<code>syncEvents</code> 等字段；PMU parser 可按 group 输出 pipeline、memory、conflict、L2 等 counter；memory schema 已能表达 copy in/out 与 memory range。</p>
+        <p>问题是这些证据还没有形成一个像 Chrome Performance 那样的“选择窗口 -> 总览 -> tracks -> 详情”交互闭环。用户打开泳道图后，仍要靠经验把慢 task、PMU CSV、copy schema、program/source 之间的因果关系拼起来。</p>
+      </div>
+
+      <figure class="figure">
+        <div class="pto-module" role="img" aria-label="PTO design system styled PyPTO target observability module">
+          <div class="pto-ide-chrome">
+            <div class="pto-ide-title">
+              <strong>PyPTO Toolkit · Fusion Performance Diagnosis</strong>
+              <span>run_2026_06_27_1542 · interleave_rope_bs1_s4096 · runtime_debug_mode=1</span>
+            </div>
+            <div class="pto-chip-row">
+              <span class="pto-chip danger">Critical Wrap #7</span>
+              <span class="pto-chip warning">UB peak 233 / 256 KB</span>
+              <span class="pto-chip primary">PMU group 2+4+7</span>
+              <span class="pto-chip success">program.json linked</span>
+            </div>
+          </div>
+
+          <div class="pto-workbench">
+            <aside class="pto-pane">
+              <div class="pto-pane-header">
+                <div class="pto-pane-title">
+                  <strong>Immediate attention</strong>
+                  <span>ranked by evidence level</span>
+                </div>
+                <span class="pto-chip danger">3 alerts</span>
+              </div>
+              <div class="pto-pane-body pto-attention">
+                <div class="pto-attention-card is-selected">
+                  <div class="pto-attention-top">
+                    <span class="pto-attention-name">Task 42 · LEAF 0x91d2</span>
+                    <span class="pto-chip warning">memory</span>
+                  </div>
+                  <div class="pto-attention-meta">wrapId=7 · callOpMagic=0x4b18 · exec=418us</div>
+                  <div class="pto-mini-bars">
+                    <div class="pto-mini-bar"><span>GM→UB</span><div class="pto-mini-track"><div class="pto-mini-fill warning" style="width: 88%;"></div></div><span>92MB</span></div>
+                    <div class="pto-mini-bar"><span>UB head</span><div class="pto-mini-track"><div class="pto-mini-fill danger" style="width: 9%;"></div></div><span>9%</span></div>
+                    <div class="pto-mini-bar"><span>MTE busy</span><div class="pto-mini-track"><div class="pto-mini-fill warning" style="width: 76%;"></div></div><span>76%</span></div>
+                  </div>
+                </div>
+
+                <div class="pto-attention-card">
+                  <div class="pto-attention-top">
+                    <span class="pto-attention-name">Task 51 · SyncWait</span>
+                    <span class="pto-chip primary">wait</span>
+                  </div>
+                  <div class="pto-attention-meta">waits AIV1 Task 48 · 176us / 421us</div>
+                  <div class="pto-mini-bars">
+                    <div class="pto-mini-bar"><span>sync</span><div class="pto-mini-track"><div class="pto-mini-fill" style="width: 42%;"></div></div><span>42%</span></div>
+                    <div class="pto-mini-bar"><span>pred</span><div class="pto-mini-track"><div class="pto-mini-fill" style="width: 18%;"></div></div><span>18%</span></div>
+                  </div>
+                </div>
+
+                <div class="pto-attention-card">
+                  <div class="pto-attention-top">
+                    <span class="pto-attention-name">Wrap #8 · AIC idle gap</span>
+                    <span class="pto-chip">pipe</span>
+                  </div>
+                  <div class="pto-attention-meta">total_cycle 741k · accounted 503k · gap 32%</div>
+                  <div class="pto-mini-bars">
+                    <div class="pto-mini-bar"><span>AIC</span><div class="pto-mini-track"><div class="pto-mini-fill success" style="width: 38%;"></div></div><span>38%</span></div>
+                    <div class="pto-mini-bar"><span>AIV</span><div class="pto-mini-track"><div class="pto-mini-fill success" style="width: 71%;"></div></div><span>71%</span></div>
+                    <div class="pto-mini-bar"><span>MTE</span><div class="pto-mini-track"><div class="pto-mini-fill warning" style="width: 83%;"></div></div><span>83%</span></div>
+                  </div>
+                </div>
+
+                <div class="pto-soft-card warning">
+                  诊断建议：先查看 Wrap #7 的 GM→UB movement 与 UB live set；如果 copy edge 与 peak contributor 同时命中 rope_cache_split，可优先缩小 K/V tile 或调整 nbuffer。
+                </div>
+              </div>
+            </aside>
+
+            <section class="pto-pane">
+              <div class="pto-pane-header">
+                <div class="pto-pane-title">
+                  <strong>Chrome-inspired performance timeline</strong>
+                  <span>overview + graph-state filmstrip + process-fused lanes</span>
+                </div>
+                <div class="pto-chip-row">
+                  <span class="pto-chip">0-1.24 ms</span>
+                  <span class="pto-chip warning">selected 0.58-1.09 ms</span>
+                </div>
+              </div>
+              <div class="pto-pane-body">
+                <div class="pto-timeline">
+                  <div class="pto-overview">
+                    <svg viewBox="0 0 760 142" preserveAspectRatio="none" aria-hidden="true">
+                      <rect x="0" y="0" width="760" height="142" fill="#141414"/>
+                      <g stroke="#262626" stroke-width="1">
+                        <line x1="90" y1="20" x2="90" y2="142"/><line x1="210" y1="20" x2="210" y2="142"/><line x1="330" y1="20" x2="330" y2="142"/><line x1="450" y1="20" x2="450" y2="142"/><line x1="570" y1="20" x2="570" y2="142"/>
+                      </g>
+                      <text x="18" y="22" fill="#999" font-size="10">Host CPU</text>
+                      <text x="18" y="48" fill="#999" font-size="10">Device CPU</text>
+                      <text x="18" y="74" fill="#999" font-size="10">AICore</text>
+                      <text x="18" y="100" fill="#999" font-size="10">UB live</text>
+                      <text x="18" y="126" fill="#999" font-size="10">MTE BW</text>
+                      <polyline points="88,19 118,30 148,24 178,31 208,28 238,34 268,33 298,29 328,35 358,40 388,43 418,44 448,47 478,43 508,38 538,41 568,52 598,49 628,46 658,51 688,54" fill="none" stroke="#7c8db8" stroke-width="2"/>
+                      <polyline points="88,48 118,48 148,46 178,44 208,45 238,42 268,39 298,37 328,36 358,34 388,32 418,31 448,33 478,36 508,40 538,45 568,50 598,55 628,54 658,57 688,58" fill="none" stroke="#4369ef" stroke-width="2"/>
+                      <path d="M88,76 L132,76 L132,62 L206,62 L206,73 L282,73 L282,55 L386,55 L386,76 L438,76 L438,60 L560,60 L560,72 L688,72" fill="none" stroke="#04d793" stroke-width="2"/>
+                      <polyline points="88,112 118,108 148,101 178,96 208,86 238,78 268,68 298,55 328,38 358,31 388,49 418,72 448,84 478,92 508,98 538,100 568,104 598,109 628,112 658,114 688,116" fill="none" stroke="#ffaa3b" stroke-width="2.5"/>
+                      <polyline points="88,130 118,128 148,126 178,124 208,116 238,104 268,92 298,85 328,66 358,54 388,72 418,88 448,102 478,110 508,118 538,119 568,121 598,123 628,125 658,126 688,127" fill="none" stroke="#ff4b7b" stroke-width="2"/>
+                      <rect x="292" y="0" width="316" height="142" fill="rgba(67,105,239,0.12)" stroke="#4369ef" stroke-width="1"/>
+                      <line x1="292" y1="0" x2="292" y2="142" stroke="#4369ef" stroke-width="2"/>
+                      <line x1="608" y1="0" x2="608" y2="142" stroke="#4369ef" stroke-width="2"/>
+                      <text x="300" y="16" fill="#e6e6e6" font-size="11">selected: Wrap #7 / Task 42-51</text>
+                    </svg>
+                  </div>
+                  <div class="pto-filmstrip">
+                    <div class="pto-frame-thumb" data-label="program"></div>
+                    <div class="pto-frame-thumb" data-label="tile graph"></div>
+                    <div class="pto-frame-thumb" data-label="wrap #6"></div>
+                    <div class="pto-frame-thumb" data-label="UB peak"></div>
+                    <div class="pto-frame-thumb" data-label="copy edge"></div>
+                    <div class="pto-frame-thumb" data-label="sync wait"></div>
+                    <div class="pto-frame-thumb" data-label="pipe gap"></div>
+                    <div class="pto-frame-thumb" data-label="rerun"></div>
+                  </div>
+                  <div class="pto-lanes">
+                    <svg viewBox="0 0 760 330" preserveAspectRatio="none" aria-hidden="true">
+                      <rect x="0" y="0" width="760" height="330" fill="#111"/>
+                      <g stroke="#202020" stroke-width="1">
+                        <line x1="108" y1="0" x2="108" y2="330"/><line x1="228" y1="0" x2="228" y2="330"/><line x1="348" y1="0" x2="348" y2="330"/><line x1="468" y1="0" x2="468" y2="330"/><line x1="588" y1="0" x2="588" y2="330"/>
+                        <line x1="0" y1="42" x2="760" y2="42"/><line x1="0" y1="84" x2="760" y2="84"/><line x1="0" y1="126" x2="760" y2="126"/><line x1="0" y1="168" x2="760" y2="168"/><line x1="0" y1="210" x2="760" y2="210"/><line x1="0" y1="252" x2="760" y2="252"/><line x1="0" y1="294" x2="760" y2="294"/>
+                      </g>
+                      <g fill="#999" font-size="10">
+                        <text x="14" y="27">Host CPU</text>
+                        <text x="14" y="69">AICPU runtime</text>
+                        <text x="14" y="111">AICore AIC0</text>
+                        <text x="14" y="153">AICore AIV0</text>
+                        <text x="14" y="195">AICore AIV1</text>
+                        <text x="14" y="237">Memory GM↔UB</text>
+                        <text x="14" y="279">UB live set</text>
+                        <text x="14" y="321">Sync / deps</text>
+                      </g>
+                      <g opacity="0.92">
+                        <rect x="116" y="12" width="134" height="18" rx="4" fill="#7c8db8"/>
+                        <rect x="282" y="12" width="98" height="18" rx="4" fill="#7c8db8"/>
+                        <rect x="128" y="54" width="116" height="18" rx="4" fill="#4369ef"/>
+                        <rect x="260" y="54" width="160" height="18" rx="4" fill="#4369ef"/>
+                        <rect x="448" y="54" width="86" height="18" rx="4" fill="#4369ef"/>
+
+                        <rect x="150" y="96" width="92" height="18" rx="4" fill="#04d793"/>
+                        <rect x="242" y="96" width="74" height="18" fill="#ffaa3b"/>
+                        <rect x="316" y="96" width="112" height="18" rx="4" fill="#04d793"/>
+                        <rect x="470" y="96" width="112" height="18" rx="4" fill="#04d793" opacity="0.55"/>
+
+                        <rect x="174" y="138" width="84" height="18" rx="4" fill="#04d793"/>
+                        <rect x="258" y="138" width="162" height="18" fill="#4369ef" opacity="0.75"/>
+                        <rect x="420" y="138" width="88" height="18" rx="4" fill="#04d793"/>
+                        <rect x="540" y="138" width="74" height="18" rx="4" fill="#04d793" opacity="0.45"/>
+
+                        <rect x="132" y="180" width="144" height="18" rx="4" fill="#ffaa3b"/>
+                        <rect x="276" y="180" width="88" height="18" fill="#4369ef" opacity="0.75"/>
+                        <rect x="364" y="180" width="154" height="18" rx="4" fill="#04d793"/>
+                        <rect x="548" y="180" width="92" height="18" rx="4" fill="#04d793" opacity="0.5"/>
+
+                        <rect x="136" y="222" width="72" height="18" rx="4" fill="#ffaa3b" opacity="0.55"/>
+                        <rect x="230" y="222" width="86" height="18" rx="4" fill="#ffaa3b"/>
+                        <rect x="324" y="222" width="62" height="18" rx="4" fill="#ff4b7b"/>
+                        <rect x="422" y="222" width="94" height="18" rx="4" fill="#ffaa3b"/>
+                        <rect x="540" y="222" width="60" height="18" rx="4" fill="#ffaa3b" opacity="0.45"/>
+
+                        <path d="M118 278 L170 270 L226 260 L282 240 L338 218 L394 250 L450 268 L506 276 L590 282" fill="none" stroke="#ffaa3b" stroke-width="3"/>
+                        <line x1="0" y1="262" x2="760" y2="262" stroke="#ff4b7b" stroke-dasharray="4 5" opacity="0.7"/>
+                        <path d="M320 180 C318 138 336 138 336 114" fill="none" stroke="#4369ef" stroke-width="2" stroke-dasharray="4 4"/>
+                        <path d="M320 180 C320 216 352 216 352 240" fill="none" stroke="#ff4b7b" stroke-width="2" stroke-dasharray="4 4"/>
+                      </g>
+                      <rect x="292" y="0" width="316" height="330" fill="rgba(67,105,239,0.08)" stroke="#4369ef" stroke-width="1"/>
+                      <g fill="#e6e6e6" font-size="10">
+                        <text x="300" y="314">selected window: memory move + sync wait + UB peak</text>
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="pto-pane">
+              <div class="pto-pane-header">
+                <div class="pto-pane-title">
+                  <strong>Selected diagnosis</strong>
+                  <span>Task 42 · wrapId=7</span>
+                </div>
+                <span class="pto-chip danger">L3 evidence</span>
+              </div>
+              <div class="pto-pane-body pto-inspector">
+                <div class="pto-inspector-section">
+                  <div class="pto-inspector-kicker">Conclusion</div>
+                  <strong>UB pressure triggers extra movement</strong>
+                  <p>在 0.58-1.09ms 窗口内，UB live set 峰值接近容量线，GM→UB copy edge 与 MTE busy 同时抬升；AIC0 有有效计算段，但 AIV0/AIV1 出现等待。</p>
+                </div>
+                <div class="pto-inspector-section">
+                  <div class="pto-inspector-kicker">Top contributors</div>
+                  <div class="pto-soft-card">
+                    rope_cache_split: 74 KB live<br>
+                    sincos_interleave_tmp: 58 KB live<br>
+                    qk_rotary_tile: 43 KB live<br>
+                    outcast buffer: 31 KB live
+                  </div>
+                </div>
+                <div class="pto-inspector-section">
+                  <div class="pto-inspector-kicker">Trace binding</div>
+                  <p><code>rootHash=0x8d73</code><br><code>callOpMagic=0x4b18</code><br><code>leafHash=0x91d2</code><br><code>oriTaskId=42</code></p>
+                </div>
+                <div class="pto-inspector-section">
+                  <div class="pto-inspector-kicker">Action candidate</div>
+                  <div class="pto-soft-card warning">
+                    优先尝试缩小 K 方向 tile 或减少 rope cache 中间结果保留；复跑时检查 UB headroom 是否从 9% 提升到 20% 以上，GM→UB bytes 是否下降。
+                  </div>
+                </div>
+                <div class="pto-inspector-section">
+                  <div class="pto-inspector-kicker">Why this is Chrome-inspired</div>
+                  <p>顶部 overview 给全局资源感知；filmstrip 用计算图状态替代页面截图；中间 tracks 将 Host/AICPU/AICore/Memory/Sync 融合在同一时间轴；右侧只解释当前选区。</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+        <figcaption>
+          PTO design system 代码生成示意图：本节单独使用 PTO 深色工作台语义，复用 <code>ide-frame</code> / <code>workbench-shell</code> 的三栏工作台思想和 <code>swimlane-task-bar</code> 的分段 task bar 语义；未调用共享 JS，因报告是静态阅读产物。示例数据为按 PyPTO 产物字段编造的 L2 产品示意，不代表真实运行结果。
+        </figcaption>
+      </figure>
+
+      <h3>融合 AICPU / AICore / Memory 的泳道图设计原则</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>设计对象</th>
+            <th>Chrome 类比</th>
+            <th>PyPTO 对应</th>
+            <th>交互规则</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>顶部 overview</td>
+            <td>FPS / CPU / NET 汇总</td>
+            <td>Host CPU、Device CPU / AICPU、AICore active、UB live、MTE / memory bandwidth</td>
+            <td>拖拽选择时间窗口后，所有 tracks 和右侧诊断只解释当前窗口。</td>
+          </tr>
+          <tr>
+            <td>状态缩略图序列</td>
+            <td>页面 screenshots</td>
+            <td>计算图状态、wrap topology、memory pressure heat overlay、critical subgraph snapshot</td>
+            <td>默认显示计算图状态；当 memory 瓶颈为主时切换为 memory heat 缩略图。</td>
+          </tr>
+          <tr>
+            <td>AICPU tracks</td>
+            <td>Network / Main 中的调度与发起事件</td>
+            <td>host launch、runtime prepare、AICPU control task、copy orchestration</td>
+            <td>用来解释 AICore 空窗是否来自 host/device 调度侧，而不是误判为算子内部慢。</td>
+          </tr>
+          <tr>
+            <td>AICore tracks</td>
+            <td>Main / GPU 执行 tracks</td>
+            <td>AIC、AIV0、AIV1、wrap group、compute / memory move / wait 分段 task</td>
+            <td>按 wrap 聚合，可展开 1C2V；选中 wait 段时高亮 peer SyncSet。</td>
+          </tr>
+          <tr>
+            <td>Memory tracks</td>
+            <td>Memory chart + NET transfer</td>
+            <td>GM↔UB movement、UB live set、L2 / main access、copy edge</td>
+            <td>作为独立 process-like 区块与 AICore 对齐，而不是藏在 tooltip 里。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. PyPTO 应采用的观测信息架构</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>层级</th>
+            <th>用户问题</th>
+            <th>主视图</th>
+            <th>关键指标</th>
+            <th>行动出口</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Diagnosis Overview</td>
+            <td>我先看哪里？</td>
+            <td>Top abnormal tasks / wraps</td>
+            <td>duration、severity、bottleneck type、evidence level</td>
+            <td>进入 memory / wait / pipeline 下钻</td>
+          </tr>
+          <tr>
+            <td>Segmented Swimlane</td>
+            <td>这个 task 的时间花在哪里？</td>
+            <td>compute / memory move / wait / unaccounted 分段条</td>
+            <td>ratio、absolute time、dominant segment、peer relation</td>
+            <td>点击分段，右侧详情跟随</td>
+          </tr>
+          <tr>
+            <td>Memory Pressure</td>
+            <td>是不是 UB 压力或额外搬运？</td>
+            <td>live memory 曲线 + Top contributors + movement graph</td>
+            <td>peak live bytes、UB headroom、GM/UB bytes、copy avoidability</td>
+            <td>定位 tensor/op，建议 tile / nbuffer / fusion 调整</td>
+          </tr>
+          <tr>
+            <td>Wait Chain</td>
+            <td>我在等谁？为什么等？</td>
+            <td>等待段 + SyncSet/SyncWait 连线 + predecessor chain</td>
+            <td>sync wait、schedule wait、predecessor wait、critical peer</td>
+            <td>跳到 peer task / wrap，优化拖尾来源</td>
+          </tr>
+          <tr>
+            <td>Pipeline Balance</td>
+            <td>AIC/AIV/MTE 谁没跑满？</td>
+            <td>1C2V grouped lanes + PMU group lens</td>
+            <td>busy cycles、memory access counters、stall/conflict、gap ratio</td>
+            <td>判断 compute-heavy、MTE-heavy、UB-conflict、L2 reuse failure</td>
+          </tr>
+          <tr>
+            <td>Before / After</td>
+            <td>我这次改动真的有效吗？</td>
+            <td>两轮运行对比</td>
+            <td>task time delta、extra movement delta、wait ratio delta、headroom delta</td>
+            <td>沉淀为团队调优规则或继续下一轮采集</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>7. 对产品策略的判断</h2>
+      <div class="grid-3">
+        <div class="box">
+          <h3>不要先做大而全 Trace Viewer</h3>
+          <p>Perfetto/Nsight 适合专家自由探索，但 PyPTO 当前最需要的是“先归因”的产品入口。默认视图要少而强，能把用户带到正确问题。</p>
+        </div>
+        <div class="box">
+          <h3>不要把 PMU CSV 当产品能力</h3>
+          <p>PMU group 是诊断镜头，不是表格字段。用户要的是“为什么 MTE 高、AIV 空、UB 冲突多”，不是几十列 counter。</p>
+        </div>
+        <div class="box">
+          <h3>不要让内存图脱离源码动作</h3>
+          <p>memory movement 只有绑定 tensor、op、fusion fragment 和源码位置，才会变成 PyPTO 用户能执行的改动。</p>
+        </div>
+      </div>
+      <div class="quote">
+        目标不是让用户多看几张图，而是让工具把“慢 task”翻译成“该改哪里的 PyPTO 表达”。
+        <small>Product principle for issue #2141</small>
+      </div>
+    </section>
+
+    <section>
+      <h2>8. 分期路线</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>优先级</th>
+            <th>能力</th>
+            <th>为什么先做</th>
+            <th>最小数据需求</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P0</td>
+            <td>慢 task 自动归因 + 分段泳道</td>
+            <td>直接解决“看见慢但不知道为什么”的核心痛点。</td>
+            <td><code>exec_start/end</code>、PMU accounted cycles、wait / sync events、memory movement summary</td>
+          </tr>
+          <tr>
+            <td>P0</td>
+            <td>Memory Pressure 面板</td>
+            <td>#2141 明确指向 UB pressure、spill-like 与额外搬运。</td>
+            <td>live memory、copy in/out、raw tensor memory range、top contributors</td>
+          </tr>
+          <tr>
+            <td>P1</td>
+            <td>Wait Chain 面板</td>
+            <td>等待和搬运经常互相伪装；必须能区分“搬得慢”和“等别人”。</td>
+            <td><code>syncEvents</code>、predecessor ready time、schedule wait、peer task mapping</td>
+          </tr>
+          <tr>
+            <td>P1</td>
+            <td>Pipeline Balance by PMU group</td>
+            <td>把 PMU group 转译为 C/V/MTE/FixPipe 的诊断镜头。</td>
+            <td>PMU group 2/4/6/7/8 counters、wrap / core mapping、total cycle</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>源码 / 计算图 / program 联动</td>
+            <td>诊断必须落到可修改对象。</td>
+            <td><code>rootHash</code>、<code>callOpMagic</code>、<code>leafHash</code>、operand hints、source map</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>Before / After 自动对比</td>
+            <td>把试错变成验证，沉淀团队可复用经验。</td>
+            <td>run id、task identity matching、metric delta、diagnosis delta</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>9. 结论</h2>
+      <p>
+        面向 #2141，PyPTO Toolkit 最有价值的竞品学习对象不是某一个单点图表，而是三类成熟范式的组合：Nsight Systems 的时间线资源观测、Nsight Compute 的瓶颈归因图、Chrome / Perfetto 的选择驱动分析。PyPTO 的差异化在于把这些能力进一步绑定到 tensor、op、leaf task、wrap、源码和调参动作。
+      </p>
+      <p>
+        因此建议把“额外搬运 / 等待 / 流水利用率观测”定义为 Fusion Performance Diagnosis 的第一期，而不是 Memory Viewer。Memory Viewer 只回答“发生了什么”，Diagnosis 才回答“为什么慢、证据多强、下一步改哪里、改完是否有效”。
+      </p>
+    </section>
+
+    <section>
+      <h2>Sources</h2>
+      <div class="sources">
+        <ul>
+          <li><a href="https://gitcode.com/cann/pypto/issues/2141">PyPTO GitCode issue #2141</a>：用户指定 issue；页面为 SPA，本轮未直接抓到正文 API 内容。</li>
+          <li><a href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html">NVIDIA Nsight Systems User Guide</a>：timeline、memory transfer、GPU metrics、memory utilization 产品图与概念。</li>
+          <li><a href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html">NVIDIA Nsight Compute Profiling Guide</a>：Memory Chart、Roofline、Speed of Light、PM sampling、stall / issue 概念。</li>
+          <li><a href="https://developer.chrome.com/docs/devtools/performance/reference">Chrome DevTools Performance reference</a>：Memory metrics、timeline selection、Summary / Bottom-up / Event Log、initiator 跳转。</li>
+          <li>用户上传截图：<code>chrome-performance-page-load-user-upload.png</code>，用于分析 Chrome Performance overview、screenshots、tracks、Summary 组合模式。</li>
+          <li><a href="https://docs.pytorch.org/docs/main/profiler.html">PyTorch Profiler documentation</a>：<code>export_memory_timeline</code>、memory timeline plot、raw memory event 格式。</li>
+          <li><a href="https://perfetto.dev/docs/visualization/perfetto-ui">Perfetto UI documentation</a>：track、slice selection、timeline navigation、current selection 分析范式。</li>
+          <li>PyPTO local mirror: <code>/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&amp;文件/pypto</code>，用于确认泳道图、PMU parser 和 memory schema 的当前本地结构。</li>
+          <li>PTO design system local skill: <code>.agents/skills/pto-design-system/</code>，第 5 节示意图参考其 dark-first workstation、workbench shell、IDE frame 和 swimlane task bar 语义。</li>
+        </ul>
+      </div>
+      <p class="source-note">
+        本报告中的产品截图保存在同目录 <code>assets/</code>，文件名与来源工具对应。所有“代码生成示意图”均为本报告内联 SVG，不代表真实产品截图。
+      </p>
+    </section>
+  </main>
+</body>
+</html>

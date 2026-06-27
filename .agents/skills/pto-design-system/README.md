@@ -13,6 +13,14 @@
 - 做 graph、swimlane、memory architecture、workbench shell 等布局密集型原型
 - 判断一个新视觉模式是否需要先走 preview gate，再沉淀进共享系统
 
+## 何时不要使用
+
+- 生成报告、研究简报、知识库文档、UX 分析文档或 `final-report.md`
+- 生成以阅读为主的 `.md` / `.html` / `.docx` / `.pptx` / PDF 等报告类内容
+- 仅在报告正文中描述、评审或引用 PTO 设计系统，而没有要求设计或实现 PTO 风格 UI / demo / prototype
+
+报告类内容无论是什么文件格式，默认使用执行 agent 原生效果：Codex 用 Codex 原生效果，Claude 用 Claude 原生效果，其他 agent 同理；不套用 PTO design system。
+
 ## Agent 读取顺序
 
 1. `SKILL.md`：触发规则和 Workflow A/B/C

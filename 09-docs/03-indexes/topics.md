@@ -8,3 +8,4 @@
 - `operator-doc-assistant`
 - `pypto-studio`
 - `a5-pmu-visualization`
+- `01-fusion-performance-diagnosis`

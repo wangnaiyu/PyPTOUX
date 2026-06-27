@@ -106,12 +106,13 @@
 - `source_type`: `code-source`, `official-doc-source`
 - `remote`: `https://gitcode.com/cann/pypto`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto`
+- `snapshot`: branch `master`, commit `ede29b6d7a3ff83067d7dfd34e3edc743334ca6a`, commit date `2026-06-27T09:40:24+08:00`
 - `authority_scope`: PyPTO 代码事实、字段名、文件路径、sample code、运行行为、上游 literal、文档源码、API / tutorial freshness。
 - `best_for`: `lookup`、`freshness`、`diagnostic`、`optimization`、`workflow-research`、`demo-material` 中需要当前代码或文档源码证据的问题。
 - `not_for`: 官网对外措辞、非 PyPTO CANN 通用概念、未校验的设计意图、外部经验 claim。
 - `question_modes`: `lookup`, `freshness`, `diagnostic`, `optimization`, `workflow-research`, `demo-material`
 - `output_modes`: `answer`, `research-brief`, `demo-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` fast-forward 到 `origin/master`，snapshot commit `2f18692ce0dbe77a86a8e4ab1479a4b5e5d8be23`，commit date `2026-06-25T11:40:28+08:00`。后续默认每个自然天最多 clone / refresh 一次；strong freshness 问题优先单点读取 upstream 或用户给定 URL。本地镜像只代表当前 checkout。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` fast-forward 到 `origin/master`，当前 snapshot 见上方 `snapshot`。后续默认每个自然天最多 clone / refresh 一次；strong freshness 问题优先单点读取 upstream 或用户给定 URL。本地镜像只代表当前 checkout。
 - `search_mode`: 本地优先 `rg`；用户给具体 URL 或强 freshness 问题时在线单点读取。线上仓库不用于大范围探索性检索。
 - `discovery_policy`: 可从当前问题出发跨目录 `rg`；发现 drift 时记录，不在 Batch A 刷新。
 - `claim_policy`: factual claim 以源码、文档源码或可追溯文件为准；字段名、路径、trace key、文件名等 literal 必须保留原样。
@@ -149,7 +150,7 @@
 - `not_for`: 当前实现事实、字段名、文件路径、运行行为、上游 literal；这些必须回 `pypto` 校验。
 - `question_modes`: `lookup`, `workflow-research`, `trend-research`, `ux-strategy`, `demo-design`
 - `output_modes`: `answer`, `research-brief`, `ux-analysis`, `demo-brief`, `ux-design-spec`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` refresh 校验，当前仍为上述 snapshot；后续 fetch / refresh 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot；后续 fetch / refresh 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
 - `search_mode`: 优先本地 `rg` 查根目录专题、architecture index、logical / development / process / physical / scenario views、module detailed designs、design decisions、open questions、glossary、codebase mapping；需要 freshness 时再在线单点读取。
 - `discovery_policy`: 不因当前已知 runtime redesign 子主题过窄而排除更 general 的 PyPTO 顶层设计主题。`github.com/hengliao1972/**` 中除本 source 外，当前没有其他需要登记的 source；后续只有用户指定或证据充分时再登记。
 - `claim_policy`: design-intent claim 可由本 source 支撑；实现事实必须回 `pypto`。
@@ -200,13 +201,13 @@
 - `remote`: `https://gitcode.com/zhanghuixin/PTO-TestData`
 - `display_name`: `PTO-TestData`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/PTO-TestData`
-- `snapshot`: branch `main`, commit `9303ae914f4bc28908b41c6dfb11b93b3fdcbc15`, commit date `2026-06-17T16:16:59+08:00`
+- `snapshot`: branch `main`, commit `62d909c3f1a2c6bc4bb2b22861d3c140c6c55f6e`, commit date `2026-06-26T09:08:31+08:00`
 - `authority_scope`: 候选 PyPTO 测试数据、样例数据、运行产物和 demo evidence。
 - `best_for`: `demo-material`、`demo-design`、PyPTO data source 对照。
 - `not_for`: 原始 L1 数据不得默认作为 `share-safe` 外发；未抽样、未脱敏、未写明边界的数据不得进入对外 demo。
 - `question_modes`: `lookup`, `demo-material`, `demo-design`, `ux-strategy`
 - `output_modes`: `demo-brief`, `research-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` refresh 校验，当前仍为上述 snapshot；后续 clone / fetch 需要单独执行并记录 snapshot。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot；后续 clone / fetch 需要单独执行并记录 snapshot。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
 - `discovery_policy`: 可升级为 PyPTO data / demo evidence source。
 - `claim_policy`: 数据等级为 L1；权限和可外发边界同 `pypto-sample-dataset`。只有抽样 / 脱敏后的数据，或按 schema 编造并明确标记为 L2 的数据，才可标记为 `share-safe`。
@@ -225,7 +226,7 @@
 - `not_for`: 不得把未对照本地 mirror、`pypto` 文档/源码或用户提供证据的 toolkit 行为写成事实。
 - `question_modes`: `lookup`, `workflow-research`, `demo-design`, `demo-material`, `ux-strategy`
 - `output_modes`: `research-brief`, `demo-brief`, `ux-analysis`, `prototype-implementation-plan`, `source-update`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` fast-forward；后续 clone / fetch 需要单独执行并记录 snapshot。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot；后续 clone / fetch 需要单独执行并记录 snapshot。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
 - `discovery_policy`: 可作为 mirror candidate；本仓库允许记录文件结构、schema、截图和少量代码片段，但不得写入未经授权的大段源码或原始私有材料。
 - `claim_policy`: 结构、schema、截图和代码片段可在标注来源后支持 toolkit 能力说明；涉及真实 toolkit 行为需以 `pypto-tools` mirror、`pypto` 文档/源码或用户提供证据校验。
@@ -238,14 +239,14 @@
 - `source_type`: `code-source`, `isa-source`, `hardware-interface-source`
 - `remote`: `https://gitcode.com/cann/pto-isa`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-isa`
-- `snapshot`: branch `master`, commit `d0a402b38ef9c4d60a445329dc0cbad0d4460aab`, commit date `2026-06-25T11:08:22+08:00`
+- `snapshot`: branch `master`, commit `4b8e10a583e0e9539421f71bdd6dd1fa8a759d06`, commit date `2026-06-26T21:20:16+08:00`
 - `knowledge_map`: `02-knowledge/00-shared/pto-isa/`
 - `authority_scope`: PTO ISA、Tile Library、硬件接口、指令语义、C++ intrinsic API、CPU / NPU / CostModel / communication 后端实现路径和 A5/950 相关 technical claim。
 - `best_for`: `lookup`、`trend-research`、`ux-strategy`、`demo-material` 中涉及 ISA / hardware interface / Tile 编程模型的问题。
 - `not_for`: PyPTO 当前实现事实，除非回 `pypto` 或相关代码校验。
 - `question_modes`: `lookup`, `trend-research`, `ux-strategy`, `demo-material`
 - `output_modes`: `answer`, `research-brief`, `ux-analysis`, `demo-brief`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` fast-forward；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
 - `discovery_policy`: 可从当前问题出发跨 docs / include / kernels / tests 检索；发现高价值专题可写回 `02-knowledge/00-shared/pto-isa/`。
 - `claim_policy`: ISA claim 以当前 snapshot 的文档、头文件或测试为准；A5/950 硬件 claim 需与官方 CANN/Ascend 或代码 source 对照；PyPTO 当前行为仍回 `pypto`。
@@ -258,14 +259,14 @@
 - `source_type`: `code-source`, `operator-workflow-source`
 - `remote`: `https://gitcode.com/cann/ops-transformer`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/ops-transformer`
-- `snapshot`: branch `master`, commit `25e127bbd7689e68536ee3ddf6324a47cdf48df3`, commit date `2026-06-25T11:55:48+08:00`
+- `snapshot`: branch `master`, commit `4802644f1a896baf5105bebae0544d3c235b5d06`, commit date `2026-06-27T09:24:49+08:00`
 - `knowledge_map`: `02-knowledge/00-shared/ops-transformer/`
 - `authority_scope`: 当前 checkout 的 transformer 类算子仓库结构、算子目录、标准算子工程 workflow、调用方式、tooling code source 和可追溯代码路径。
 - `best_for`: `workflow-research`、`demo-material`、`ux-strategy` 中与算子迁移、operator workflow 或 tooling 相关的问题。
 - `not_for`: PyPTO current behavior，除非经过相关代码和官方文档校验。
 - `question_modes`: `lookup`, `workflow-research`, `demo-material`, `ux-strategy`
 - `output_modes`: `answer`, `research-brief`, `demo-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` fast-forward；后续 clone / fetch 需要单独执行并记录 snapshot。README 提醒源码会跟随 CANN 软件版本发布，使用 `master` 可能存在版本不匹配风险；强版本问题必须选配套 tag / release。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot。README 提醒源码会跟随 CANN 软件版本发布，使用 `master` 可能存在版本不匹配风险；强版本问题必须选配套 tag / release。
 - `search_mode`: 优先本地 `rg`；需要 freshness 或版本配套时再在线单点读取、checkout tag 或 refresh mirror。
 - `discovery_policy`: 可从当前问题出发跨 docs / op directories / examples / torch_extension 检索；发现高价值算子 workflow 可写回 `02-knowledge/00-shared/ops-transformer/`。
 - `claim_policy`: factual claim 需回当前代码、配套 tag、CANN/Ascend 官方文档或具体算子目录校验；PyPTO 当前行为仍回 `pypto`。
@@ -278,14 +279,14 @@
 - `source_type`: `tooling-source`, `agent-workflow-source`
 - `remote`: `https://gitcode.com/cann/cannbot-skills`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/cannbot-skills`
-- `snapshot`: branch `master`, commit `8fdbf6aade329d41c6ee09b5560c967002736048`, commit date `2026-06-25T11:54:07+08:00`
+- `snapshot`: branch `master`, commit `769225f86bd5a1a6993114326007064d34499efd`, commit date `2026-06-26T20:21:09+08:00`
 - `knowledge_map`: `02-knowledge/00-shared/cannbot-skills/`
 - `authority_scope`: agent skill taxonomy、tooling workflow、prompt pattern、skill governance、GitCode issue / PR workflow 和自动化线索。
 - `best_for`: `workflow-research`、`ux-strategy` 中与 agent 辅助、工具链工作流有关的问题。
 - `not_for`: PyPTO / CANN factual source of truth。
 - `question_modes`: `workflow-research`, `trend-research`, `ux-strategy`
 - `output_modes`: `research-brief`, `ux-analysis`, `source-update`, `knowledge-writeback`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` fast-forward；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot；后续 clone / fetch 需要单独执行并记录 snapshot。强 freshness 问题优先在线单点读取或 refresh mirror。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
 - `discovery_policy`: 可作为 CANN agent / skill workflow 的高相关 source；不将 skill 文案中的技术 claim 直接提升为事实。
 - `claim_policy`: 仅作 workflow / tooling / skill governance 线索；API、硬件、性能、PyPTO 行为等 factual claim 回 authoritative source。
@@ -298,13 +299,13 @@
 - `source_type`: `design-system-source`
 - `remote`: `https://github.com/yinyucheng0601/pto-design-system`
 - `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pto-design-system`
-- `snapshot`: branch `main`, commit `c0eaecdf811d01dcdec423ccb4484a39e8a8799b`, commit date `2026-06-25T09:17:15+08:00`
+- `snapshot`: branch `main`, commit `7434a243904de060aa01be5f9bf8e348aad9e703`, commit date `2026-06-25T15:43:22+08:00`
 - `authority_scope`: 上游 PTO design system、tokens、视觉规范、交互模式、approved patterns、agent-facing skill bundle。
 - `best_for`: `design-system-application`、`ux-design-spec`、`prototype-implementation-plan`、`demo-design` 中涉及 PTO 风格和 design system 的问题。
 - `not_for`: 不得把上游仓库全量盲目复制进 PyPTOUX；未批准 experimental preview 不得进入 `.agents/skills/pto-design-system/` 稳定 bundle。
 - `question_modes`: `demo-design`, `ux-strategy`, `workflow-research`
 - `output_modes`: `design-system-application`, `ux-design-spec`, `prototype-implementation-plan`, `source-update`
-- `freshness_policy`: 本地 mirror 已于 `2026-06-25` fast-forward；后续 sync 采用手动触发 mirror inspect / audit / change report，不做后台自动同步。
+- `freshness_policy`: 本地 mirror 已于 `2026-06-27` refresh 校验，当前仍为上述 snapshot；后续 sync 采用手动触发 mirror inspect / audit / change report，不做后台自动同步。
 - `search_mode`: 优先本地 `rg`；需要 freshness 时再在线单点读取或 refresh mirror。
 - `discovery_policy`: 先 clone / inspect 上游 mirror，再系统性更新 `.agents/skills/pto-design-system`（如需）。
 - `claim_policy`: design system claim 需区分上游 source 与 agent-facing skill bundle。实现用 token / pattern code 以当前 skill 或上游 mirror 文件为准；人类审阅以 `.agents/skills/pto-design-system/design-system-preview.html` 和 skill references 为入口。
