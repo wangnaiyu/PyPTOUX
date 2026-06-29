@@ -58,7 +58,7 @@
 
 | Source Type | 用途 | 可能包含 |
 | --- | --- | --- |
-| `code-source` | 代码事实、实现路径、API / schema / adapter 线索 | `pypto`、`pypto-tools`、`pto-isa`、`ops-transformer` |
+| `code-source` | 代码事实、实现路径、API / schema / adapter 线索 | `pypto`、`pypto-3.0`、`pypto-tools`、`pto-isa`、`ops-transformer` |
 | `official-doc-source` | 官方口径、API、开发指南、工具链说明 | `pypto-official-docs`、`cann-docs-community-edition` |
 | `design-intent-source` | 架构意图、设计决策、方向规划 | `pypto-top-level-design-documents` |
 | `pypto-data-source` | PyPTO 样例、测试数据、编译 / 运行产物、性能 / 图 / 日志证据 | `pypto-sample-dataset`、`pypto-testdata` |
@@ -77,6 +77,7 @@
 | URL pattern | Source |
 | --- | --- |
 | `gitcode.com/cann/pypto/**` | `pypto` |
+| `github.com/hw-native-sys/pypto/**` | `pypto-3.0` |
 | `pypto.gitcode.com/**` | `pypto-official-docs` |
 | `github.com/hengliao1972/pypto_top_level_design_documents/**` | `pypto-top-level-design-documents` |
 | `github.com/hengliao1972/**` | `web-discovery / no registered source by default` |
@@ -118,6 +119,27 @@
 - `claim_policy`: factual claim 以源码、文档源码或可追溯文件为准；字段名、路径、trace key、文件名等 literal 必须保留原样。
 - `writeback_policy`: verified claim 可建议写回 `02-knowledge/`；drift 记录到对应 `drift.md` 或任务包。
 - `orientation_hints`: `02-knowledge/00-shared/pypto-architecture/overview.md` 仅作目录 hint 和架构速读，不能限制 why/how/design/UX/demo 类探索；当前 snapshot 细节见该目录的 `sources.md`。
+- `overwrite_guard`: local mirror 有未提交改动时，不得覆盖；先确认。
+
+### pypto-3.0
+
+- `status`: `active`
+- `access_mode`: `local-mirror`, `online`
+- `source_type`: `code-source`, `official-doc-source`
+- `remote`: `https://github.com/hw-native-sys/pypto`
+- `local_mirror`: `/Users/wny/Documents/2 领域 Area/工作/EASY CANN/样例工程&文件/pypto-3.0`
+- `snapshot`: branch `main`, commit `8f8de9b9c4419e526c1869b84d1f79d0f79de7a0`, commit date `2026-06-29T16:21:25+08:00`
+- `authority_scope`: PyPTO 3.0 / next-generation 代码事实、字段名、文件路径、sample code、运行行为、上游 literal、文档源码、API / tutorial freshness。
+- `best_for`: 涉及 PyPTO 3.0、next-generation PyPTO、GitHub `hw-native-sys/pypto`、新架构代码事实或 2.x / 3.0 差异的问题。
+- `not_for`: PyPTO 2.x / GitCode `cann/pypto` 当前实现事实、官网对外措辞、非 PyPTO CANN 通用概念、未校验的设计意图、外部经验 claim。
+- `question_modes`: `lookup`, `freshness`, `diagnostic`, `optimization`, `workflow-research`, `demo-material`
+- `output_modes`: `answer`, `research-brief`, `demo-brief`, `source-update`, `knowledge-writeback`
+- `freshness_policy`: 本地 mirror 于 `2026-06-29` clone 自 GitHub `hw-native-sys/pypto`，当前 snapshot 见上方 `snapshot`。后续 fetch / refresh 前需要单独确认权限、记录 snapshot，并检查本地改动；strong freshness 问题优先单点读取 upstream 或用户给定 URL。本地镜像只代表当前 checkout。
+- `search_mode`: 本地优先 `rg`；用户给具体 URL 或强 freshness 问题时在线单点读取。线上仓库不用于大范围探索性检索。
+- `discovery_policy`: 可从当前问题出发跨目录 `rg`；发现与 `pypto` 2.x 的差异、drift 或高价值迁移线索时记录，不直接覆盖旧 `pypto` source。
+- `claim_policy`: PyPTO 3.0 factual claim 以本 source 的源码、文档源码或可追溯文件为准；涉及 PyPTO 2.x 行为时必须回 `pypto` 校验并分开标注；字段名、路径、trace key、文件名等 literal 必须保留原样。
+- `writeback_policy`: verified claim 可建议写回 `02-knowledge/`；3.0 / next-gen 差异、迁移线索和 drift 记录到对应 `drift.md`、`sources.md` 或任务包。
+- `orientation_hints`: 根目录 `README.md`、`README.zh-CN.md`、`docs/`、`examples/`、`include/`、`python/`、`runtime/`、`src/`、`tests/`。
 - `overwrite_guard`: local mirror 有未提交改动时，不得覆盖；先确认。
 
 ### pypto-official-docs
@@ -404,12 +426,14 @@ Batch A 只制定原则和候选清单，不执行 clone / pull / fetch / refres
 - supporting article / 社区帖子默认不 clone，只登记链接、claim 和验证状态。
 - issues / discussions / PR / FAQ 类 source 先保持在线检索；如高频用于 painpoint-mining，再考虑导出快照或 mirror。
 - `pypto` 本体 refresh 归 Batch B。
+- `pypto-3.0` 本地镜像已落地；后续 fetch / refresh 前单独确认权限、记录 snapshot，并检查本地改动。
 - `pypto-tools` 的本地路径、mirror、adapter 和 demo 使用策略归 Batch C。
 - `yinyucheng0601/pto-design-system` 的 mirror 与 `.agents/skills/pto-design-system/` 同步策略归 Batch D。
 
 明确 mirror tracking set（包含已落地 mirror 与仍待确认的 mirror-candidate）：
 
 - `https://gitcode.com/cann/pypto`
+- `https://github.com/hw-native-sys/pypto`
 - `https://gitcode.com/cann/pto-isa`
 - `https://gitcode.com/cann/cannbot-skills`
 - `https://gitcode.com/cann/ops-transformer`
